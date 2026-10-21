@@ -233,12 +233,19 @@ Evaluated per new item. Each kind can be turned off in settings (FR-60).
 | `reviewSubmitted` | A new review on an `authored` pull request, state `APPROVED`, `CHANGES_REQUESTED` or `COMMENTED` | FR-51 |
 | `commentAdded` | A new conversation comment (`PullRequest.comments`) on an `authored` pull request | FR-52 |
 | `threadReply` | A new review-thread comment, on a pull request of any role, in a thread where an earlier comment is yours | FR-53 |
+| `checksFailed` | An `authored` pull request whose `checks` is `FAILURE` or `ERROR` on a head commit other than the cursor's `notifiedFailingHead`; the cursor then records that head. On entry and on the baseline the head is recorded without notifying | FR-61 |
+| `closedByOther` | An `authored` pull request leaves the watch set as `MERGED` or `CLOSED`, and the actor who merged it (`mergedBy`) or closed it (the latest `ClosedEvent`) is not you | FR-62 |
+| `mention` | A new conversation comment, review or review-thread comment by someone else whose text contains `@<your login>` as a whole word, on a pull request of any role. It replaces the `commentAdded` or `threadReply` the same item would have fired, because it says more | FR-64 |
 
 Reviews in state `PENDING` (unsubmitted drafts) and `DISMISSED` never fire.
 
 **A conversation comment on a pull request that is not yours never fires.** The conversation tab
 has no reply structure, so every comment after yours would count as a reply, which is the noise of
 PROJECT.md §1. A comment that mentions you is the P1 `mention` kind (FR-64).
+
+**Mentions are matched, never stored.** The detail query reads the text of comments and reviews;
+the client keeps only the logins mentioned in each and discards the text (`04-data.md` §5). A team
+mention (`@acme/backend`) is not a mention of you. Your own items never mention you (§5.4).
 
 **A request removed before the poll sees it never fires.** The role check is part of the
 condition, so a request made and withdrawn between two polls is invisible, which is correct.
@@ -459,6 +466,12 @@ notification. Within a group, items are ordered oldest first.
 | n × `commentAdded` | `4 comments on your pull requests` | `acme/api` | `@dave on #470` |
 | 1 × `reviewReminder` | `Your review is still waiting` | `acme/api #482` | `Fix login redirect loop` · `requested 2h ago by @ana` |
 | n × `reviewReminder` | `3 reviews still waiting for you` | `acme/api` | One line per pull request: `#482 Fix login redirect loop · 2h` |
+| 1 × `checksFailed` | `Checks failed` | `acme/api #470` | The pull request title |
+| n × `checksFailed` | `Checks failed on 2 pull requests` | `acme/api` | One line per pull request: `#470 Cache the account lookup` |
+| 1 × `closedByOther` | `@bruno merged your pull request` / `@bruno closed your pull request` | `acme/api #470` | The pull request title |
+| n × `closedByOther` | `2 pull requests closed` | `acme/api` | One line per pull request |
+| 1 × `mention` | `@carla mentioned you` | `acme/web #88` | The pull request title |
+| n × `mention` | `3 mentions` | `acme/web` | `@carla on #88` |
 
 Copy lives in `Localizable.xcstrings` (D-18); the strings above are the English source values and
 the exact composition is in `05-design.md`.
@@ -473,9 +486,9 @@ summary argument, so macOS stacks one repository's notifications together (FR-54
 At most five notifications per poll (FR-55). When there are more groups, the four with the highest
 priority are delivered and the fifth says `N more updates in M repositories` and opens the popover.
 
-Priority, highest first: `reviewRequested`, then `reviewSubmitted` with changes requested,
-`reviewSubmitted` approved, `threadReply`, `reviewSubmitted` commented, `commentAdded`,
-`reviewReminder`. Ties are broken by the oldest event in the group. Reminders come last because
+Priority, highest first: `reviewRequested`, then `reviewSubmitted` with changes requested and
+`checksFailed`, `reviewSubmitted` approved and `closedByOther`, `threadReply` and `mention`,
+`reviewSubmitted` commented, `commentAdded`, `reviewReminder`. Ties are broken by the oldest event in the group. Reminders come last because
 they repeat what the list already says; something that happened outranks something that is still
 true.
 
@@ -574,6 +587,17 @@ Ignore and Focus:
 | 34 | Hold on; Docket killed at 14:30 and relaunched at 14:40 | Still holding; at 15:00 the digest includes events from before and after the relaunch | `held` and the hold's start are in `state.json` |
 | 35 | Hold started at 09:00 and macOS never calls the filter again | The hold ends at 21:00 and the digest is delivered | §7.5's 12-hour safety |
 | 36 | Hold on; `acme/api#482` gets 2 held comments, then you ignore it before the Focus ends | The digest leaves out #482's comments | §7.5: held events of a pull request that is muted, ignored or gone are dropped |
+
+The P1 kinds:
+
+| # | Given | Expected | Why |
+|---|---|---|---|
+| 37 | Your `acme/api#470` turns `FAILURE` on head `a1`; you push `a2`, which also fails | 2 `checksFailed`, one per head | §5.3: once per head commit. The naive answer is 1, because the status never left `checksFailing` |
+| 38 | Your `acme/api#470` is already `FAILURE` when Docket first sees it; the next poll is unchanged | 0 notifications | The head is recorded on entry |
+| 39 | `bruno` merges your `acme/api#470`; separately you merge your `acme/api#471` | 1 `closedByOther`, `@bruno merged your pull request` | §5.4 rule 1 applied to the closer |
+| 40 | On `carla`'s `acme/web#88`, `carla` writes `@you can you check the migration?` in the conversation | 1 `mention` | A conversation comment on someone else's pull request fires only as a mention |
+| 41 | On your `acme/api#470`, `dave` comments `ping @you` | 1 `mention`, no `commentAdded` | The mention replaces the comment for the same item |
+| 42 | `dave` writes `@acme/backend please look` or `@youngster` | 0 mentions | A team, or a longer login, is not you |
 
 ## 9. What can go wrong
 
