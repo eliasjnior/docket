@@ -1,0 +1,67 @@
+name: Docket
+options:
+  bundleIdPrefix: com.eliasjnior
+  deploymentTarget:
+    macOS: "15.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+
+configFiles:
+  Debug: Config/Version.xcconfig
+  Release: Config/Version.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CURRENT_PROJECT_VERSION: 1
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    ENABLE_HARDENED_RUNTIME: NO
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+
+packages:
+  DocketKit:
+    path: Packages/DocketKit
+
+targets:
+  Docket:
+    type: application
+    platform: macOS
+    sources:
+      - path: App/Sources
+      - path: CHANGELOG.md
+        buildPhase: resources
+    dependencies:
+      - package: DocketKit
+        product: DocketCore
+      - package: DocketKit
+        product: DocketStores
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleName: Docket
+        CFBundleDisplayName: Docket
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSUIElement: true
+        DocketUpdatePublicKey: jQN1tZ7YnTQyKwXJiZpMwPb16+SB85e5CA3I8Nil9/Q=
+        LSApplicationCategoryType: public.app-category.developer-tools
+        NSHumanReadableCopyright: "Copyright © 2026 Elias Júnior"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.eliasjnior.docket
+        PRODUCT_NAME: Docket
+        COMBINE_HIDPI_IMAGES: YES
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+schemes:
+  Docket:
+    build:
+      targets:
+        Docket: all
+    run:
+      config: Debug
+    archive:
+      config: Release

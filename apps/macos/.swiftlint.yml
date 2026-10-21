@@ -1,0 +1,44 @@
+included:
+  - App
+  - scripts
+  - Packages/DocketKit/Sources
+  - Packages/DocketKit/Tests
+excluded:
+  - Packages/DocketKit/.build
+  - build
+
+disabled_rules:
+  - trailing_comma
+  - opening_brace
+  - todo
+
+opt_in_rules:
+  - closure_spacing
+  - empty_count
+  - explicit_init
+  - first_where
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - last_where
+  - modifier_order
+  - redundant_nil_coalescing
+  - sorted_first_last
+  - toggle_bool
+  - vertical_whitespace_closing_braces
+
+line_length:
+  warning: 120
+  error: 160
+  ignores_urls: true
+
+identifier_name:
+  min_length: 1
+  excluded: [id, x, y]
+
+type_body_length:
+  warning: 300
+file_length:
+  warning: 500
+
+nesting:
+  type_level: 2

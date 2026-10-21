@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      macos-created: ${{ steps.rp.outputs['apps/macos--release_created'] }}
+      macos-tag: ${{ steps.rp.outputs['apps/macos--tag_name'] }}
+      macos-version: ${{ steps.rp.outputs['apps/macos--version'] }}
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: rp
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+      # Runs on a pull request opened or updated by GITHUB_TOKEN wait for approval; approve them so the
+      # required checks report. release-please only reports new pull requests, so look up every release branch.
+      - name: Approve checks on release pull requests
+        if: steps.rp.outputs.releases_created != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          branches=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --json headRefName \
+            --jq '.[].headRefName | select(startswith("release-please--"))')
+          for branch in $branches; do
+            for attempt in 1 2 3 4 5 6 7 8 9; do
+              ids=$(gh run list --repo "$GITHUB_REPOSITORY" --branch "$branch" --event pull_request \
+                --status action_required --json databaseId --jq '.[].databaseId')
+              [[ -n "$ids" ]] && break
+              sleep 10
+            done
+            for id in $ids; do
+              gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$id/approve" || \
+                echo "::warning::Could not approve run $id; approve it from the Actions tab."
+            done
+          done
+
+  # The only macOS runner Docket uses (D-12): the gate runs here before anything is signed, so a release
+  # is the one artifact a `--no-verify` push cannot produce untested.
+  macos:
+    needs: release-please
+    if: needs.release-please.outputs.macos-created == 'true'
+    runs-on: macos-26
+    timeout-minutes: 40
+    env:
+      VERSION: ${{ needs.release-please.outputs.macos-version }}
+      TAG: ${{ needs.release-please.outputs.macos-tag }}
+      APP: apps/macos/build/Build/Products/Release/Docket.app
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install XcodeGen, SwiftLint and gitleaks
+        run: |
+          curl -fsSL "https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip" -o "$RUNNER_TEMP/xcodegen.zip"
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+          command -v swiftlint >/dev/null || brew install swiftlint
+          command -v gitleaks >/dev/null || brew install gitleaks
+      - name: Gate
+        run: ./scripts/ci.sh
+      - name: Build
+        run: make -C apps/macos build CONFIG=Release BUILD_NUMBER=${{ github.run_number }}
+      - name: Sign
+        working-directory: apps/macos
+        env:
+          P12: ${{ secrets.SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        run: |
+          keychain=$(scripts/import-signing-identity.sh)
+          SIGN_KEYCHAIN="$keychain" scripts/codesign-app.sh build/Build/Products/Release/Docket.app
+          security delete-keychain "$keychain"
+      - name: Package
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent "$APP" "dist/Docket-$VERSION.zip"
+      - name: Sign update
+        env:
+          UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
+        run: swift apps/macos/scripts/sign-update.swift "dist/Docket-$VERSION.zip" > "dist/Docket-$VERSION.zip.sig"
+      - name: Manifest
+        run: |
+          jq -n \
+            --arg version "$VERSION" \
+            --arg build "${{ github.run_number }}" \
+            --arg asset "Docket-$VERSION.zip" \
+            --arg signature "$(cat "dist/Docket-$VERSION.zip.sig")" \
+            --arg minimumSystemVersion "15.0" \
+            --argjson size "$(stat -f%z "dist/Docket-$VERSION.zip")" \
+            '{version: $version, build: $build, asset: $asset, signature: $signature, size: $size, minimumSystemVersion: $minimumSystemVersion}' \
+            > dist/release.json
+      - name: Upload
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "$TAG" dist/* --clobber

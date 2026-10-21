@@ -36,7 +36,11 @@ describes the target rather than the tree, so check here before reaching for som
 
 | Built | Not built yet |
 |---|---|
-| The plan: `PROJECT.md`, `docs/01`–`09`, this file, `README.md` | Everything else. `M0` starts with creating the repository (`docs/07-roadmap.md`) |
+| The plan: `PROJECT.md`, `docs/01`–`09`, this file, `README.md` | Every product feature: `M1` onwards (`docs/07-roadmap.md`) |
+| Toolchain and gate: `package.json`, `lefthook.yml`, `scripts/ci.sh`, `scripts/check-push.sh`, the `pr` and `Release` workflows, release-please, the `main` ruleset | `docket-cli` commands: the target prints usage only |
+| An empty app: the status item with `Quit Docket` | The popover, settings and notifications |
+| `DocketKit` with every target as a placeholder, `check-imports.sh`, `check-coverage.sh` | Any type in `DocketCore` or the other targets beyond the placeholder |
+| Signing: the self-signed identity, the update key, their secrets and scripts | |
 
 A PR that builds one of these moves it to the left column; the last PR of a milestone updates this
 table.
