@@ -30,7 +30,8 @@ struct SettingsView: View {
             )
             .tabItem { Label(String(localized: "Repositories", comment: "Settings tab"), systemImage: "folder") }
             NotificationsSettingsView(
-                configStore: configStore, permission: permission, requestPermission: requestPermission
+                configStore: configStore, permission: permission, requestPermission: requestPermission,
+                holdSince: watch.snapshot.state.focusHold?.since
             )
             .tabItem { Label(String(localized: "Notifications", comment: "Settings tab"), systemImage: "bell") }
             GeneralSettingsView(configStore: configStore, loginItem: loginItem)

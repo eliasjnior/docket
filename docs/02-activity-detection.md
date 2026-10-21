@@ -513,7 +513,7 @@ the default when its values stop applying — which is when the Focus ends.
 | State | Events | Reminders |
 |---|---|---|
 | Not holding | Delivered as in §7.1–§7.3 | §5.7 |
-| Holding | Diffed, filtered and folded as usual, then appended to `held` in `state.json` instead of being delivered; rows are marked (FR-46) | Not sent and not queued: the digest says what is pending |
+| Holding | Diffed, filtered and folded as usual, then appended to `held` in `state.json` instead of being delivered; rows are marked (FR-46) | Not sent and not queued: a reminder that falls due moves its record as if sent, and the digest says what is pending |
 | Hold ends | One poll, then the **digest** | Resume from their records; nothing is due merely because the hold ended |
 
 **The digest** is one notification per repository with held events, whatever their kinds:

@@ -63,6 +63,15 @@ struct Banners: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
             }
+            if watch.snapshot.state.focusHold != nil {
+                BannerRow(
+                    symbol: "moon", color: .textSecondary,
+                    text: String(
+                        localized: "Holding \(watch.snapshot.state.held.count) updates until your Focus ends.",
+                        comment: "Focus hold banner"),
+                    action: String(localized: "Deliver Now", comment: "Focus hold banner button"),
+                    perform: actions.deliverHeld)
+            }
             if permission.status == .denied {
                 BannerRow(
                     symbol: "bell.slash", color: .textSecondary,

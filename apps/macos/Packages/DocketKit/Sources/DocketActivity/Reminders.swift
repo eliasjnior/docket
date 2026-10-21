@@ -78,7 +78,10 @@ public enum Reminders {
                 record = ReminderRecord(requestedAt: requestedAt, lastRemindedAt: now)
             }
             let anchor = record.lastRemindedAt ?? record.requestedAt
-            if settings.enabled, !quiet, !context.holding, now >= anchor.addingTimeInterval(settings.interval) {
+            if context.holding, settings.enabled, !quiet, now >= anchor.addingTimeInterval(settings.interval) {
+                // Not sent and not queued: the digest says what is pending (`docs/02-activity-detection.md` §7.5).
+                record.lastRemindedAt = now
+            } else if settings.enabled, !quiet, now >= anchor.addingTimeInterval(settings.interval) {
                 due.append(
                     Reminder(
                         pullRequestID: entry.id, repository: entry.pullRequest.repository,

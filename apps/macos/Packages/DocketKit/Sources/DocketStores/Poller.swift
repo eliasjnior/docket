@@ -114,6 +114,20 @@ public actor Poller {
 
     public func current() -> WatchSnapshot { snapshot }
 
+    /// A Focus filter turned holding on or off (`docs/02-activity-detection.md` §7.5). Ending a hold polls at
+    /// once, and that poll delivers the digest.
+    public func setHold(_ holding: Bool) async {
+        let now = clock.now()
+        await updateState { state in
+            if holding {
+                if state.focusHold == nil { state.focusHold = FocusHold(since: now) }
+            } else {
+                state.focusHold = nil
+            }
+        }
+        if !holding { await pollNow() }
+    }
+
     /// Retention over `state.json` (`docs/04-data.md` §4); returns `config` with dead tags, mutes and ignores
     /// removed, for the config store to save.
     public func retain(
