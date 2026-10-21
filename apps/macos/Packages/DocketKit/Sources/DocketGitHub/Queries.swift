@@ -38,7 +38,7 @@ enum Queries {
               id number title url state isDraft createdAt updatedAt
               author { \(actor) }
               repository { nameWithOwner isArchived }
-              mergeable reviewDecision
+              mergeable reviewDecision mergedBy { login }
               commits(last: 1) { nodes { commit { oid statusCheckRollup { state } } } }
               reviewRequests(first: 10) { nodes { \(reviewer) } }
               latestOpinionatedReviews(first: 10) { nodes { author { login } state } }
@@ -54,15 +54,19 @@ enum Queries {
             ... on PullRequest {
               id
               reviews(last: 30) { nodes { id state body submittedAt author { \(actor) } } }
-              comments(last: 30) { nodes { id url createdAt author { \(actor) } } }
+              comments(last: 30) { nodes { id url body createdAt author { \(actor) } } }
               reviewThreads(last: 30) {
                 nodes {
                   id
-                  comments(last: 20) { nodes { id url createdAt author { \(actor) } pullRequestReview { id } } }
+                  comments(last: 20) { nodes { id url body createdAt author { \(actor) } pullRequestReview { id } } }
                 }
               }
-              timelineItems(last: 20, itemTypes: [REVIEW_REQUESTED_EVENT]) {
-                nodes { ... on ReviewRequestedEvent { id createdAt actor { \(actor) } \(reviewer) } }
+              timelineItems(last: 20, itemTypes: [REVIEW_REQUESTED_EVENT, CLOSED_EVENT]) {
+                nodes {
+                  __typename
+                  ... on ReviewRequestedEvent { id createdAt actor { \(actor) } \(reviewer) }
+                  ... on ClosedEvent { createdAt actor { login } }
+                }
               }
             }
           }

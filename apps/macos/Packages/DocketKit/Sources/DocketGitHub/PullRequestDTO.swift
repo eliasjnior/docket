@@ -37,6 +37,7 @@ struct PullRequestDTO: Decodable {
     var commits: Connection<Commit>?
     var reviewRequests: Connection<RequestNode>?
     var latestOpinionatedReviews: Connection<LatestReviewNode>?
+    var mergedBy: LatestReviewNode.Login?
 
     var value: PullRequest? {
         guard let id, let number, let title, let url, let createdAt, let updatedAt, let repository else { return nil }
@@ -52,7 +53,8 @@ struct PullRequestDTO: Decodable {
             latestReviews: latestOpinionatedReviews?.values.compactMap { node in
                 guard let login = node.author?.login, let state = ReviewState(rawValue: node.state) else { return nil }
                 return LatestReview(login: login, state: state)
-            } ?? []
+            } ?? [],
+            mergedBy: mergedBy?.login
         )
     }
 }
@@ -70,6 +72,7 @@ struct DetailDTO: Decodable {
     struct CommentNode: Decodable {
         var id: String
         var url: URL
+        var body: String?
         var createdAt: Date
         var author: ActorDTO?
     }
@@ -80,10 +83,16 @@ struct DetailDTO: Decodable {
     }
 
     struct RequestEventNode: Decodable {
+        var typename: String?
         var id: String?
         var createdAt: Date?
         var actor: ActorDTO?
         var requestedReviewer: RequestedReviewerDTO?
+
+        enum CodingKeys: String, CodingKey {
+            case typename = "__typename"
+            case id, createdAt, actor, requestedReviewer
+        }
     }
 
     var id: String?
@@ -100,10 +109,12 @@ struct DetailDTO: Decodable {
                 Review(
                     id: node.id, state: ReviewState(rawValue: node.state) ?? .commented,
                     bodyIsEmpty: (node.body ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                    submittedAt: node.submittedAt, author: node.author?.value)
+                    submittedAt: node.submittedAt, author: node.author?.value, mentions: Mentions.logins(in: node.body))
             } ?? [],
             comments: comments?.values.map { node in
-                Comment(id: node.id, url: node.url, createdAt: node.createdAt, author: node.author?.value)
+                Comment(
+                    id: node.id, url: node.url, createdAt: node.createdAt, author: node.author?.value,
+                    mentions: Mentions.logins(in: node.body))
             } ?? [],
             threads: reviewThreads?.values.map { thread in
                 ReviewThread(
@@ -111,14 +122,18 @@ struct DetailDTO: Decodable {
                     comments: thread.comments?.values.map { node in
                         ThreadComment(
                             id: node.id, url: node.url, createdAt: node.createdAt, author: node.author?.value,
-                            reviewID: node.pullRequestReview?.id)
+                            reviewID: node.pullRequestReview?.id, mentions: Mentions.logins(in: node.body))
                     } ?? [])
             } ?? [],
             requestEvents: timelineItems?.values.compactMap { node in
-                guard let id = node.id, let createdAt = node.createdAt else { return nil }
+                guard node.typename != "ClosedEvent", let id = node.id, let createdAt = node.createdAt else {
+                    return nil
+                }
                 return ReviewRequestEvent(
                     id: id, createdAt: createdAt, actor: node.actor?.value, reviewer: node.requestedReviewer?.value)
-            } ?? []
+            } ?? [],
+            closedBy: timelineItems?.values.filter { $0.typename == "ClosedEvent" }
+                .max { ($0.createdAt ?? .distantPast) < ($1.createdAt ?? .distantPast) }?.actor?.login
         )
     }
 }
@@ -133,6 +148,7 @@ struct ThreadCommentDTO: Decodable {
     struct ReviewID: Decodable { var id: String }
     var id: String
     var url: URL
+    var body: String?
     var createdAt: Date
     var author: ActorDTO?
     var pullRequestReview: ReviewID?

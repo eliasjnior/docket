@@ -25,6 +25,8 @@ public struct Event: Codable, Hashable, Sendable, Identifiable {
     public var decision: ReviewState?
     /// The team a review request reached you through.
     public var team: Reviewer?
+    /// For `closedByOther`: merged rather than closed.
+    public var merged: Bool?
     public var at: Date
 
     public init(

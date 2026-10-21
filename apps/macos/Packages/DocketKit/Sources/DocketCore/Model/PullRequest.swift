@@ -20,12 +20,15 @@ public struct PullRequest: Codable, Hashable, Sendable, Identifiable {
     public var headOID: String?
     public var reviewRequests: [Reviewer]
     public var latestReviews: [LatestReview]
+    /// Who merged it, once merged (FR-62).
+    public var mergedBy: String?
 
     public init(
         id: String, number: Int, title: String, url: URL, state: PullRequestState = .open, isDraft: Bool = false,
         createdAt: Date, updatedAt: Date, author: Actor?, repository: String, isArchived: Bool = false,
         mergeable: Mergeable = .mergeable, reviewDecision: ReviewDecision? = nil, checks: CheckState? = nil,
-        headOID: String? = nil, reviewRequests: [Reviewer] = [], latestReviews: [LatestReview] = []
+        headOID: String? = nil, reviewRequests: [Reviewer] = [], latestReviews: [LatestReview] = [],
+        mergedBy: String? = nil
     ) {
         self.id = id
         self.number = number
@@ -44,6 +47,7 @@ public struct PullRequest: Codable, Hashable, Sendable, Identifiable {
         self.headOID = headOID
         self.reviewRequests = reviewRequests
         self.latestReviews = latestReviews
+        self.mergedBy = mergedBy
     }
 
     /// `owner/name#number`, the form that pastes as a GitHub reference.

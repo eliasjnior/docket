@@ -216,6 +216,9 @@
     "Checks failing" : {
       "comment" : "Status chip"
     },
+    "Checks failing on your pull request" : {
+      "comment" : "Notification kind"
+    },
     "Checks running" : {
       "comment" : "Status chip"
     },
@@ -356,6 +359,9 @@
     },
     "Loading pull requests…" : {
       "comment" : "First poll of a launch with no cache"
+    },
+    "Mention of you" : {
+      "comment" : "Notification kind"
     },
     "Menu bar count" : {
       "comment" : "General settings section"
@@ -653,6 +659,9 @@
     },
     "You have %@." : {
       "comment" : "Update prompt: the running version"
+    },
+    "Your pull request merged or closed by someone else" : {
+      "comment" : "Notification kind"
     },
     "Your review is still waiting" : {
       "comment" : "One reminder"
