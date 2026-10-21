@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.0](https://github.com/eliasjnior/docket/compare/macos-v0.2.0...macos-v1.0.0) (2026-10-21)
+
+
+### New
+
+* **activity:** notify failing checks, pull requests closed by others, and mentions ([#30](https://github.com/eliasjnior/docket/issues/30)) ([e76f84f](https://github.com/eliasjnior/docket/commit/e76f84fbdd78c2135dc5f8052ba7e39e5901ccd4))
+* **macos:** show sections as tabs, newest first, with coloured tags ([#34](https://github.com/eliasjnior/docket/issues/34)) ([4da1ce6](https://github.com/eliasjnior/docket/commit/4da1ce6ad995b58270c6f431fdfc05eb03e6ff14))
+
 ## [0.2.0](https://github.com/eliasjnior/docket/compare/macos-v0.1.0...macos-v0.2.0) (2026-10-21)
 
 
