@@ -3,7 +3,7 @@ import DocketCore
 import DocketStores
 import SwiftUI
 
-/// The three role sections, always present, and Ignored while something is ignored (`docs/05-design.md` §5.3).
+/// The selected tab's rows (`docs/05-design.md` §5.3).
 struct SectionsView: View {
     let watch: WatchStore
     @Bindable var model: PopoverModel
@@ -16,7 +16,7 @@ struct SectionsView: View {
 
     var body: some View {
         let sections = watch.sections(tag: model.tagFilter, repository: model.repositoryFilter)
-        let filtering = model.tagFilter != nil
+        let filtering = model.tagFilter != nil || model.repositoryFilter != nil
         VStack(alignment: .leading, spacing: 0) {
             if watch.config.selection.mode == .only, watch.config.selection.includedRepositories.isEmpty,
                 watch.config.selection.includedOwners.isEmpty
@@ -28,15 +28,12 @@ struct SectionsView: View {
                 )
                 .padding(.horizontal, 24)
             }
-            section(
-                .reviewRequested, String(localized: "Review requested", comment: "Section header"),
-                count: sections.reviewRequestedCount,
-                marked: sections.reviewRequested.flatMap(\.items).contains(where: \.isMarked)
-            ) {
+            switch model.tab {
+            case .reviewRequested:
                 if sections.reviewRequested.isEmpty {
                     EmptyLine(
                         text: filtering
-                            ? emptyTag : String(localized: "No reviews waiting on you.", comment: "Empty state"))
+                            ? emptyFilter : String(localized: "No reviews waiting on you.", comment: "Empty state"))
                 }
                 ForEach(sections.reviewRequested) { group in
                     HStack {
@@ -49,67 +46,62 @@ struct SectionsView: View {
                     .padding(.horizontal, 24)
                     .padding(.top, 6)
                     .accessibilityAddTraits(.isHeader)
-                    ForEach(group.items) {
-                        RowView(item: $0, placement: .reviewRequested, now: now, actions: actions.row, editor: editor)
-                    }
+                    rows(group.items, .reviewRequested)
                 }
                 notShown(.reviewRequested)
-            }
-            section(
-                .mine, String(localized: "Mine", comment: "Section header"), count: sections.mine.count,
-                marked: sections.mine.contains(where: \.isMarked)
-            ) {
+            case .mine:
                 if sections.mine.isEmpty {
                     EmptyLine(
                         text: filtering
-                            ? emptyTag
+                            ? emptyFilter
                             : String(
                                 localized: "No open pull requests of yours in the watched repositories.",
                                 comment: "Empty state"))
                 }
-                ForEach(sections.mine) {
-                    RowView(item: $0, placement: .mine, now: now, actions: actions.row, editor: editor)
-                }
+                rows(sections.mine, .mine)
                 notShown(.authored)
-            }
-            section(
-                .involved, String(localized: "Involved", comment: "Section header"), count: sections.involved.count,
-                marked: sections.involved.contains(where: \.isMarked)
-            ) {
+            case .involved:
                 if sections.involved.isEmpty {
                     EmptyLine(
                         text: filtering
-                            ? emptyTag
+                            ? emptyFilter
                             : String(
                                 localized: "Nothing you commented on or reviewed in the last 30 days.",
                                 comment: "Empty state"))
                 }
-                ForEach(sections.involved) {
-                    RowView(item: $0, placement: .involved, now: now, actions: actions.row, editor: editor)
+                rows(sections.involved, .involved)
+            case .ignored:
+                if sections.ignored.isEmpty {
+                    EmptyLine(text: String(localized: "Nothing is ignored.", comment: "Empty state"))
                 }
+                rows(sections.ignored, .ignored)
             }
-            if !sections.ignored.isEmpty {
-                section(
-                    .ignored, String(localized: "Ignored", comment: "Section header"), count: sections.ignored.count,
-                    marked: false
-                ) {
-                    ForEach(sections.ignored) {
-                        RowView(item: $0, placement: .ignored, now: now, actions: actions.row, editor: editor)
-                    }
+            if filtering, model.tab != .ignored {
+                Button(String(localized: "Clear Filter", comment: "Filter button")) {
+                    model.tagFilter = nil
+                    model.repositoryFilter = nil
                 }
-            }
-            if filtering, let tag = model.tagFilter,
-                sections.reviewRequested.isEmpty && sections.mine.isEmpty && sections.involved.isEmpty
-            {
-                Button(String(localized: "Clear Filter", comment: "Empty tag filter button")) { model.tagFilter = nil }
-                    .padding(.horizontal, 24)
-                    .accessibilityHint(Text(verbatim: tag))
+                .padding(.horizontal, 24)
+                .padding(.top, 4)
             }
         }
     }
 
-    private var emptyTag: String {
-        String(localized: "No pull requests tagged \(model.tagFilter ?? "").", comment: "Empty tag filter")
+    /// Rows with a separator between each, inset to the text.
+    private func rows(_ items: [WatchedPullRequest], _ placement: RowView.Placement) -> some View {
+        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+            RowView(item: item, placement: placement, now: now, actions: actions.row, editor: editor)
+            if index < items.count - 1 {
+                Divider().padding(.leading, 24).padding(.trailing, 12)
+            }
+        }
+    }
+
+    private var emptyFilter: String {
+        if let tag = model.tagFilter {
+            return String(localized: "No pull requests tagged \(tag).", comment: "Empty tag filter")
+        }
+        return String(localized: "Nothing here in \(model.repositoryFilter ?? "").", comment: "Empty repository filter")
     }
 
     @ViewBuilder
@@ -118,39 +110,6 @@ struct SectionsView: View {
         if hidden > 0 {
             Text("+\(hidden) not shown", comment: "More results than the search returned")
                 .font(.subheadline).foregroundStyle(Color.textTertiary).padding(.horizontal, 24).padding(.vertical, 4)
-        }
-    }
-
-    private func section<Content: View>(
-        _ section: PopoverModel.Section, _ title: String, count: Int, marked: Bool,
-        @ViewBuilder content: () -> Content
-    ) -> some View {
-        let isExpanded = model.expanded.contains(section)
-        return VStack(alignment: .leading, spacing: 0) {
-            Button {
-                withAnimation { model.toggle(section) }
-            } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right").font(.caption)
-                    Text(verbatim: title)
-                    Spacer()
-                    Text(verbatim: "\(count)").monospacedDigit()
-                    if marked && !isExpanded {
-                        Image(systemName: "circle.fill").font(.system(size: 8)).foregroundStyle(Color.accentMarked)
-                    }
-                }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(Color.textSecondary)
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .padding(.horizontal, 12)
-            .padding(.top, 8)
-            .padding(.bottom, 2)
-            .accessibilityAddTraits(.isHeader)
-            .accessibilityLabel(Text(verbatim: "\(title), \(count)"))
-            if isExpanded { content() }
-            Divider().padding(.top, 6)
         }
     }
 }

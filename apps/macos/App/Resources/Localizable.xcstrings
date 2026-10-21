@@ -4,6 +4,16 @@
     "" : {
 
     },
+    "%@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$lld)"
+          }
+        }
+      }
+    },
     "%@ approved" : {
       "comment" : "Review decision\nVoiceOver: reviewer"
     },
@@ -150,6 +160,9 @@
     "Add tag" : {
       "comment" : "Tag editor field"
     },
+    "All repositories" : {
+      "comment" : "Repository filter"
+    },
     "All repositories, except…" : {
       "comment" : "Selection mode"
     },
@@ -232,7 +245,7 @@
       "comment" : "Open panel message"
     },
     "Clear Filter" : {
-      "comment" : "Empty tag filter button"
+      "comment" : "Filter button"
     },
     "Clear filter" : {
       "comment" : "Repository filter token"
@@ -331,7 +344,7 @@
       "comment" : "Row context menu"
     },
     "Ignored" : {
-      "comment" : "Section header"
+      "comment" : "Tab"
     },
     "Install and Relaunch" : {
       "comment" : "Update prompt button"
@@ -343,7 +356,7 @@
       "comment" : "Update prompt state\nUpdate status"
     },
     "Involved" : {
-      "comment" : "Section header"
+      "comment" : "Tab"
     },
     "Last checked" : {
       "comment" : "Updates setting"
@@ -367,7 +380,7 @@
       "comment" : "General settings section"
     },
     "Mine" : {
-      "comment" : "Section header"
+      "comment" : "Tab"
     },
     "Missing" : {
       "comment" : "Scope state"
@@ -419,6 +432,12 @@
     },
     "Not found, or you don't have access" : {
       "comment" : "Repository picker"
+    },
+    "Nothing here in %@." : {
+      "comment" : "Empty repository filter"
+    },
+    "Nothing is ignored." : {
+      "comment" : "Empty state"
     },
     "Nothing needs you" : {
       "comment" : "Status item tooltip"
@@ -535,7 +554,7 @@
       "comment" : "Notification kind"
     },
     "Review requested" : {
-      "comment" : "Notification kind\nSection header"
+      "comment" : "Notification kind\nTab"
     },
     "Review requested by %@" : {
       "comment" : "One review request"

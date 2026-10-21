@@ -43,6 +43,7 @@ struct RowView: View {
                     .help(pullRequest.title)
                 thirdLine
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
@@ -70,6 +71,8 @@ struct RowView: View {
                 .font(.subheadline.monospacedDigit())
                 .foregroundStyle(Color.textSecondary)
                 .lineLimit(1)
+                .truncationMode(.middle)
+                .layoutPriority(-1)
             Spacer(minLength: 4)
             if placement == .reviewRequested {
                 AgeLabel(
@@ -87,41 +90,59 @@ struct RowView: View {
         }
     }
 
+    /// Line 3 never wraps and never widens the row: reviewers collapse to `+N` first, then tags
+    /// (`docs/05-design.md` §6.1).
     private var thirdLine: some View {
+        ViewThatFits(in: .horizontal) {
+            thirdLine(reviewers: 3, tags: item.tags.count)
+            thirdLine(reviewers: 1, tags: item.tags.count)
+            thirdLine(reviewers: 0, tags: item.tags.count)
+            thirdLine(reviewers: 0, tags: 1)
+            thirdLine(reviewers: 0, tags: 0)
+            StatusChip(status: item.status, secondary: placement == .reviewRequested)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func thirdLine(reviewers shownReviewers: Int, tags shownTags: Int) -> some View {
         HStack(spacing: 6) {
             if placement == .reviewRequested {
+                StatusChip(status: item.status, secondary: true)
+                Text(verbatim: "· \(Age.short(age))").font(.subheadline.monospacedDigit())
+                    .foregroundStyle(Color.textSecondary).fixedSize()
                 if let author = pullRequest.author?.login {
                     Text("by @\(author)", comment: "The author of a pull request in Review requested")
-                        .font(.subheadline).foregroundStyle(Color.textSecondary).lineLimit(1)
+                        .font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
                 }
-                if let team = teamText {
-                    Text(verbatim: team).font(.subheadline).foregroundStyle(Color.textSecondary).lineLimit(1)
+                if let team = teamText, shownReviewers > 0 {
+                    Text(verbatim: team).font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
                 }
-                StatusChip(status: item.status, secondary: true)
-                Text(verbatim: "· \(Age.short(age))").font(.subheadline.monospacedDigit()).foregroundStyle(
-                    Color.textSecondary)
             } else if placement == .ignored {
-                Text(verbatim: item.status.label).font(.subheadline).foregroundStyle(Color.textSecondary)
+                Text(verbatim: item.status.label).font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
             } else {
                 StatusChip(status: item.status)
                 if pullRequest.isDraft { DraftChip() }
                 if placement == .involved, let author = pullRequest.author?.login {
                     Text("by @\(author)", comment: "The author of a pull request in Involved")
-                        .font(.subheadline).foregroundStyle(Color.textSecondary).lineLimit(1)
+                        .font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
                 }
-                ForEach(Array(item.reviewers.prefix(3).enumerated()), id: \.offset) { _, entry in
+                ForEach(Array(item.reviewers.prefix(shownReviewers).enumerated()), id: \.offset) { _, entry in
                     ReviewerLabel(entry: entry)
                 }
-                if item.reviewers.count > 3 {
-                    Text(verbatim: "+\(item.reviewers.count - 3)").font(.subheadline).foregroundStyle(
-                        Color.textSecondary)
+                if item.reviewers.count > shownReviewers {
+                    Text(verbatim: "+\(item.reviewers.count - shownReviewers)").font(.subheadline)
+                        .foregroundStyle(Color.textSecondary).fixedSize()
                 }
             }
-            ForEach(item.tags, id: \.self) { tag in
+            ForEach(item.tags.prefix(shownTags), id: \.self) { tag in
                 TagChip(tag: tag) { actions.filterTag(tag) }
             }
+            if item.tags.count > shownTags {
+                Text(verbatim: "+\(item.tags.count - shownTags)").font(.subheadline)
+                    .foregroundStyle(Color.textSecondary).fixedSize()
+            }
         }
-        .lineLimit(1)
+        .fixedSize()
     }
 
     private var teamText: String? {

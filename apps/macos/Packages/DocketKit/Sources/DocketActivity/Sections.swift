@@ -26,20 +26,20 @@ public struct Sections: Hashable, Sendable {
             ($0.ignoredAt ?? .distantPast) > ($1.ignoredAt ?? .distantPast)
         }
 
-        let requested = active.filter { $0.role == .reviewRequested }.sorted(by: Self.longestWaitingFirst)
+        let requested = active.filter { $0.role == .reviewRequested }.sorted(by: Self.newestFirst)
         let byRepository = Dictionary(grouping: requested) { $0.pullRequest.repository }
         reviewRequested = byRepository.map { RepositoryGroup(repository: $0.key, items: $0.value) }
             .sorted { lhs, rhs in
-                let left = lhs.items.map(\.waitingSince).min() ?? .distantFuture
-                let right = rhs.items.map(\.waitingSince).min() ?? .distantFuture
-                if left != right { return left < right }
+                let left = lhs.items.map(\.waitingSince).max() ?? .distantPast
+                let right = rhs.items.map(\.waitingSince).max() ?? .distantPast
+                if left != right { return left > right }
                 return lhs.repository.lowercased() < rhs.repository.lowercased()
             }
 
         mine = active.filter { $0.role == .authored }.sorted { lhs, rhs in
             if lhs.status != rhs.status { return lhs.status < rhs.status }
             if lhs.pullRequest.createdAt != rhs.pullRequest.createdAt {
-                return lhs.pullRequest.createdAt < rhs.pullRequest.createdAt
+                return lhs.pullRequest.createdAt > rhs.pullRequest.createdAt
             }
             return Self.byReference(lhs, rhs)
         }
@@ -51,8 +51,8 @@ public struct Sections: Hashable, Sendable {
         }
     }
 
-    private static func longestWaitingFirst(_ lhs: WatchedPullRequest, _ rhs: WatchedPullRequest) -> Bool {
-        if lhs.waitingSince != rhs.waitingSince { return lhs.waitingSince < rhs.waitingSince }
+    private static func newestFirst(_ lhs: WatchedPullRequest, _ rhs: WatchedPullRequest) -> Bool {
+        if lhs.waitingSince != rhs.waitingSince { return lhs.waitingSince > rhs.waitingSince }
         return byReference(lhs, rhs)
     }
 
