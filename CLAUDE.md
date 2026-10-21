@@ -36,10 +36,10 @@ describes the target rather than the tree, so check here before reaching for som
 
 | Built | Not built yet |
 |---|---|
-| The plan: `PROJECT.md`, `docs/01`–`09`, this file, `README.md` | The Focus hold (FR-69), keyboard navigation (FR-47), the global shortcut (FR-48), export and import (FR-96): `M5` |
+| The plan: `PROJECT.md`, `docs/01`–`09`, this file, `README.md` | Nothing in `M0`–`M5`. The Focus filter's `perform` calls are not yet confirmed on the installed macOS (task 5.2a's spike) |
 | Toolchain and gate: `package.json`, `lefthook.yml`, `scripts/ci.sh`, `scripts/check-push.sh`, the `pr` and `Release` workflows, release-please, the `main` ruleset | |
 | `DocketKit`: every target with its tests — the poll engine, events, folding, the cap, reminders, retention, tags, selection, the GraphQL client, the `gh` token, the stores, notifications, updates | |
-| The app: status item, popover, tag editor, account screens, every settings tab, notifications, What's New, updates, launch at login, `--snapshot` | |
+| The app: status item, popover with tabs, tag editor, account screens, every settings tab, notifications, reminders, the Focus filter and digest, keyboard navigation, the global shortcut, export and import, What's New, updates, launch at login, `--snapshot` | |
 | `docket-cli whoami`, `poll`, `stats` | |
 | Signing: the self-signed identity, the update key, their secrets and scripts | |
 
