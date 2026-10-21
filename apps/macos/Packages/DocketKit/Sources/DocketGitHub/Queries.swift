@@ -70,6 +70,27 @@ enum Queries {
         }
         """
 
+    static let history = """
+        query($query: String!, $after: String) {
+          search(query: $query, type: ISSUE, first: 50, after: $after) {
+            pageInfo { hasNextPage endCursor }
+            nodes {
+              ... on PullRequest {
+                id mergedAt author { \(actor) }
+                timelineItems(last: 100, itemTypes: [REVIEW_REQUESTED_EVENT, PULL_REQUEST_REVIEW]) {
+                  nodes {
+                    __typename
+                    ... on ReviewRequestedEvent { id createdAt actor { \(actor) } \(reviewer) }
+                    ... on PullRequestReview { id state submittedAt author { \(actor) } }
+                  }
+                }
+              }
+            }
+          }
+          \(rateLimit)
+        }
+        """
+
     static let teams = """
         query($organization: String!, $login: String!) {
           organization(login: $organization) { teams(first: 100, userLogins: [$login]) { nodes { slug } } }

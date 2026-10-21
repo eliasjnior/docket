@@ -122,6 +122,16 @@ struct GraphQLClientTests {
             ])
     }
 
+    @Test func historyDecodesRequestsAndReviews() async throws {
+        let (client, _) = client([ok("history")])
+        let histories = try await client.history(query: "is:pr author:you").value
+        #expect(histories.count == 1)
+        let history = try #require(histories.first)
+        #expect(history.mergedAt == Date(timeIntervalSince1970: 1_792_584_000))
+        #expect(history.requests.map(\.reviewer) == [.user(login: "ana")])
+        #expect(history.reviews.map(\.state) == [.approved])
+    }
+
     @Test func teamsAndRepositories() async throws {
         let (client, _) = client([ok("teams"), ok("repository-found"), ok("repository-missing")])
         #expect(try await client.teams(organization: "acme", login: "you").value == ["backend", "platform"])
