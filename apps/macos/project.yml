@@ -38,6 +38,12 @@ targets:
         product: DocketCore
       - package: DocketKit
         product: DocketStores
+      - package: DocketKit
+        product: DocketActivity
+      - package: DocketKit
+        product: DocketGitHub
+      - package: DocketKit
+        product: DocketPersistence
     info:
       path: App/Info.plist
       properties:
