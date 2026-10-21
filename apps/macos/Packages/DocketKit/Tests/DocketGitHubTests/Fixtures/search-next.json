@@ -1,0 +1,1 @@
+{"data":{"requested":{"issueCount":160,"pageInfo":{"hasNextPage":true,"endCursor":"c2"},"nodes":[{"id":"PR_R2","updatedAt":"2026-10-21T10:00:00Z"}]},"rateLimit":{"cost":1,"remaining":4990,"limit":5000,"resetAt":"2026-10-21T13:00:00Z"}}}
