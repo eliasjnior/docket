@@ -97,7 +97,8 @@ keeps its cursors for 30 days (`04-data.md` §4), so re-including it does not re
 
 A pull request **enters** the watch set when it gains a role. On entry its cursor is seeded with
 every item currently visible, so its history never notifies (§5.2). The one exception is the
-review request that caused the entry, when it is newer than the baseline.
+review request that caused the entry, when it is newer than the previous poll: a request made while
+Docket was closed notifies (§8 #2), one made while the repository was excluded does not (§8 #18).
 
 A pull request **leaves** when it loses its role, is closed or merged, is excluded by the
 selection, or returns `NOT_FOUND` because access was lost. Its cursor and tags are kept for 30

@@ -165,4 +165,57 @@ struct PollerTests {
         await harness.poller.pollIfOlder(than: 30)
         #expect(GitHubWorld.queries.count > served)
     }
+
+    // MARK: - Restarts
+    @Test("Worked example #2 through the stores: time closed is not time lost")
+    func example2() async throws {
+        var world = GitHubWorld()
+        let first = Harness(world: world)
+        _ = await first.poll()
+        first.clock.advance(7200)
+        let requested = Fixtures.pullRequest(requests: [.user(login: "you")], authorIsBot: false)
+        world.pullRequests = [requested]
+        world.discovery = Discovery(requested: [requested.id])
+        world.details = [
+            requested.id: PullRequestDetail(
+                id: requested.id,
+                requestEvents: [Fixtures.request("E1", at: first.clock.now().addingTimeInterval(-3600))])
+        ]
+        let second = first.relaunch(world: world)
+        second.clock.set(first.clock.now())
+        _ = await second.poll()
+        #expect(second.sink.all.count == 1)
+        #expect(second.sink.all.first?.deliveredIDs == ["reviewRequested:E1"])
+
+        let third = second.relaunch(world: world)
+        _ = await third.poll()
+        #expect(third.sink.all.isEmpty)
+    }
+
+    @Test("Worked example #16 through the stores: what was committed is never delivered twice")
+    func example16() async throws {
+        let mine = Fixtures.pullRequest(author: "you")
+        var world = GitHubWorld()
+        world.pullRequests = [mine]
+        world.discovery = Discovery(authored: [mine.id])
+        world.details = [mine.id: PullRequestDetail(id: mine.id)]
+        let first = Harness(world: world)
+        _ = await first.poll()
+        first.clock.advance(60)
+        var changed = mine
+        changed.updatedAt = first.clock.now()
+        world.pullRequests = [changed]
+        world.details = [
+            mine.id: PullRequestDetail(
+                id: mine.id, comments: [Fixtures.comment("C1", by: "dave", at: first.clock.now())])
+        ]
+        GitHubWorld.set(world)
+        _ = await first.poll()
+        #expect(first.sink.all.count == 1)
+        let relaunched = first.relaunch(world: world)
+        relaunched.clock.advance(60)
+        _ = await relaunched.poll()
+        #expect(relaunched.sink.all.isEmpty)
+        #expect(try #require(await relaunched.state()).marked == [mine.id])
+    }
 }
