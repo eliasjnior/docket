@@ -567,6 +567,11 @@ over the working tree: without them, an uncommitted fix or a push of another bra
 green gate vouch for commits it never saw. Like everything else in the hook, `--no-verify` skips
 it (§7.1).
 
+**A push that changes no file skips both jobs.** lefthook runs `pre-push` jobs only when the push
+carries files, so a branch of empty commits is pushed unchecked; there is nothing in it for the
+suite to check. A push of empty commits to `main` is the one case the guard would have caught, and
+the ruleset on GitHub refuses it (D-13).
+
 ## 9. GitHub Actions
 
 Two workflows, plus `.github/dependabot.yml` proposing npm and Actions updates as ordinary pull
