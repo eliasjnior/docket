@@ -36,8 +36,35 @@ enum Snapshots {
                         watch: watch, model: model, permission: NotificationPermission(), actions: SampleData.actions),
                     appearance: appearance, to: directory, name: "\(scenario.name)-\(suffix)")
             }
+            renderSettings(appearance: appearance, to: directory, suffix: suffix)
         }
         exit(0)
+    }
+
+    private static func renderSettings(appearance: NSAppearance.Name, to directory: URL, suffix: String) {
+        let watch = SampleData.watch(account: .ready, problem: nil, cache: SampleData.cache)
+        let configStore = watch.configStore
+        let item = watch.items.first { $0.id == "acme/api#470" }
+        if let item {
+            render(
+                TagEditorView(item: item, tags: TagStore(configStore: configStore), close: {}),
+                appearance: appearance, to: directory, name: "tag-editor-\(suffix)")
+        }
+        render(
+            NotificationsSettingsView(
+                configStore: configStore, permission: NotificationPermission(), requestPermission: {}
+            )
+            .frame(width: 520),
+            appearance: appearance, to: directory, name: "settings-notifications-\(suffix)")
+        render(
+            RepositoriesSettingsView(
+                selection: SelectionStore(configStore: configStore), known: ["acme/api"], check: { _ in true }
+            )
+            .frame(width: 520, height: 320),
+            appearance: appearance, to: directory, name: "settings-repositories-\(suffix)")
+        render(
+            GeneralSettingsView(configStore: configStore).frame(width: 520),
+            appearance: appearance, to: directory, name: "settings-general-\(suffix)")
     }
 
     private struct Scenario {

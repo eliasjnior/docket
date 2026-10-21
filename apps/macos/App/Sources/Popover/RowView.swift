@@ -1,5 +1,6 @@
 import DocketActivity
 import DocketCore
+import DocketStores
 import SwiftUI
 
 /// One pull request, three lines (`docs/05-design.md` §6.1). The whole row opens it (FR-42).
@@ -15,6 +16,7 @@ struct RowView: View {
     let placement: Placement
     let now: Date
     let actions: RowActions
+    var editor: TagEditorBinding?
     @State private var isHovered = false
 
     private var pullRequest: PullRequest { item.pullRequest }
@@ -53,6 +55,9 @@ struct RowView: View {
         .onHover { isHovered = $0 }
         .onTapGesture { actions.open(pullRequest.url) }
         .contextMenu { RowMenu(item: item, actions: actions) }
+        .popover(isPresented: editor?.isPresented(item) ?? .constant(false), arrowEdge: .trailing) {
+            if let editor { TagEditorView(item: item, tags: editor.tags, close: editor.close) }
+        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(RowAccessibility.label(for: item, placement: placement, now: now))
         .accessibilityAddTraits(.isButton)
@@ -160,5 +165,20 @@ struct RowMenu: View {
         } else {
             Button(String(localized: "Stop Ignoring", comment: "Row context menu")) { actions.setIgnored(item, false) }
         }
+    }
+}
+
+/// Which row's tag editor is open, shared by the rows of one popover.
+@MainActor
+struct TagEditorBinding {
+    let model: PopoverModel
+    let tags: TagStore
+
+    func isPresented(_ item: WatchedPullRequest) -> Binding<Bool> {
+        Binding(get: { model.editingTags?.id == item.id }, set: { if !$0 { model.editingTags = nil } })
+    }
+
+    func close() {
+        model.editingTags = nil
     }
 }

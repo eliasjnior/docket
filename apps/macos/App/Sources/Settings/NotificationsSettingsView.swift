@@ -57,8 +57,12 @@ struct NotificationsSettingsView: View {
                 }
                 .frame(minHeight: 60)
                 HStack {
-                    TextField(String(localized: "Bot login", comment: "Bot allowlist field"), text: $newBot)
-                        .onSubmit(addBot)
+                    TextField(
+                        String(localized: "Bot login", comment: "Bot allowlist field"), text: $newBot,
+                        prompt: Text("copilot-pull-request-reviewer", comment: "Bot allowlist placeholder")
+                    )
+                    .labelsHidden()
+                    .onSubmit(addBot)
                     Button(action: addBot) { Image(systemName: "plus") }
                         .accessibilityLabel(Text("Add bot", comment: "Bot allowlist button"))
                     Button {

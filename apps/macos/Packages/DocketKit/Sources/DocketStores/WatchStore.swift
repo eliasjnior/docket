@@ -8,7 +8,7 @@ import Observation
 @Observable
 public final class WatchStore {
     public private(set) var snapshot = WatchSnapshot()
-    @ObservationIgnored private let configStore: ConfigStore
+    @ObservationIgnored public let configStore: ConfigStore
 
     public init(configStore: ConfigStore) {
         self.configStore = configStore
