@@ -1,3 +1,4 @@
+import DocketActivity
 import DocketCore
 import DocketStores
 import SwiftUI
@@ -49,6 +50,7 @@ struct NotificationsSettingsView: View {
                     String(localized: "Reply to your comment", comment: "Notification kind"),
                     isOn: binding(\.notifications.threadReply))
             }
+            RemindersSection(configStore: configStore)
             Section {
                 List(selection: $selectedBot) {
                     ForEach(configStore.config.botAllowlist, id: \.self) { Text(verbatim: $0).tag($0) }
@@ -94,5 +96,69 @@ struct NotificationsSettingsView: View {
         Binding(
             get: { configStore.config[keyPath: path] },
             set: { value in configStore.update { $0[keyPath: path] = value } })
+    }
+}
+
+/// The Reminders group (FR-66, FR-67): disabled, not hidden, while reminders are off.
+struct RemindersSection: View {
+    let configStore: ConfigStore
+
+    var body: some View {
+        let reminders = configStore.config.reminders
+        Section {
+            Toggle(
+                String(localized: "Remind me about pending reviews", comment: "Reminders setting"),
+                isOn: binding(\.enabled))
+            Picker(String(localized: "Every", comment: "Reminder interval"), selection: binding(\.intervalMinutes)) {
+                Text("15 minutes", comment: "Reminder interval").tag(15)
+                Text("30 minutes", comment: "Reminder interval").tag(30)
+                Text("1 hour", comment: "Reminder interval").tag(60)
+                Text("2 hours", comment: "Reminder interval").tag(120)
+                Text("4 hours", comment: "Reminder interval").tag(240)
+                Text("8 hours", comment: "Reminder interval").tag(480)
+            }
+            .disabled(!reminders.enabled)
+            Toggle(String(localized: "Quiet hours", comment: "Reminders setting"), isOn: binding(\.quietHours.enabled))
+                .disabled(!reminders.enabled)
+            HStack {
+                DatePicker(
+                    String(localized: "From", comment: "Quiet hours start"), selection: time(\.quietHours.start),
+                    displayedComponents: .hourAndMinute)
+                DatePicker(
+                    String(localized: "To", comment: "Quiet hours end"), selection: time(\.quietHours.end),
+                    displayedComponents: .hourAndMinute)
+            }
+            .disabled(!reminders.enabled || !reminders.quietHours.enabled)
+        } header: {
+            Text("Reminders", comment: "Notifications settings section")
+        } footer: {
+            Text("Reminders pause in this window. Other notifications follow Focus.", comment: "Quiet hours caption")
+                .font(.caption).foregroundStyle(Color.textSecondary)
+        }
+    }
+
+    private func binding<Value>(_ path: WritableKeyPath<Config.Reminders, Value>) -> Binding<Value> {
+        Binding(
+            get: { configStore.config.reminders[keyPath: path] },
+            set: { value in configStore.update { $0.reminders[keyPath: path] = value } })
+    }
+
+    /// `HH:mm` shown as a time picker; a start equal to the end is refused (`docs/02-activity-detection.md` §5.7).
+    private func time(_ path: WritableKeyPath<Config.Reminders, String>) -> Binding<Date> {
+        Binding(
+            get: {
+                let minutes = Reminders.minutes(configStore.config.reminders[keyPath: path]) ?? 0
+                return Calendar.current.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: Date())
+                    ?? Date()
+            },
+            set: { date in
+                let parts = Calendar.current.dateComponents([.hour, .minute], from: date)
+                let text = String(format: "%02d:%02d", parts.hour ?? 0, parts.minute ?? 0)
+                configStore.update { config in
+                    var next = config.reminders
+                    next[keyPath: path] = text
+                    if next.quietHours.start != next.quietHours.end { config.reminders = next }
+                }
+            })
     }
 }

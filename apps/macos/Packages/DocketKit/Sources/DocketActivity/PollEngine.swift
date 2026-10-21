@@ -155,7 +155,13 @@ struct PollRun {
         let marked = Set(state.marked).union(folded.map(\.pullRequestID))
         state.marked = marked.filter(watchedIDs.contains).sorted()
         let enabled = folded.filter { input.config.notifications.isEnabled($0.kind) }
-        let notifications = Coalesce.capped(Coalesce.groups(events: enabled))
+        let newlyRequested = Set(raw.filter { $0.event.kind == .reviewRequested }.map(\.event.pullRequestID))
+        let reminders = Reminders.due(
+            cached, records: &state.reminders,
+            context: Reminders.Context(
+                now: now, timeZone: input.timeZone, config: input.config, isBaseline: isBaseline,
+                newlyRequested: newlyRequested, holding: state.focusHold != nil))
+        let notifications = Coalesce.capped(Coalesce.groups(events: enabled, reminders: reminders))
         for event in enabled {
             state.delivered[event.id] = now
         }
