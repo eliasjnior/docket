@@ -42,10 +42,11 @@ public enum PollEngine {
         run.keepFailed()
         run.markLeft()
         if run.isBaseline { run.state.baselineAt = input.now }
+        let notifications = run.compose()
         let cache = SnapshotCache(
             fetchedAt: input.now, viewerLogin: input.viewer.login, pullRequests: run.cached,
             knownRepositories: knownRepositories(input, now: input.now), notShown: input.discovery.notShown)
-        return PollOutput(state: run.state, cache: cache, notifications: [], events: run.events)
+        return PollOutput(state: run.state, cache: cache, notifications: notifications, events: run.events)
     }
 
     private static func knownRepositories(_ input: PollInput, now: Date) -> [KnownRepository] {
@@ -68,6 +69,7 @@ struct PollRun {
     var state: PersistedState
     var cached: [CachedPullRequest] = []
     var watchedIDs = Set<String>()
+    var raw: [RawEvent] = []
     var events: [Event] = []
 
     init(input: PollInput) {
@@ -104,8 +106,8 @@ struct PollRun {
         if let detail {
             let subject = DiffSubject(
                 pullRequest: pullRequest, role: role, detail: detail, cursor: cursor, entering: entering,
-                isBaseline: isBaseline)
-            events.append(contentsOf: Diff.events(for: subject, viewer: input.viewer))
+                isBaseline: isBaseline, previousPollAt: input.state.lastPoll?.at)
+            raw.append(contentsOf: Diff.events(for: subject, viewer: input.viewer))
             cursor.markSeen(detail.itemIDs)
             cursor.updatedAt = pullRequest.updatedAt
         }
@@ -140,6 +142,25 @@ struct PollRun {
                 cached.append(old)
             }
         }
+    }
+
+    static let ledgerRetention: TimeInterval = 14 * 86400
+
+    /// Filter, fold, the ledger, marks, the per-kind switches, then groups and the cap (§5.4–§7.3).
+    mutating func compose() -> [PlannedNotification] {
+        let now = input.now
+        let filtered = Compose.filter(raw, viewer: input.viewer, config: input.config)
+        let folded = Compose.fold(filtered).filter { state.delivered[$0.id] == nil }
+        events = Compose.fold(raw)
+        let marked = Set(state.marked).union(folded.map(\.pullRequestID))
+        state.marked = marked.filter(watchedIDs.contains).sorted()
+        let enabled = folded.filter { input.config.notifications.isEnabled($0.kind) }
+        let notifications = Coalesce.capped(Coalesce.groups(events: enabled))
+        for event in enabled {
+            state.delivered[event.id] = now
+        }
+        state.delivered = state.delivered.filter { now.timeIntervalSince($0.value) <= Self.ledgerRetention }
+        return notifications
     }
 
     mutating func markLeft() {
