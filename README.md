@@ -14,7 +14,7 @@ the plan; [`CLAUDE.md`](CLAUDE.md) is the working agreement. This file only cove
 
 ## Current state
 
-`M0` is done: the repository, the gate and an empty menu bar app. `M1` in
+`M0` to `M4` are done: Docket lists, counts, notifies, reminds, tags and updates itself. `M5` in
 [`docs/07-roadmap.md`](docs/07-roadmap.md) is next. The authoritative built / not-built table is in
 [`CLAUDE.md`](CLAUDE.md) under "What exists today".
 
