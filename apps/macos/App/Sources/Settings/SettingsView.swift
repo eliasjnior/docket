@@ -1,7 +1,9 @@
+import AppKit
 import DocketCore
 import DocketStores
 import DocketUpdate
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The settings window of `docs/05-design.md` §9: toolbar tabs, each a grouped form, saved on change.
 struct SettingsView: View {
@@ -136,6 +138,35 @@ struct AccountSettingsView: View {
 struct GeneralSettingsView: View {
     let configStore: ConfigStore
     var loginItem: LoginItem?
+    @State private var importError: String?
+
+    /// FR-96: `config.json` to a file of the user's choice.
+    private func export() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "docket-config.json"
+        panel.allowedContentTypes = [.json]
+        NSApp.activate()
+        guard panel.runModal() == .OK, let url = panel.url, let data = try? configStore.config.exported() else {
+            return
+        }
+        try? data.write(to: url, options: .atomic)
+    }
+
+    /// FR-96: read through the same decoder as the file on disk; a newer or unreadable file is refused.
+    private func importConfig() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.allowsMultipleSelection = false
+        NSApp.activate()
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            configStore.replace(with: try Config.imported(from: Data(contentsOf: url)))
+            importError = nil
+        } catch {
+            importError = String(
+                localized: "That file is not a Docket settings file this version can read.", comment: "Import error")
+        }
+    }
 
     var body: some View {
         Form {
@@ -170,6 +201,23 @@ struct GeneralSettingsView: View {
                     comment: "Caption under the poll interval: the estimated hourly cost"
                 )
                 .font(.caption).foregroundStyle(Color.textSecondary)
+            }
+            Section(String(localized: "Keyboard", comment: "General settings section")) {
+                Picker(
+                    String(localized: "Open Docket with", comment: "Global shortcut picker"),
+                    selection: binding(\.shortcut)
+                ) {
+                    ForEach(Config.Shortcut.allCases, id: \.self) { Text(verbatim: GlobalShortcut.label($0)).tag($0) }
+                }
+            }
+            Section(String(localized: "Settings file", comment: "General settings section")) {
+                HStack {
+                    Button(String(localized: "Export…", comment: "Export settings button"), action: export)
+                    Button(String(localized: "Import…", comment: "Import settings button"), action: importConfig)
+                }
+                if let importError {
+                    Text(verbatim: importError).font(.caption).foregroundStyle(Color.statusAttention)
+                }
             }
             if let loginItem {
                 Section {

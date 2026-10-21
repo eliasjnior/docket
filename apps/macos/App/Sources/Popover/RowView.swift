@@ -17,6 +17,7 @@ struct RowView: View {
     let now: Date
     let actions: RowActions
     var editor: TagEditorBinding?
+    var isFocused = false
     @State private var isHovered = false
 
     private var pullRequest: PullRequest { item.pullRequest }
@@ -50,8 +51,11 @@ struct RowView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 6).fill(
-                isHovered ? Color(nsColor: .selectedContentBackgroundColor).opacity(0.15) : .clear)
+                isHovered || isFocused ? Color(nsColor: .selectedContentBackgroundColor).opacity(0.15) : .clear)
         )
+        .overlay {
+            if isFocused { RoundedRectangle(cornerRadius: 6).strokeBorder(Color.accentMarked, lineWidth: 2) }
+        }
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }
         .onTapGesture { actions.open(pullRequest.url) }

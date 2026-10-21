@@ -29,6 +29,11 @@ public final class ConfigStore {
         }
     }
 
+    /// Import (FR-96): the whole file is replaced, as one change.
+    public func replace(with imported: Config) {
+        update { $0 = imported }
+    }
+
     public func update(_ mutate: (inout Config) -> Void) {
         guard !isReadOnly else { return }
         var next = config

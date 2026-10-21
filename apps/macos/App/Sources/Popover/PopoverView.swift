@@ -37,6 +37,22 @@ struct PopoverView: View {
             }
         }
         .frame(width: 380)
+        .focusable()
+        .focusEffectDisabled()
+        .onKeyPress(.downArrow) { move(1) }
+        .onKeyPress(.upArrow) { move(-1) }
+        .onKeyPress(.leftArrow) { switchTab(-1) }
+        .onKeyPress(.rightArrow) { switchTab(1) }
+        .onKeyPress(.return) {
+            guard let item = focusedItem else { return .ignored }
+            actions.row.open(item.pullRequest.url)
+            return .handled
+        }
+        .onKeyPress(characters: CharacterSet(charactersIn: "tT")) { _ in
+            guard let item = focusedItem else { return .ignored }
+            model.editingTags = item
+            return .handled
+        }
         .onExitCommand {
             if !model.clearFilter() { actions.close() }
         }
@@ -44,6 +60,40 @@ struct PopoverView: View {
             Button("") { actions.refresh() }.keyboardShortcut("r").hidden()
             Button("") { actions.openSettings() }.keyboardShortcut(",").hidden()
         }
+    }
+}
+
+extension PopoverView {
+    /// The rows of the current tab, in display order.
+    var visibleItems: [WatchedPullRequest] {
+        let sections = watch.sections(tag: model.tagFilter, repository: model.repositoryFilter)
+        switch model.tab {
+        case .reviewRequested: return sections.reviewRequested.flatMap(\.items)
+        case .mine: return sections.mine
+        case .involved: return sections.involved
+        case .ignored: return sections.ignored
+        }
+    }
+
+    var focusedItem: WatchedPullRequest? {
+        visibleItems.first { $0.id == model.focusedID }
+    }
+
+    func move(_ step: Int) -> KeyPress.Result {
+        let items = visibleItems
+        guard !items.isEmpty else { return .ignored }
+        let index = items.firstIndex { $0.id == model.focusedID }.map { $0 + step } ?? (step > 0 ? 0 : items.count - 1)
+        model.focusedID = items[min(max(index, 0), items.count - 1)].id
+        return .handled
+    }
+
+    func switchTab(_ step: Int) -> KeyPress.Result {
+        var tabs: [PopoverModel.Section] = [.reviewRequested, .mine, .involved]
+        if !watch.sections().ignored.isEmpty { tabs.append(.ignored) }
+        guard let index = tabs.firstIndex(of: model.tab) else { return .ignored }
+        model.tab = tabs[(index + step + tabs.count) % tabs.count]
+        model.focusedID = nil
+        return .handled
     }
 }
 

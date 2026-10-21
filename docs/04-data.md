@@ -54,6 +54,7 @@ written by a poll.
 | `updates.automaticInstall` | Bool | `false` | As in Lookout |
 | `tags` | `{nodeID: TagEntry}` | `{}` | Below |
 | `mutes` | `{nodeID: MuteEntry}` | `{}` | FR-63, below |
+| `shortcut` | `"off"` \| `"controlOptionCommandD"` \| `"optionCommandD"` \| `"controlOptionD"` | `"controlOptionCommandD"` | The global shortcut that opens the popover (FR-48) |
 
 `TagEntry`:
 

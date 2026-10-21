@@ -16,6 +16,8 @@ final class PopoverModel {
     var tagFilter: String?
     var repositoryFilter: String?
     var tab: Section = .reviewRequested
+    /// The row the keyboard focus ring is on (FR-47).
+    var focusedID: String?
     var editingTags: WatchedPullRequest?
 
     /// `Escape`: the filter first, then the popover (`docs/05-design.md` §11).
