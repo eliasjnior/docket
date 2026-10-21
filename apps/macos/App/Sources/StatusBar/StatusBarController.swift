@@ -2,21 +2,30 @@ import AppKit
 import DocketActivity
 import DocketStores
 import SwiftUI
+import os
 
 /// The status item of `docs/05-design.md` §4: the icon, the "needs you" count, and the popover.
 @MainActor
-final class StatusBarController: NSObject {
+final class StatusBarController: NSObject, NSPopoverDelegate {
     private let watch: WatchStore
     private let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let popover = NSPopover()
     private let menu = NSMenu()
     private let onOpen: () -> Void
+    private let onClose: () -> Void
+    /// The interval NFR-06 is measured with, from click to the first frame of rows.
+    private let signposter = OSSignposter(subsystem: "com.eliasjnior.docket", category: "popover")
 
-    init(watch: WatchStore, content: some View, menuItems: [NSMenuItem], onOpen: @escaping () -> Void) {
+    init(
+        watch: WatchStore, content: some View, menuItems: [NSMenuItem], onOpen: @escaping () -> Void,
+        onClose: @escaping () -> Void
+    ) {
         self.watch = watch
         self.onOpen = onOpen
+        self.onClose = onClose
         super.init()
         popover.behavior = .transient
+        popover.delegate = self
         popover.setHostedContent(content)
         menuItems.forEach(menu.addItem)
         if let button = item.button {
@@ -32,12 +41,18 @@ final class StatusBarController: NSObject {
 
     func show() {
         guard let button = item.button, !popover.isShown else { return }
+        let interval = signposter.beginInterval("open")
         popover.show(below: button)
+        DispatchQueue.main.async { [signposter] in signposter.endInterval("open", interval) }
         onOpen()
     }
 
     func close() {
         popover.performClose(nil)
+    }
+
+    func popoverDidClose(_ notification: Notification) {
+        onClose()
     }
 
     @objc private func click() {

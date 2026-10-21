@@ -44,6 +44,8 @@ targets:
         product: DocketGitHub
       - package: DocketKit
         product: DocketPersistence
+      - package: DocketKit
+        product: DocketNotify
     info:
       path: App/Info.plist
       properties:

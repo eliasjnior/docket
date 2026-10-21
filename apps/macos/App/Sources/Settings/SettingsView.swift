@@ -7,6 +7,8 @@ struct SettingsView: View {
     let watch: WatchStore
     let configStore: ConfigStore
     let account: AccountSettingsModel
+    let permission: NotificationPermission
+    let requestPermission: () -> Void
 
     var body: some View {
         TabView {
@@ -14,6 +16,10 @@ struct SettingsView: View {
                 .tabItem {
                     Label(String(localized: "Account", comment: "Settings tab"), systemImage: "person.crop.circle")
                 }
+            NotificationsSettingsView(
+                configStore: configStore, permission: permission, requestPermission: requestPermission
+            )
+            .tabItem { Label(String(localized: "Notifications", comment: "Settings tab"), systemImage: "bell") }
             GeneralSettingsView(configStore: configStore)
                 .tabItem { Label(String(localized: "General", comment: "Settings tab"), systemImage: "gearshape") }
         }

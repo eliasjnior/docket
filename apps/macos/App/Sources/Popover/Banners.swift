@@ -5,6 +5,7 @@ import SwiftUI
 /// One-line banners between the header and the sections, in the order of `docs/05-design.md` §7.2.
 struct Banners: View {
     let watch: WatchStore
+    let permission: NotificationPermission
     let actions: PopoverActions
     let now: Date
 
@@ -43,6 +44,13 @@ struct Banners: View {
                     perform: actions.refresh)
             case nil:
                 EmptyView()
+            }
+            if permission.status == .denied {
+                BannerRow(
+                    symbol: "bell.slash", color: .textSecondary,
+                    text: String(localized: "Notifications are off for Docket.", comment: "Permission banner"),
+                    action: String(localized: "Open System Settings", comment: "Permission banner button"),
+                    perform: NotificationSettingsLink.open)
             }
             if watch.snapshot.state.baselineAt != nil, !watch.snapshot.state.baselineNoticeDismissed,
                 watch.account == .ready

@@ -7,6 +7,7 @@ import SwiftUI
 struct PopoverView: View {
     let watch: WatchStore
     @Bindable var model: PopoverModel
+    let permission: NotificationPermission
     let actions: PopoverActions
 
     private var maxHeight: CGFloat {
@@ -18,7 +19,7 @@ struct PopoverView: View {
             let now = context.date.addingTimeInterval(watch.snapshot.state.lastPoll?.serverTimeOffset ?? 0)
             VStack(spacing: 0) {
                 PopoverHeader(watch: watch, model: model, actions: actions, now: context.date)
-                Banners(watch: watch, actions: actions, now: context.date)
+                Banners(watch: watch, permission: permission, actions: actions, now: context.date)
                 Divider()
                 if let screen = FullScreen.for(watch: watch) {
                     FullScreenView(screen: screen, actions: actions).padding(20)
