@@ -245,8 +245,9 @@ anything an agent cannot finish alone, such as every step in §2 and §4.
 
 ### 3.4 Protecting `main` — closing D-13
 
-D-13 is open and this is the check that closes it. Rulesets and branch protection on a private
-repository need GitHub Pro for a personal account; GitHub Free does not offer them.
+This is the check that closed D-13: the account is on `pro`, so the ruleset below exists.
+Rulesets and branch protection on a private repository need GitHub Pro for a personal account;
+GitHub Free does not offer them.
 
 ```sh
 gh api user --jq .plan.name     # "free" or "pro"
