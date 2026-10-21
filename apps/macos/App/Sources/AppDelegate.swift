@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusBar: StatusBarController?
     private var settings: SettingsWindowController?
     private let popover = PopoverModel()
+    private var updateWindows: UpdateWindows?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let environment = AppEnvironment()
@@ -22,23 +23,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.statusBar?.show()
             }
         }
+        let updateWindows = UpdateWindows(updates: environment.updates, info: environment.info)
+        self.updateWindows = updateWindows
+        settings = makeSettings(environment, windows: updateWindows)
+        statusBar = makeStatusBar(environment)
+        Task {
+            await environment.start()
+            environment.reconcileLoginItem()
+            await environment.requestNotificationPermission()
+            if let lastShown = await environment.takeLastShownVersion(), lastShown < environment.info.semanticVersion {
+                updateWindows.showWhatsNew(since: lastShown)
+            }
+        }
+        environment.updates.relaunch = { NSApp.terminate(nil) }
+        environment.updates.startAutomaticChecks()
+        observeUpdates(environment, windows: updateWindows)
+    }
+
+    private func makeSettings(_ environment: AppEnvironment, windows updateWindows: UpdateWindows)
+        -> SettingsWindowController
+    {
         let account = AccountSettingsModel(
             locate: { await environment.tokens.location() },
             chooseLocation: { [weak self] in self?.chooseGhLocation() },
             retry: { environment.retryAuthentication() })
-        settings = SettingsWindowController {
+        return SettingsWindowController {
             AnyView(
                 SettingsView(
                     watch: environment.watch, configStore: environment.configStore, account: account,
                     permission: environment.permission,
                     requestPermission: { Task { await environment.requestNotificationPermission() } },
-                    checkRepository: { await environment.repositoryExists($0) }))
+                    checkRepository: { await environment.repositoryExists($0) }, updates: environment.updates,
+                    info: environment.info, loginItem: environment.loginItem, dataFolder: environment.paths.root,
+                    showWhatsNew: { updateWindows.showWhatsNew() }, showPrompt: { updateWindows.showPrompt() }))
         }
+    }
+
+    private func makeStatusBar(_ environment: AppEnvironment) -> StatusBarController {
         let content = PopoverView(
             watch: environment.watch, model: popover, permission: environment.permission,
             actions: popoverActions(environment))
         var shownMarks: [String] = []
-        statusBar = StatusBarController(
+        return StatusBarController(
             watch: environment.watch, content: content, menuItems: statusMenu(),
             onOpen: {
                 shownMarks = environment.watch.snapshot.state.marked
@@ -58,9 +84,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             })
-        Task {
-            await environment.start()
-            await environment.requestNotificationPermission()
+    }
+
+    /// A newly found update shows the prompt once, unless updates install by themselves.
+    private func observeUpdates(_ environment: AppEnvironment, windows: UpdateWindows) {
+        var announced: String?
+        observeContinuously(environment.updates) { updates in
+            guard let update = updates.availableUpdate, update.version.description != announced else { return }
+            announced = update.version.description
+            if !environment.configStore.config.updates.automaticInstall { windows.showPrompt() }
         }
     }
 
@@ -123,10 +155,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return PopoverActions(
             refresh: { [weak self] in self?.refresh() },
             openSettings: { [weak self] in self?.openSettings() },
-            checkForUpdates: { [weak self] in self?.openSettings() },
+            checkForUpdates: { [weak self] in
+                self?.statusBar?.close()
+                Task {
+                    await environment.updates.check(userInitiated: true)
+                    self?.updateWindows?.showPrompt()
+                }
+            },
             quit: { NSApp.terminate(nil) },
             retry: { environment.retryAuthentication() },
             chooseGhLocation: { [weak self] in self?.chooseGhLocation() },
+            launchAtLogin: { environment.setLaunchAtLogin($0) },
             dismissBaselineNotice: {
                 Task { await environment.poller.updateState { $0.baselineNoticeDismissed = true } }
             },

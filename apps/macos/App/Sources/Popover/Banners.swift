@@ -45,6 +45,24 @@ struct Banners: View {
             case nil:
                 EmptyView()
             }
+            if watch.snapshot.state.baselineAt != nil, watch.config.launchAtLogin == nil {
+                HStack(spacing: 8) {
+                    Image(systemName: "power").foregroundStyle(Color.textSecondary)
+                    Text("Open Docket at login?", comment: "Launch at login banner")
+                    Spacer(minLength: 4)
+                    Button(String(localized: "Not Now", comment: "Launch at login banner button")) {
+                        actions.launchAtLogin(false)
+                    }
+                    .controlSize(.small)
+                    Button(String(localized: "Turn On", comment: "Launch at login banner button")) {
+                        actions.launchAtLogin(true)
+                    }
+                    .controlSize(.small)
+                }
+                .font(.subheadline)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+            }
             if permission.status == .denied {
                 BannerRow(
                     symbol: "bell.slash", color: .textSecondary,

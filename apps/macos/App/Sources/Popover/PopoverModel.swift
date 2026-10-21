@@ -39,6 +39,7 @@ struct PopoverActions {
     var quit: () -> Void
     var retry: () -> Void
     var chooseGhLocation: () -> Void
+    var launchAtLogin: (Bool) -> Void
     var dismissBaselineNotice: () -> Void
     var close: () -> Void
     var row: RowActions

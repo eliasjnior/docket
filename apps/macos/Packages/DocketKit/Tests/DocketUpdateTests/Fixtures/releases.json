@@ -1,0 +1,10 @@
+[
+  {"tag_name":"web-v3.0.0","body":"web","draft":false,"prerelease":false,"published_at":"2026-10-20T00:00:00Z","assets":[]},
+  {"tag_name":"macos-v0.4.0","body":"draft","draft":true,"prerelease":false,"published_at":null,"assets":[]},
+  {"tag_name":"macos-v0.3.0","body":"### New\n\n* thing","draft":false,"prerelease":false,"published_at":"2026-10-19T00:00:00Z","assets":[
+    {"name":"Docket-0.3.0.zip","url":"https://api.test/assets/30"},
+    {"name":"Docket-0.3.0.zip.sig","url":"https://api.test/assets/31"},
+    {"name":"release.json","url":"https://api.test/assets/32"}
+  ]},
+  {"tag_name":"macos-v0.2.0","body":"older","draft":false,"prerelease":false,"published_at":"2026-10-18T00:00:00Z","assets":[]}
+]

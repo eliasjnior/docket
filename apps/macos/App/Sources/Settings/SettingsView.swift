@@ -1,5 +1,6 @@
 import DocketCore
 import DocketStores
+import DocketUpdate
 import SwiftUI
 
 /// The settings window of `docs/05-design.md` §9: toolbar tabs, each a grouped form, saved on change.
@@ -10,6 +11,12 @@ struct SettingsView: View {
     let permission: NotificationPermission
     let requestPermission: () -> Void
     let checkRepository: (String) async -> Bool
+    let updates: UpdateStore
+    let info: AppInfo
+    let loginItem: LoginItem
+    let dataFolder: URL
+    let showWhatsNew: () -> Void
+    let showPrompt: () -> Void
 
     var body: some View {
         TabView {
@@ -17,12 +24,24 @@ struct SettingsView: View {
                 .tabItem {
                     Label(String(localized: "Account", comment: "Settings tab"), systemImage: "person.crop.circle")
                 }
+            RepositoriesSettingsView(
+                selection: SelectionStore(configStore: configStore),
+                known: watch.snapshot.cache?.knownRepositories.map(\.name) ?? [], check: checkRepository
+            )
+            .tabItem { Label(String(localized: "Repositories", comment: "Settings tab"), systemImage: "folder") }
             NotificationsSettingsView(
                 configStore: configStore, permission: permission, requestPermission: requestPermission
             )
             .tabItem { Label(String(localized: "Notifications", comment: "Settings tab"), systemImage: "bell") }
-            GeneralSettingsView(configStore: configStore)
+            GeneralSettingsView(configStore: configStore, loginItem: loginItem)
                 .tabItem { Label(String(localized: "General", comment: "Settings tab"), systemImage: "gearshape") }
+            UpdatesSettingsView(
+                configStore: configStore, updates: updates, info: info, showWhatsNew: showWhatsNew,
+                showPrompt: showPrompt
+            )
+            .tabItem { Label(String(localized: "Updates", comment: "Settings tab"), systemImage: "arrow.down.circle") }
+            AboutSettingsView(info: info, dataFolder: dataFolder, showWhatsNew: showWhatsNew)
+                .tabItem { Label(String(localized: "About", comment: "Settings tab"), systemImage: "info.circle") }
         }
         .frame(width: 520)
         .fixedSize(horizontal: false, vertical: true)
@@ -115,9 +134,26 @@ struct AccountSettingsView: View {
 
 struct GeneralSettingsView: View {
     let configStore: ConfigStore
+    var loginItem: LoginItem?
 
     var body: some View {
         Form {
+            Section {
+                Toggle(
+                    String(localized: "Count review requests", comment: "Menu bar count setting"),
+                    isOn: binding(\.count.includeReviewRequests))
+                Toggle(
+                    String(localized: "Count your pull requests that need you", comment: "Menu bar count setting"),
+                    isOn: binding(\.count.includeBlockedAuthored))
+            } header: {
+                Text("Menu bar count", comment: "General settings section")
+            } footer: {
+                Text(
+                    "Yours count when they have a conflict, failing checks, requested changes, or are ready to merge.",
+                    comment: "Menu bar count caption"
+                )
+                .font(.caption).foregroundStyle(Color.textSecondary)
+            }
             Section(String(localized: "Poll interval", comment: "General settings section")) {
                 Picker(
                     String(localized: "Check GitHub every", comment: "Poll interval picker"),
@@ -133,6 +169,23 @@ struct GeneralSettingsView: View {
                     comment: "Caption under the poll interval: the estimated hourly cost"
                 )
                 .font(.caption).foregroundStyle(Color.textSecondary)
+            }
+            if let loginItem {
+                Section {
+                    Toggle(
+                        String(localized: "Open at login", comment: "General setting"),
+                        isOn: Binding(
+                            get: { loginItem.isEnabled },
+                            set: { enabled in
+                                loginItem.setEnabled(enabled)
+                                configStore.update { $0.launchAtLogin = enabled }
+                            }))
+                    if loginItem.requiresApproval {
+                        Button(
+                            String(localized: "Allow in System Settings…", comment: "Login item button"),
+                            action: loginItem.openSystemSettings)
+                    }
+                }
             }
         }
         .formStyle(.grouped)
