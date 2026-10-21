@@ -4,5 +4,5 @@ import Testing
 
 @Test func moduleIsLinked() {
     #expect(DocketStoresModule.name == "DocketStores")
-    #expect(DocketTestSupportModule.name == "DocketTestSupport")
+    #expect(Fixtures.you == "you")
 }
