@@ -628,8 +628,8 @@ should already be written as if it were one (`04-data.md` §6). `edited` is in t
 a retitled pull request is re-checked. gitleaks scans the whole history, as Lookout's does, which
 costs seconds at this size and also catches a secret added and removed inside the branch.
 
-Both jobs run at 1× on Ubuntu, a few minutes of the monthly allowance per week. When D-13 closes
-with a ruleset, `pr-title` and `secrets` are its required status checks.
+Both jobs run at 1× on Ubuntu, a few minutes of the monthly allowance per week. D-13 closed with a
+ruleset, and `pr-title` and `secrets` are its required status checks.
 
 ### 9.2 `Release`
 

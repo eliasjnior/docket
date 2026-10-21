@@ -232,4 +232,4 @@ bridged.
 
 ## 13. Open technical questions
 
-- Whether `main` can be protected on the private repository depends on the account plan — D-13.
+None. Protecting `main` was the last one and closed with a ruleset (D-13).
