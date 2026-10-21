@@ -1,10 +1,12 @@
 import AppKit
 import DocketCore
 import DocketGitHub
+import DocketNotify
 import DocketPersistence
 import DocketStores
 import Foundation
 import Network
+import UserNotifications
 
 /// The composition root: the only place that builds adapters (CLAUDE.md, non-negotiable 4).
 @MainActor
@@ -14,10 +16,13 @@ final class AppEnvironment {
     let poller: Poller
     let tokens: GhTokenProvider
     let paths: AppPaths
+    let permission = NotificationPermission()
+    private let notifications = UserNotificationSink()
+    private var delegate: NotificationDelegate?
     private let monitor = NWPathMonitor()
     private var observers: [NSObjectProtocol] = []
 
-    init(notifications: NotificationSink) {
+    init() {
         let paths =
             (try? AppPaths.applicationSupport())
             ?? AppPaths(root: FileManager.default.temporaryDirectory.appending(path: "Docket"))
@@ -31,6 +36,34 @@ final class AppEnvironment {
         self.tokens = tokens
         poller = Poller(
             github: GraphQLClient(tokens: tokens), tokens: tokens, storage: storage, notifications: notifications)
+    }
+
+    /// Clicks on notifications, routed to the app (`docs/02-activity-detection.md` §7.4).
+    func handleNotifications(_ route: @escaping @MainActor (NotificationRoute) -> Void) {
+        UserNotificationSink.registerCategories()
+        let configStore = configStore
+        let delegate = NotificationDelegate { click in
+            Task { @MainActor in
+                switch click {
+                case .open(let url): route(.open(url))
+                case .popover(let repository): route(.popover(repository: repository))
+                case .muteReminders(let id, let ref):
+                    configStore.update {
+                        $0.mutes[id] = Config.MuteEntry(ref: ref ?? id, scope: .reminders, mutedAt: Date())
+                    }
+                }
+            }
+        }
+        self.delegate = delegate
+        UNUserNotificationCenter.current().delegate = delegate
+    }
+
+    func requestNotificationPermission() async {
+        permission.status = await notifications.requestAuthorization()
+    }
+
+    func refreshNotificationPermission() async {
+        permission.status = await notifications.authorization()
     }
 
     func start() async {
@@ -69,4 +102,17 @@ final class AppEnvironment {
         }
         monitor.start(queue: DispatchQueue(label: "com.eliasjnior.docket.network"))
     }
+}
+
+/// Where a notification click leads, in the app's terms.
+enum NotificationRoute {
+    case open(URL)
+    case popover(repository: String?)
+}
+
+/// Notification permission as settings and the banner show it.
+@MainActor
+@Observable
+final class NotificationPermission {
+    var status: NotificationAuthorization = .notAsked
 }

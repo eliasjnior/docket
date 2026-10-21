@@ -29,7 +29,7 @@ let package = Package(
         .testTarget(name: "DocketActivityTests", dependencies: ["DocketActivity", "DocketTestSupport"]),
         .testTarget(name: "DocketGitHubTests", dependencies: ["DocketGitHub"], resources: [.copy("Fixtures")]),
         .testTarget(name: "DocketPersistenceTests", dependencies: ["DocketPersistence"]),
-        .testTarget(name: "DocketNotifyTests", dependencies: ["DocketNotify"]),
+        .testTarget(name: "DocketNotifyTests", dependencies: ["DocketNotify", "DocketTestSupport"]),
         .testTarget(name: "DocketUpdateTests", dependencies: ["DocketUpdate"]),
         .testTarget(
             name: "DocketStoresTests",

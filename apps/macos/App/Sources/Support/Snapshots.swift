@@ -32,7 +32,8 @@ enum Snapshots {
                 let model = PopoverModel()
                 model.expanded = [.reviewRequested, .mine, .involved, .ignored]
                 render(
-                    PopoverView(watch: watch, model: model, actions: SampleData.actions),
+                    PopoverView(
+                        watch: watch, model: model, permission: NotificationPermission(), actions: SampleData.actions),
                     appearance: appearance, to: directory, name: "\(scenario.name)-\(suffix)")
             }
         }

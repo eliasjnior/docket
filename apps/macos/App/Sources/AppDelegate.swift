@@ -12,20 +12,55 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let popover = PopoverModel()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let environment = AppEnvironment(notifications: SilentNotificationSink())
+        let environment = AppEnvironment()
         self.environment = environment
+        environment.handleNotifications { [weak self] route in
+            switch route {
+            case .open(let url): NSWorkspace.shared.open(url)
+            case .popover(let repository):
+                self?.popover.repositoryFilter = repository
+                self?.statusBar?.show()
+            }
+        }
         let account = AccountSettingsModel(
             locate: { await environment.tokens.location() },
             chooseLocation: { [weak self] in self?.chooseGhLocation() },
             retry: { environment.retryAuthentication() })
         settings = SettingsWindowController {
-            AnyView(SettingsView(watch: environment.watch, configStore: environment.configStore, account: account))
+            AnyView(
+                SettingsView(
+                    watch: environment.watch, configStore: environment.configStore, account: account,
+                    permission: environment.permission,
+                    requestPermission: { Task { await environment.requestNotificationPermission() } }))
         }
-        let content = PopoverView(watch: environment.watch, model: popover, actions: popoverActions(environment))
+        let content = PopoverView(
+            watch: environment.watch, model: popover, permission: environment.permission,
+            actions: popoverActions(environment))
+        var shownMarks: [String] = []
         statusBar = StatusBarController(
             watch: environment.watch, content: content, menuItems: statusMenu(),
-            onOpen: { Task { await environment.poller.pollIfOlder(than: 30) } })
-        Task { await environment.start() }
+            onOpen: {
+                shownMarks = environment.watch.snapshot.state.marked
+                Task {
+                    await environment.refreshNotificationPermission()
+                    await environment.poller.pollIfOlder(than: 30)
+                }
+            },
+            onClose: {
+                // Marks shown in this opening are cleared; one that arrived while open stays (FR-46).
+                let seen = Set(shownMarks)
+                let openedAt = Date()
+                Task {
+                    await environment.poller.updateState { state in
+                        state.marked.removeAll(where: seen.contains)
+                        state.popoverOpenedAt = openedAt
+                    }
+                }
+            })
+        Task {
+            await environment.start()
+            await environment.requestNotificationPermission()
+        }
     }
 
     private func statusMenu() -> [NSMenuItem] {
@@ -110,11 +145,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         environment.configStore.update { $0.ghPath = url.path }
         environment.retryAuthentication()
     }
-}
-
-/// Until `DocketNotify` lands (M2), nothing is delivered.
-struct SilentNotificationSink: NotificationSink {
-    func deliver(_ notifications: [PlannedNotification]) async {}
-    func authorization() async -> NotificationAuthorization { .notAsked }
-    func requestAuthorization() async -> NotificationAuthorization { .notAsked }
 }
