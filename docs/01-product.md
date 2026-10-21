@@ -161,7 +161,7 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §5 and 
 | **NFR-07** | Idle cost | ≤ 0.5% CPU averaged over 10 minutes; ≤ 80 MB resident memory with 100 pull requests |
 | **NFR-08** | First data after launch | ≤ 3 s with the network up and `gh` signed in |
 | **NFR-09** | Test coverage | `DocketActivity` ≥ 90% lines and `DocketKit` overall ≥ 75%, enforced by `scripts/ci.sh` |
-| **NFR-10** | Network surface | Only GitHub hosts: `api.github.com`, `github.com` and the release asset hosts it redirects to |
+| **NFR-10** | Network surface | Only GitHub hosts: `api.github.com` for every query and release lookup, and the asset host `api.github.com` redirects a release download to (`release-assets.githubusercontent.com` or `objects.githubusercontent.com`); `github.com` only opens in the browser |
 | **NFR-11** | Accessibility | Every row and chip has a VoiceOver label; no status is conveyed by colour alone |
 
 ## 5. Success metrics
