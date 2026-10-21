@@ -4,6 +4,7 @@ import DocketGitHub
 import DocketNotify
 import DocketPersistence
 import DocketStores
+import DocketUpdate
 import Foundation
 import Network
 import UserNotifications
@@ -18,6 +19,9 @@ final class AppEnvironment {
     let tokens: GhTokenProvider
     let paths: AppPaths
     let permission = NotificationPermission()
+    let info = AppInfo(bundle: .main)
+    let updates: UpdateStore
+    let loginItem = LoginItem()
     private let notifications = UserNotificationSink()
     private var delegate: NotificationDelegate?
     private let monitor = NWPathMonitor()
@@ -41,7 +45,50 @@ final class AppEnvironment {
         self.tokens = tokens
         let github = GraphQLClient(tokens: tokens)
         self.github = github
-        poller = Poller(github: github, tokens: tokens, storage: storage, notifications: notifications)
+        let poller = Poller(github: github, tokens: tokens, storage: storage, notifications: notifications)
+        self.poller = poller
+        let bundle = Bundle.main
+        let repository =
+            bundle.object(forInfoDictionaryKey: "DocketReleaseRepository") as? String ?? "eliasjnior/docket"
+        let key = bundle.object(forInfoDictionaryKey: "DocketUpdatePublicKey") as? String
+        updates = UpdateStore(
+            current: AppInfo(bundle: bundle).semanticVersion,
+            // The repository is private, so releases are read with the `gh` token (D-14).
+            source: GitHubReleasesSource(repository: repository, token: { try? await tokens.token() }),
+            verifier: key.flatMap { try? UpdateVerifier(publicKeyBase64: $0) },
+            installer: UpdateInstaller(bundleIdentifier: bundle.bundleIdentifier ?? "com.eliasjnior.docket"),
+            runningApp: bundle.bundleURL, configStore: configStore,
+            bookkeeping: UpdateStore.Bookkeeping(
+                load: {
+                    let state = await poller.current().state
+                    return (state.lastUpdateCheckAt, state.skippedVersion)
+                },
+                save: { checked, skipped in
+                    await poller.updateState { state in
+                        state.lastUpdateCheckAt = checked
+                        state.skippedVersion = skipped
+                    }
+                }))
+    }
+
+    /// FR-90: `config.json` and `SMAppService` agree at launch; the user's choice wins.
+    func reconcileLoginItem() {
+        guard let wanted = configStore.config.launchAtLogin else { return }
+        loginItem.refresh()
+        if wanted != loginItem.isEnabled { loginItem.setEnabled(wanted) }
+    }
+
+    func setLaunchAtLogin(_ enabled: Bool) {
+        loginItem.setEnabled(enabled)
+        configStore.update { $0.launchAtLogin = enabled }
+    }
+
+    /// The version What's New last showed; records the running one. `nil` on a first install.
+    func takeLastShownVersion() async -> SemanticVersion? {
+        let current = info.semanticVersion.description
+        let previous = await poller.current().state.lastShownVersion
+        await poller.updateState { $0.lastShownVersion = current }
+        return previous.flatMap(SemanticVersion.init)
     }
 
     /// FR-73: one `repository(owner:, name:)` query.

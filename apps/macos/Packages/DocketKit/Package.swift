@@ -30,10 +30,10 @@ let package = Package(
         .testTarget(name: "DocketGitHubTests", dependencies: ["DocketGitHub"], resources: [.copy("Fixtures")]),
         .testTarget(name: "DocketPersistenceTests", dependencies: ["DocketPersistence"]),
         .testTarget(name: "DocketNotifyTests", dependencies: ["DocketNotify", "DocketTestSupport"]),
-        .testTarget(name: "DocketUpdateTests", dependencies: ["DocketUpdate"]),
+        .testTarget(name: "DocketUpdateTests", dependencies: ["DocketUpdate"], resources: [.copy("Fixtures")]),
         .testTarget(
             name: "DocketStoresTests",
-            dependencies: ["DocketStores", "DocketTestSupport", "DocketGitHub", "DocketPersistence"]
+            dependencies: ["DocketStores", "DocketTestSupport", "DocketGitHub", "DocketPersistence", "DocketUpdate"]
         ),
     ]
 )

@@ -159,7 +159,8 @@ organization (FR-13).
 
 ## 7. Ports and adapters
 
-Ports live in `DocketCore`. Each adapter is replaced in tests **at the edge it talks to**, never at
+Ports live in `DocketCore`, except `ReleaseSource`, which lives in `DocketUpdate` with the release types it
+returns. Each adapter is replaced in tests **at the edge it talks to**, never at
 the port, so the code we wrote is the code under test.
 
 | Port | Real adapter | In tests |
