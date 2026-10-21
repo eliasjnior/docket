@@ -8,7 +8,7 @@ SIGN_IDENTITY ?= Docket Self-Signed Code Signing
 APP = $(BUILD_DIR)/Build/Products/$(CONFIG)/Docket.app
 SWIFT_SOURCES := $(wildcard App scripts $(KIT)/Sources $(KIT)/Tests $(KIT)/Package.swift)
 
-.PHONY: bootstrap gen build sign test lint format install ci clean
+.PHONY: bootstrap gen build sign test lint format install ci clean strings
 
 bootstrap:
 	brew bundle --file=../../Brewfile
@@ -45,6 +45,10 @@ install:
 
 ci:
 	../../scripts/ci.sh
+
+# Copy lives in Localizable.xcstrings (D-18); run after adding or changing a string.
+strings: gen
+	scripts/sync-strings.sh
 
 clean:
 	rm -rf $(BUILD_DIR) $(PROJECT) $(KIT)/.build

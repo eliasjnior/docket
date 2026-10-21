@@ -83,6 +83,7 @@ table.
 | `make -C apps/macos gen` | Generates `Docket.xcodeproj` from `project.yml` (not committed) |
 | `make -C apps/macos build` / `test` / `lint` / `format` | Build the app, run `DocketKit` tests, lint, format |
 | `make -C apps/macos install` | Builds Release, signs with the self-signed identity, installs to `/Applications` |
+| `make -C apps/macos strings` | Syncs every string the code looks up into `Localizable.xcstrings` (D-18) |
 | `swift run --package-path apps/macos/Packages/DocketKit docket-cli poll` | One real poll against your account: roles, statuses, events, `rateLimit.cost` |
 | `docket-cli whoami` / `docket-cli stats` | Token, login and scopes / the success metrics of `docs/01-product.md` §5 |
 | `Docket.app/Contents/MacOS/Docket --snapshot <dir>` | Renders views with synthetic data to PNG, light and dark, then exits |

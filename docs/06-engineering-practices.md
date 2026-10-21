@@ -72,6 +72,7 @@ devDependencies and delegates everything else:
 | `sign` | `scripts/codesign-app.sh` with `Docket Self-Signed Code Signing` (D-15) |
 | `install` | `build sign CONFIG=Release`, quit the running app, copy to `/Applications`, re-register, open |
 | `ci` | `../../scripts/ci.sh` |
+| `strings` | `scripts/sync-strings.sh`: build with `SWIFT_EMIT_LOC_STRINGS`, then `xcstringstool sync` every extracted string into `App/Resources/Localizable.xcstrings` (D-18); run after adding or changing copy |
 | `clean` | remove `build/`, the `.xcodeproj` and the package's `.build/` |
 
 `apps/macos/.swift-format` and `apps/macos/.swiftlint.yml` are Lookout's files with `LookoutKit`
