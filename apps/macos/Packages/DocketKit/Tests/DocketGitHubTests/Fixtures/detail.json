@@ -1,0 +1,8 @@
+{"data":{"nodes":[{"id":"PR_1",
+ "reviews":{"nodes":[{"id":"PRR_1","state":"COMMENTED","body":"  ","submittedAt":"2026-10-21T10:00:00Z","author":{"__typename":"User","login":"bruno"}},
+                     {"id":"PRR_2","state":"APPROVED","body":"LGTM","submittedAt":"2026-10-21T10:05:00Z","author":{"__typename":"Bot","login":"copilot-pull-request-reviewer"}}]},
+ "comments":{"nodes":[{"id":"IC_1","url":"https://github.com/acme/api/pull/482#issuecomment-1","createdAt":"2026-10-21T10:01:00Z","author":{"__typename":"User","login":"dave"}}]},
+ "reviewThreads":{"nodes":[{"id":"RT_1","comments":{"nodes":[{"id":"RC_1","url":"https://github.com/acme/api/pull/482#discussion_r1","createdAt":"2026-10-21T09:00:00Z","author":{"__typename":"User","login":"you"},"pullRequestReview":{"id":"PRR_0"}},
+                                                    {"id":"RC_2","url":"https://github.com/acme/api/pull/482#discussion_r2","createdAt":"2026-10-21T10:00:00Z","author":{"__typename":"User","login":"bruno"},"pullRequestReview":{"id":"PRR_1"}}]}}]},
+ "timelineItems":{"nodes":[{"id":"RRE_1","createdAt":"2026-10-21T08:00:00Z","actor":{"__typename":"User","login":"ana"},"requestedReviewer":{"__typename":"User","login":"you"}},{}]}
+}],"rateLimit":{"cost":1,"remaining":4990,"limit":5000,"resetAt":"2026-10-21T13:00:00Z"}}}

@@ -27,7 +27,7 @@ let package = Package(
         .executableTarget(name: "DocketCLI", dependencies: ["DocketCore", "DocketActivity", "DocketGitHub"]),
         .testTarget(name: "DocketCoreTests", dependencies: ["DocketCore"]),
         .testTarget(name: "DocketActivityTests", dependencies: ["DocketActivity", "DocketTestSupport"]),
-        .testTarget(name: "DocketGitHubTests", dependencies: ["DocketGitHub"]),
+        .testTarget(name: "DocketGitHubTests", dependencies: ["DocketGitHub"], resources: [.copy("Fixtures")]),
         .testTarget(name: "DocketPersistenceTests", dependencies: ["DocketPersistence"]),
         .testTarget(name: "DocketNotifyTests", dependencies: ["DocketNotify"]),
         .testTarget(name: "DocketUpdateTests", dependencies: ["DocketUpdate"]),

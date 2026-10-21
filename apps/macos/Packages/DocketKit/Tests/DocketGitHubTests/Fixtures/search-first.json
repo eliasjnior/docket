@@ -1,0 +1,6 @@
+{"data":{
+ "authored":{"issueCount":2,"pageInfo":{"hasNextPage":false,"endCursor":null},"nodes":[{"id":"PR_A1","updatedAt":"2026-10-21T10:00:00Z"},{"id":"PR_A2","updatedAt":"2026-10-21T10:00:00Z"}]},
+ "requested":{"issueCount":160,"pageInfo":{"hasNextPage":true,"endCursor":"c1"},"nodes":[{"id":"PR_R1","updatedAt":"2026-10-21T10:00:00Z"}]},
+ "commented":{"issueCount":1,"pageInfo":{"hasNextPage":false,"endCursor":null},"nodes":[{"id":"PR_A1","updatedAt":"2026-10-21T10:00:00Z"}]},
+ "reviewed":{"issueCount":0,"pageInfo":{"hasNextPage":false,"endCursor":null},"nodes":[]},
+ "rateLimit":{"cost":1,"remaining":4990,"limit":5000,"resetAt":"2026-10-21T13:00:00Z"}}}

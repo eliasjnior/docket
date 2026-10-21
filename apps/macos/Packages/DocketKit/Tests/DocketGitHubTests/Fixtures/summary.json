@@ -1,0 +1,15 @@
+{"data":{"nodes":[
+ {"id":"PR_1","number":482,"title":"Fix login redirect loop","url":"https://github.com/acme/api/pull/482","state":"OPEN","isDraft":false,
+  "createdAt":"2026-10-19T12:00:00Z","updatedAt":"2026-10-21T11:00:00Z","author":{"__typename":"User","login":"ana"},
+  "repository":{"nameWithOwner":"acme/api","isArchived":false},"mergeable":"CONFLICTING","reviewDecision":"REVIEW_REQUIRED",
+  "commits":{"nodes":[{"commit":{"oid":"abc123","statusCheckRollup":{"state":"FAILURE"}}}]},
+  "reviewRequests":{"nodes":[{"requestedReviewer":{"__typename":"User","login":"you"}},{"requestedReviewer":{"__typename":"Team","slug":"backend","organization":{"login":"acme"}}},{"requestedReviewer":{"__typename":"Mannequin"}}]},
+  "latestOpinionatedReviews":{"nodes":[{"author":{"login":"bruno"},"state":"APPROVED"}]}},
+ null,
+ null,
+ {"id":"PR_4","number":7,"title":"Draft","url":"https://github.com/acme/web/pull/7","state":"OPEN","isDraft":true,
+  "createdAt":"2026-10-19T12:00:00Z","updatedAt":"2026-10-21T11:00:00Z","author":{"__typename":"Bot","login":"renovate"},
+  "repository":{"nameWithOwner":"acme/web","isArchived":true},"mergeable":"SOMETHING_NEW","reviewDecision":null,
+  "commits":{"nodes":[{"commit":{"oid":"def","statusCheckRollup":null}}]},"reviewRequests":{"nodes":[]},"latestOpinionatedReviews":{"nodes":[]}}
+ ],"rateLimit":{"cost":1,"remaining":4990,"limit":5000,"resetAt":"2026-10-21T13:00:00Z"}},
+ "errors":[{"type":"NOT_FOUND","path":["nodes",1],"message":"Could not resolve to a node"},{"type":"FORBIDDEN","path":["nodes",2],"message":"SAML"}]}
