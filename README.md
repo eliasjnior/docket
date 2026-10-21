@@ -14,8 +14,8 @@ the plan; [`CLAUDE.md`](CLAUDE.md) is the working agreement. This file only cove
 
 ## Current state
 
-Planning. No code is written yet; `M0` in [`docs/07-roadmap.md`](docs/07-roadmap.md) creates the
-repository, the gate and an empty app. The authoritative built / not-built table is in
+`M0` is done: the repository, the gate and an empty menu bar app. `M1` in
+[`docs/07-roadmap.md`](docs/07-roadmap.md) is next. The authoritative built / not-built table is in
 [`CLAUDE.md`](CLAUDE.md) under "What exists today".
 
 ## Requirements
