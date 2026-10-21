@@ -1,0 +1,719 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%@ approved" : {
+      "comment" : "Review decision\nVoiceOver: reviewer"
+    },
+    "%@ closed your pull request" : {
+      "comment" : "Closed by someone else"
+    },
+    "%@ commented" : {
+      "comment" : "One comment on your pull request\nReview decision\nVoiceOver: reviewer"
+    },
+    "%@ mentioned you" : {
+      "comment" : "One mention"
+    },
+    "%@ merged your pull request" : {
+      "comment" : "Merged by someone else"
+    },
+    "%@ number %lld." : {
+      "comment" : "VoiceOver: reference",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ number %2$lld."
+          }
+        }
+      }
+    },
+    "%@ pending" : {
+      "comment" : "VoiceOver: reviewer"
+    },
+    "%@ replied to your comment" : {
+      "comment" : "One reply"
+    },
+    "%@ requested changes" : {
+      "comment" : "Review decision\nVoiceOver: reviewer"
+    },
+    "%@ requires SAML authorization." : {
+      "comment" : "SAML banner"
+    },
+    "%lld comments on your pull requests" : {
+      "comment" : "Digest line\nSeveral comments"
+    },
+    "%lld mentions" : {
+      "comment" : "Digest line\nSeveral mentions"
+    },
+    "%lld more updates in %lld repositories" : {
+      "comment" : "The fifth notification when a poll has more than five",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld more updates in %2$lld repositories"
+          }
+        }
+      }
+    },
+    "%lld of %lld" : {
+      "comment" : "Tag editor counter",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld pull requests closed" : {
+      "comment" : "Digest line\nSeveral closed by others"
+    },
+    "%lld pull requests need you" : {
+      "comment" : "Status item tooltip"
+    },
+    "%lld replies to your comments" : {
+      "comment" : "Digest line\nSeveral replies"
+    },
+    "%lld reviews on your pull requests" : {
+      "comment" : "Digest line\nSeveral reviews"
+    },
+    "%lld reviews requested" : {
+      "comment" : "Digest line\nSeveral review requests"
+    },
+    "%lld reviews still waiting for you" : {
+      "comment" : "Several reminders"
+    },
+    "+%lld not shown" : {
+      "comment" : "More results than the search returned"
+    },
+    "1 hour" : {
+      "comment" : "Reminder interval"
+    },
+    "1 minute" : {
+      "comment" : "Poll interval"
+    },
+    "15 minutes" : {
+      "comment" : "Reminder interval"
+    },
+    "2 hours" : {
+      "comment" : "Reminder interval"
+    },
+    "2 minutes" : {
+      "comment" : "Poll interval"
+    },
+    "30 minutes" : {
+      "comment" : "Reminder interval"
+    },
+    "30 seconds" : {
+      "comment" : "Poll interval"
+    },
+    "4 hours" : {
+      "comment" : "Reminder interval"
+    },
+    "5 minutes" : {
+      "comment" : "Poll interval"
+    },
+    "8 hours" : {
+      "comment" : "Reminder interval"
+    },
+    "@%@ on #%lld" : {
+      "comment" : "Comment line\nMention line\nReply line",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "@%1$@ on #%2$lld"
+          }
+        }
+      }
+    },
+    "About" : {
+      "comment" : "Settings tab"
+    },
+    "About %lld of GitHub's 5,000 points an hour." : {
+      "comment" : "Caption under the poll interval: the estimated hourly cost"
+    },
+    "Account" : {
+      "comment" : "Settings tab"
+    },
+    "Add" : {
+      "comment" : "Repositories list button"
+    },
+    "Add bot" : {
+      "comment" : "Bot allowlist button"
+    },
+    "Add tag" : {
+      "comment" : "Tag editor field"
+    },
+    "All repositories, except…" : {
+      "comment" : "Selection mode"
+    },
+    "All tags" : {
+      "comment" : "Tag filter"
+    },
+    "Allow in System Settings…" : {
+      "comment" : "Login item button"
+    },
+    "Allowed" : {
+      "comment" : "Notification permission state"
+    },
+    "Allow…" : {
+      "comment" : "Notification permission button"
+    },
+    "Already added" : {
+      "comment" : "Tag rejected"
+    },
+    "Authorize" : {
+      "comment" : "SAML banner button\nSAML button"
+    },
+    "Automatic updates" : {
+      "comment" : "Updates settings section"
+    },
+    "Bot login" : {
+      "comment" : "Bot allowlist field"
+    },
+    "Bots" : {
+      "comment" : "Notifications settings section"
+    },
+    "Bots never notify unless they are listed here." : {
+      "comment" : "Bot allowlist caption"
+    },
+    "By %@." : {
+      "comment" : "VoiceOver: author"
+    },
+    "Cancel" : {
+      "comment" : "Repository picker"
+    },
+    "Changes requested" : {
+      "comment" : "Status chip"
+    },
+    "Check GitHub every" : {
+      "comment" : "Poll interval picker"
+    },
+    "Check Now" : {
+      "comment" : "Updates button"
+    },
+    "Check for Updates…" : {
+      "comment" : "Gear menu"
+    },
+    "Check for updates automatically" : {
+      "comment" : "Updates setting"
+    },
+    "Checking…" : {
+      "comment" : "Repository picker"
+    },
+    "Checks failed" : {
+      "comment" : "Checks failed on your pull request"
+    },
+    "Checks failed on %lld pull requests" : {
+      "comment" : "Digest line\nSeveral failing checks"
+    },
+    "Checks failing" : {
+      "comment" : "Status chip"
+    },
+    "Checks running" : {
+      "comment" : "Status chip"
+    },
+    "Choose Location…" : {
+      "comment" : "Account setting button\nFull screen button"
+    },
+    "Choose Repositories…" : {
+      "comment" : "Empty state button"
+    },
+    "Choose the gh executable" : {
+      "comment" : "Open panel message"
+    },
+    "Clear Filter" : {
+      "comment" : "Empty tag filter button"
+    },
+    "Clear filter" : {
+      "comment" : "Repository filter token"
+    },
+    "Comment on your pull request" : {
+      "comment" : "Notification kind"
+    },
+    "Conflict" : {
+      "comment" : "Status chip: the pull request has a merge conflict"
+    },
+    "Continue" : {
+      "comment" : "What's New button"
+    },
+    "Copy" : {
+      "comment" : "Copies the command"
+    },
+    "Copy Reference" : {
+      "comment" : "Row context menu"
+    },
+    "Copy URL" : {
+      "comment" : "Row context menu"
+    },
+    "Could not check for updates. %@" : {
+      "comment" : "Update error"
+    },
+    "Couldn't update. Showing data from %@." : {
+      "comment" : "Failed poll banner"
+    },
+    "Count review requests" : {
+      "comment" : "Menu bar count setting"
+    },
+    "Count your pull requests that need you" : {
+      "comment" : "Menu bar count setting"
+    },
+    "Current version" : {
+      "comment" : "Updates setting"
+    },
+    "Docket %@ is available" : {
+      "comment" : "Update prompt title"
+    },
+    "Docket Settings" : {
+      "comment" : "Settings window title"
+    },
+    "Docket needs %@ to read your pull requests and teams." : {
+      "comment" : "Full screen body"
+    },
+    "Docket needs attention: %@" : {
+      "comment" : "Status item tooltip"
+    },
+    "Docket reads your account through the GitHub CLI. Install it, then sign in." : {
+      "comment" : "Full screen body"
+    },
+    "Docket update" : {
+      "comment" : "Update prompt title"
+    },
+    "Draft" : {
+      "comment" : "The draft modifier beside the status chip"
+    },
+    "Edit Tags…" : {
+      "comment" : "Row context menu"
+    },
+    "Every" : {
+      "comment" : "Reminder interval"
+    },
+    "Filter to %@" : {
+      "comment" : "Row context menu"
+    },
+    "From" : {
+      "comment" : "Quiet hours start"
+    },
+    "General" : {
+      "comment" : "Settings tab"
+    },
+    "GitHub CLI" : {
+      "comment" : "Account setting"
+    },
+    "GitHub CLI not found" : {
+      "comment" : "Full screen title\nStatus item tooltip reason"
+    },
+    "GitHub CLI not signed in" : {
+      "comment" : "Status item tooltip reason"
+    },
+    "GitHub CLI token is missing scopes" : {
+      "comment" : "Status item tooltip reason"
+    },
+    "GitHub refused the download." : {
+      "comment" : "Update error reason"
+    },
+    "GitHub refused the request. Check that gh is signed in." : {
+      "comment" : "Update error"
+    },
+    "Granted" : {
+      "comment" : "Scope state"
+    },
+    "Ignore" : {
+      "comment" : "Row context menu"
+    },
+    "Ignored" : {
+      "comment" : "Section header"
+    },
+    "Install and Relaunch" : {
+      "comment" : "Update prompt button"
+    },
+    "Install updates automatically" : {
+      "comment" : "Updates setting"
+    },
+    "Installing" : {
+      "comment" : "Update prompt state\nUpdate status"
+    },
+    "Involved" : {
+      "comment" : "Section header"
+    },
+    "Last checked" : {
+      "comment" : "Updates setting"
+    },
+    "Last update failed at %@" : {
+      "comment" : "Status item tooltip"
+    },
+    "Later" : {
+      "comment" : "Update prompt button"
+    },
+    "Loading pull requests" : {
+      "comment" : "Status item tooltip"
+    },
+    "Loading pull requests…" : {
+      "comment" : "First poll of a launch with no cache"
+    },
+    "Menu bar count" : {
+      "comment" : "General settings section"
+    },
+    "Mine" : {
+      "comment" : "Section header"
+    },
+    "Missing" : {
+      "comment" : "Scope state"
+    },
+    "Mute Notifications" : {
+      "comment" : "Row context menu"
+    },
+    "Mute Reminders" : {
+      "comment" : "Notification action\nRow context menu"
+    },
+    "Muted" : {
+      "comment" : "VoiceOver label of the muted marker"
+    },
+    "Muted." : {
+      "comment" : "VoiceOver: muted"
+    },
+    "New activity." : {
+      "comment" : "VoiceOver: marked row"
+    },
+    "No open pull requests of yours in the watched repositories." : {
+      "comment" : "Empty state"
+    },
+    "No pull requests tagged %@." : {
+      "comment" : "Empty tag filter"
+    },
+    "No release notes" : {
+      "comment" : "What's New empty"
+    },
+    "No repositories selected." : {
+      "comment" : "Empty state in only mode"
+    },
+    "No reviewers" : {
+      "comment" : "Status chip"
+    },
+    "No reviews waiting on you." : {
+      "comment" : "Empty state"
+    },
+    "Not Now" : {
+      "comment" : "Launch at login banner button"
+    },
+    "Not asked" : {
+      "comment" : "Notification permission state"
+    },
+    "Not checked yet" : {
+      "comment" : "Update status"
+    },
+    "Not found" : {
+      "comment" : "gh location"
+    },
+    "Not found, or you don't have access" : {
+      "comment" : "Repository picker"
+    },
+    "Nothing needs you" : {
+      "comment" : "Status item tooltip"
+    },
+    "Nothing you commented on or reviewed in the last 30 days." : {
+      "comment" : "Empty state"
+    },
+    "Notifications" : {
+      "comment" : "Settings tab"
+    },
+    "Notifications are off for Docket." : {
+      "comment" : "Permission banner"
+    },
+    "Notify me about" : {
+      "comment" : "Notifications settings section"
+    },
+    "OK" : {
+      "comment" : "First-run banner button"
+    },
+    "Off in System Settings" : {
+      "comment" : "Notification permission state"
+    },
+    "Offline." : {
+      "comment" : "Offline banner without data"
+    },
+    "Offline. Showing data from %@" : {
+      "comment" : "Status item tooltip"
+    },
+    "Offline. Showing data from %@." : {
+      "comment" : "Offline banner"
+    },
+    "Only these repositories" : {
+      "comment" : "Selection mode"
+    },
+    "Open" : {
+      "comment" : "Notification action"
+    },
+    "Open Docket" : {
+      "comment" : "Notification action"
+    },
+    "Open Docket at login?" : {
+      "comment" : "Launch at login banner"
+    },
+    "Open System Settings" : {
+      "comment" : "Notification permission button\nPermission banner button"
+    },
+    "Open at login" : {
+      "comment" : "General setting"
+    },
+    "Open for %@" : {
+      "comment" : "VoiceOver: age"
+    },
+    "Open in Browser" : {
+      "comment" : "Row context menu"
+    },
+    "Organizations needing SAML authorization" : {
+      "comment" : "Account settings section"
+    },
+    "Paused by GitHub's rate limit until %@" : {
+      "comment" : "Status item tooltip"
+    },
+    "Paused by GitHub's rate limit until %@." : {
+      "comment" : "Rate-limit banner"
+    },
+    "Permission" : {
+      "comment" : "Notifications setting"
+    },
+    "Poll interval" : {
+      "comment" : "General settings section"
+    },
+    "Quiet hours" : {
+      "comment" : "Reminders setting"
+    },
+    "Quit Docket" : {
+      "comment" : "Gear menu\nStatus item menu"
+    },
+    "Ready" : {
+      "comment" : "Secondary status chip in Review requested"
+    },
+    "Ready to merge" : {
+      "comment" : "Status chip"
+    },
+    "Refresh" : {
+      "comment" : "Refresh button\nStatus item menu"
+    },
+    "Remind me about pending reviews" : {
+      "comment" : "Reminders setting"
+    },
+    "Reminders" : {
+      "comment" : "Notifications settings section"
+    },
+    "Reminders pause in this window. Other notifications follow Focus." : {
+      "comment" : "Quiet hours caption"
+    },
+    "Remove" : {
+      "comment" : "Repositories list button"
+    },
+    "Remove %@" : {
+      "comment" : "Tag editor: remove a tag"
+    },
+    "Remove bot" : {
+      "comment" : "Bot allowlist button"
+    },
+    "Reply to your comment" : {
+      "comment" : "Notification kind"
+    },
+    "Repositories" : {
+      "comment" : "Settings tab"
+    },
+    "Requested from team %@." : {
+      "comment" : "VoiceOver: team"
+    },
+    "Review on your pull request" : {
+      "comment" : "Notification kind"
+    },
+    "Review requested" : {
+      "comment" : "Notification kind\nSection header"
+    },
+    "Review requested by %@" : {
+      "comment" : "One review request"
+    },
+    "Reviewers: %@." : {
+      "comment" : "VoiceOver: reviewers"
+    },
+    "Run this in Terminal and follow the prompts." : {
+      "comment" : "Full screen body"
+    },
+    "Saved as %@" : {
+      "comment" : "Tag editor: normalization feedback"
+    },
+    "Scopes" : {
+      "comment" : "Account settings section"
+    },
+    "Settings" : {
+      "comment" : "Gear menu button"
+    },
+    "Settings…" : {
+      "comment" : "Gear menu\nStatus item menu"
+    },
+    "Show Data Folder" : {
+      "comment" : "About button"
+    },
+    "Sign in to the GitHub CLI" : {
+      "comment" : "Full screen title"
+    },
+    "Signed in as" : {
+      "comment" : "Account setting"
+    },
+    "Skip This Version" : {
+      "comment" : "Update prompt button"
+    },
+    "Software Update" : {
+      "comment" : "Window title"
+    },
+    "Status" : {
+      "comment" : "Updates setting"
+    },
+    "Stop Ignoring" : {
+      "comment" : "Row context menu"
+    },
+    "Suggestions" : {
+      "comment" : "Tag editor section"
+    },
+    "Tags are up to 24 characters" : {
+      "comment" : "Tag rejected"
+    },
+    "Tags use letters, digits and hyphens" : {
+      "comment" : "Tag rejected"
+    },
+    "Tags: %@." : {
+      "comment" : "VoiceOver: tags"
+    },
+    "The GitHub CLI token is missing %@" : {
+      "comment" : "Full screen title"
+    },
+    "The pull requests waiting on you, from the menu bar." : {
+      "comment" : "About: tagline"
+    },
+    "The update could not be installed: %@" : {
+      "comment" : "Update error"
+    },
+    "This build has no update key, so updates cannot be verified." : {
+      "comment" : "Update error"
+    },
+    "To" : {
+      "comment" : "Quiet hours end"
+    },
+    "Try Again" : {
+      "comment" : "Failed poll banner button\nFull screen button"
+    },
+    "Turn On" : {
+      "comment" : "Launch at login banner button"
+    },
+    "Type a tag" : {
+      "comment" : "Tag rejected: empty"
+    },
+    "Up to 5 tags per pull request" : {
+      "comment" : "Tag rejected"
+    },
+    "Up to date" : {
+      "comment" : "Update status"
+    },
+    "Updated %lld min ago" : {
+      "comment" : "Header when the list is older than two poll intervals"
+    },
+    "Updates" : {
+      "comment" : "Settings tab"
+    },
+    "Updating…" : {
+      "comment" : "Header while a poll runs"
+    },
+    "Use Default" : {
+      "comment" : "Account setting button"
+    },
+    "Version %@" : {
+      "comment" : "About: version and build\nChangelog entry title"
+    },
+    "Version %@ available" : {
+      "comment" : "Update status"
+    },
+    "Waiting for review" : {
+      "comment" : "Status chip"
+    },
+    "Waiting for review for %@" : {
+      "comment" : "VoiceOver: waited time"
+    },
+    "Watching from now on. What was already waiting is listed but did not notify." : {
+      "comment" : "First-run banner"
+    },
+    "What's New" : {
+      "comment" : "About button\nUpdates button\nWindow title"
+    },
+    "What's New in Docket" : {
+      "comment" : "What's New window title"
+    },
+    "While you were in Focus" : {
+      "comment" : "The Focus digest"
+    },
+    "You have %@." : {
+      "comment" : "Update prompt: the running version"
+    },
+    "Your review is still waiting" : {
+      "comment" : "One reminder"
+    },
+    "Yours count when they have a conflict, failing checks, requested changes, or are ready to merge." : {
+      "comment" : "Menu bar count caption"
+    },
+    "ageing" : {
+      "comment" : "VoiceOver: over 3 days"
+    },
+    "and %lld more" : {
+      "comment" : "Last body line of a long group"
+    },
+    "by @%@" : {
+      "comment" : "Reminder requester\nThe author of a pull request in Involved\nThe author of a pull request in Review requested"
+    },
+    "copilot-pull-request-reviewer" : {
+      "comment" : "Bot allowlist placeholder"
+    },
+    "draft" : {
+      "comment" : "VoiceOver: draft modifier"
+    },
+    "github.com/eliasjnior/docket" : {
+      "comment" : "About: repository link"
+    },
+    "it needs macOS %@ or later." : {
+      "comment" : "Update error reason"
+    },
+    "owner/name or organization" : {
+      "comment" : "Repository picker field"
+    },
+    "re-requested" : {
+      "comment" : "After a reviewer asked to review again"
+    },
+    "requested %@ ago" : {
+      "comment" : "Reminder"
+    },
+    "stale" : {
+      "comment" : "VoiceOver: over 7 days"
+    },
+    "the download is incomplete." : {
+      "comment" : "Update error reason"
+    },
+    "the download's signature is invalid." : {
+      "comment" : "Update error reason"
+    },
+    "the new app is not signed by Docket." : {
+      "comment" : "Update error reason"
+    },
+    "the release has no %@." : {
+      "comment" : "Update error reason"
+    },
+    "via %@" : {
+      "comment" : "A review request through a team\nTeam request"
+    },
+    "via a team" : {
+      "comment" : "A review request through a team Docket cannot name"
+    },
+    "waited" : {
+      "comment" : "Before the waited time of a review request"
+    }
+  },
+  "version" : "1.0"
+}
