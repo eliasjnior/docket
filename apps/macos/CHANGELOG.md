@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/eliasjnior/docket/compare/macos-v1.0.0...macos-v1.1.0) (2026-10-21)
+
+
+### New
+
+* **macos:** hold notifications during a Focus and deliver a digest ([#36](https://github.com/eliasjnior/docket/issues/36)) ([c4c4970](https://github.com/eliasjnior/docket/commit/c4c4970b2271b0d7e28056241297b1c525f0e333))
+* **macos:** navigate the popover by keyboard, open it with a shortcut, export settings ([#38](https://github.com/eliasjnior/docket/issues/38)) ([fc34344](https://github.com/eliasjnior/docket/commit/fc343441fa6233ea794afcdd2bc57695d596841b))
+
 ## [1.0.0](https://github.com/eliasjnior/docket/compare/macos-v0.2.0...macos-v1.0.0) (2026-10-21)
 
 
