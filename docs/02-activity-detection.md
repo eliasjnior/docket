@@ -310,9 +310,9 @@ in a row to catch up on time Docket missed asleep, closed or inside quiet hours.
 
 | Situation | Record |
 |---|---|
-| `requestedAt` differs from the record's — a re-request after you reviewed | Replaced: `requestedAt` is the new one, `lastRemindedAt = null` |
+| `requestedAt` differs from the record's — a re-request after you reviewed — and its event is not visible | Replaced: `requestedAt` is the new one, `lastRemindedAt = null` |
 | Created on the fresh-install baseline (D-19), or for a request older than the poll that first sees it — the repository was just included again, the team membership was just learned | `lastRemindedAt = now`, nothing delivered: the first reminder is one interval away, so neither launching nor changing the selection produces a burst |
-| Created for a request whose `ReviewRequestedEvent` is new in this poll (§5.1) | `lastRemindedAt = null`: the `reviewRequested` event notifies now, the reminder one interval later |
+| Created or replaced for a request whose `ReviewRequestedEvent` is new in this poll (§5.1) | `lastRemindedAt = now`: the `reviewRequested` event notifies now and counts as the first notice, so the reminder is one interval later even when the request was made while Docket was closed |
 | The pull request stops being pending | Deleted |
 | `interval` changed in settings | Nothing: the next due time is recomputed from the record with the new interval, so shortening it can make a reminder due at the next poll — one, not one per missed interval |
 
@@ -554,7 +554,7 @@ Reminders, with `interval` 60 min unless stated, and `t₀` the time `ana` reque
 | 19 | Polls every minute from `t₀` to `t₀ + 3 h 30 min`; you never review | `reviewRequested` at `t₀`; reminders at `t₀ + 1 h`, `+ 2 h`, `+ 3 h` | §5.7: each reminder anchors on the previous one |
 | 20 | Mac asleep from `t₀ + 10 min` to `t₀ + 5 h` | 1 reminder at wake, the next at wake `+ 1 h` | §5.7: never a catch-up burst. The naive answer is 4 reminders at wake, or 1 grouped "4 reminders" |
 | 21 | You approve at `t₀ + 40 min` | No reminder | The review ends the role, so the pull request is not pending |
-| 22 | You reviewed at `t₀ + 40 min`; `ana` re-requests at `t₀ + 2 h` | `reviewRequested` at `t₀ + 2 h`; the reminder at `t₀ + 3 h`, not at `t₀ + 2 h` | The record is replaced with the new `requestedAt` and `lastRemindedAt = null`. The naive answer reminds at once, because the first request is more than an hour old |
+| 22 | You reviewed at `t₀ + 40 min`; `ana` re-requests at `t₀ + 2 h` | `reviewRequested` at `t₀ + 2 h`; the reminder at `t₀ + 3 h`, not at `t₀ + 2 h` | The record is replaced with the new `requestedAt`, anchored on the re-request's notification. The naive answer reminds at once, because the first request is more than an hour old |
 | 23 | Quiet hours `22:00`–`08:00`; `t₀` = 21:30; Mac awake all night | 0 reminders until 08:00; 1 at the first poll after 08:00; the next at 09:00 | §5.7: the window crosses midnight; a reminder due inside it waits for the end, and only one comes |
 | 24 | Fresh install at `t₀ + 3 h` | 0 notifications; the first reminder at install `+ 1 h` | D-19 extended to reminders by the record's seeding |
 | 25 | `acme/api#482` muted with scope `reminders`; at `t₀ + 2 h`, `ana` comments in a thread you started | 1 `threadReply`; no reminders | §5.7: scope `reminders` stops reminders only |
