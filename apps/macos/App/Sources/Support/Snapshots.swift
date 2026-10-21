@@ -1,0 +1,170 @@
+import AppKit
+import DocketActivity
+import DocketCore
+import DocketStores
+import SwiftUI
+
+/// `Docket --snapshot <directory>` renders views with synthetic data to PNG, light and dark, then exits
+/// (`docs/03-architecture.md` §8), so a view can be checked without screen capture.
+@MainActor
+enum Snapshots {
+    static func runIfRequested() {
+        let arguments = CommandLine.arguments
+        guard let flag = arguments.firstIndex(of: "--snapshot"), arguments.indices.contains(flag + 1) else { return }
+        let directory = URL(fileURLWithPath: arguments[flag + 1])
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let scenarios = [
+            Scenario(name: "popover", account: .ready, cache: SampleData.cache),
+            Scenario(name: "popover-offline", account: .ready, problem: .offline, cache: SampleData.cache),
+            Scenario(
+                name: "popover-empty", account: .ready,
+                cache: SnapshotCache(fetchedAt: SampleData.now, viewerLogin: "you")),
+            Scenario(name: "gh-not-found", account: .ghNotFound),
+            Scenario(name: "signed-out", account: .signedOut),
+            Scenario(name: "missing-scopes", account: .missingScopes(["read:org"])),
+            Scenario(name: "loading", account: .loading),
+        ]
+        for appearance in [NSAppearance.Name.aqua, .darkAqua] {
+            let suffix = appearance == .aqua ? "light" : "dark"
+            for scenario in scenarios {
+                let watch = SampleData.watch(
+                    account: scenario.account, problem: scenario.problem, cache: scenario.cache)
+                let model = PopoverModel()
+                model.expanded = [.reviewRequested, .mine, .involved, .ignored]
+                render(
+                    PopoverView(watch: watch, model: model, actions: SampleData.actions),
+                    appearance: appearance, to: directory, name: "\(scenario.name)-\(suffix)")
+            }
+        }
+        exit(0)
+    }
+
+    private struct Scenario {
+        var name: String
+        var account: AccountState
+        var problem: PollProblem?
+        var cache: SnapshotCache?
+    }
+
+    static func render(_ view: some View, appearance: NSAppearance.Name, to directory: URL, name: String) {
+        let hosting = NSHostingView(rootView: view.background(Color(nsColor: .windowBackgroundColor)))
+        hosting.appearance = NSAppearance(named: appearance)
+        hosting.frame.size = hosting.fittingSize
+        hosting.layoutSubtreeIfNeeded()
+        guard let rep = hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds) else { return }
+        hosting.cacheDisplay(in: hosting.bounds, to: rep)
+        try? rep.representation(using: .png, properties: [:])?.write(to: directory.appending(path: "\(name).png"))
+    }
+}
+
+/// Synthetic pull requests for snapshots: `acme/api`, `ana`, `bruno`, `carla`, `dave`, `you`.
+@MainActor
+enum SampleData {
+    static let now = Date()
+
+    static func url(_ path: String) -> URL { URL(string: "https://github.com/\(path)") ?? URL(fileURLWithPath: "/") }
+
+    /// `ref` is `owner/name#number`, and doubles as the node ID.
+    static func pullRequest(
+        _ ref: String, _ title: String, author: String, days: Double, _ change: (inout PullRequest) -> Void = { _ in }
+    ) -> PullRequest {
+        let parts = ref.split(separator: "#")
+        let repository = String(parts.first ?? "")
+        let number = Int(parts.last ?? "") ?? 0
+        var pullRequest = PullRequest(
+            id: ref, number: number, title: title, url: url("\(repository)/pull/\(number)"),
+            createdAt: now.addingTimeInterval(-days * 86400), updatedAt: now.addingTimeInterval(-3600),
+            author: Actor(login: author), repository: repository)
+        change(&pullRequest)
+        return pullRequest
+    }
+
+    static var cache: SnapshotCache {
+        let team = Reviewer.team(organization: "acme", slug: "frontend")
+        let you = Reviewer.user(login: "you")
+        let entries = [
+            CachedPullRequest(
+                pullRequest: pullRequest(
+                    "acme/api#482", "Fix login redirect loop after the SSO session expires", author: "ana", days: 4
+                ) {
+                    $0.reviewRequests = [you]
+                },
+                role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 4), requestedBy: "ana")),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/api#490", "Rate-limit the export endpoint", author: "bruno", days: 1) {
+                    $0.checks = .pending
+                    $0.reviewRequests = [you]
+                },
+                role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 0.08), requestedBy: "bruno")),
+            CachedPullRequest(
+                pullRequest: pullRequest(
+                    "acme/web#88", "Move checkout to the new payments client", author: "carla", days: 12
+                ) {
+                    $0.reviewDecision = .approved
+                    $0.checks = .success
+                    $0.reviewRequests = [team]
+                },
+                role: .reviewRequested,
+                request: RequestInfo(requestedAt: ago(days: 9), requestedBy: "carla", team: team)),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/api#470", "Cache the account lookup", author: "you", days: 4) {
+                    $0.mergeable = .conflicting
+                    $0.isDraft = true
+                    $0.reviewRequests = [.user(login: "ana")]
+                    $0.latestReviews = [LatestReview(login: "bruno", state: .approved)]
+                },
+                role: .authored),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/web#91", "Drop the legacy feature flags", author: "you", days: 0.2) {
+                    $0.reviewDecision = .approved
+                    $0.checks = .success
+                },
+                role: .authored, commenters: ["dave"]),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/api#475", "Retry webhooks with backoff", author: "you", days: 9) {
+                    $0.reviewDecision = .changesRequested
+                    $0.latestReviews = [LatestReview(login: "carla", state: .changesRequested)]
+                },
+                role: .authored),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/infra#12", "Bump the base image", author: "dave", days: 2) {
+                    $0.reviewRequests = [.user(login: "carla")]
+                },
+                role: .involved),
+        ]
+        return SnapshotCache(fetchedAt: now, viewerLogin: "you", pullRequests: entries)
+    }
+
+    static func ago(days: Double) -> Date { now.addingTimeInterval(-days * 86400) }
+
+    static func watch(account: AccountState, problem: PollProblem?, cache: SnapshotCache?) -> WatchStore {
+        var config = Config()
+        config.tags["acme/api#470"] = Config.TagEntry(ref: "acme/api#470", tags: ["wip"], updatedAt: now)
+        config.tags["acme/web#88"] = Config.TagEntry(ref: "acme/web#88", tags: ["after"], updatedAt: now)
+        config.mutes["acme/api#490"] = Config.MuteEntry(ref: "acme/api#490", scope: .all, mutedAt: now)
+        let store = WatchStore(configStore: ConfigStore(storage: NoStorage(), initial: config))
+        store.apply(
+            WatchSnapshot(
+                cache: cache,
+                state: PersistedState(
+                    viewerLogin: "you", baselineAt: now, marked: ["acme/api#482", "acme/infra#12"],
+                    baselineNoticeDismissed: true),
+                account: account, problem: problem))
+        return store
+    }
+
+    static var actions: PopoverActions {
+        let row = RowActions(
+            open: { _ in }, copy: { _ in }, filterRepository: { _ in }, filterTag: { _ in }, editTags: { _ in },
+            setMute: { _, _ in }, setIgnored: { _, _ in })
+        return PopoverActions(
+            refresh: {}, openSettings: {}, checkForUpdates: {}, quit: {}, retry: {}, chooseGhLocation: {},
+            dismissBaselineNotice: {}, close: {}, row: row)
+    }
+}
+
+/// Snapshots never touch the disk.
+private struct NoStorage: ConfigStoring {
+    func loadConfig() async throws -> Config { Config() }
+    func saveConfig(_ config: Config) async throws {}
+}
