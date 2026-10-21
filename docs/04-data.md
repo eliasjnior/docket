@@ -148,6 +148,7 @@ Written by every poll that reaches step 8 of `02-activity-detection.md` §1, and
 | `leftAt` | timestamp \| null | Set when it leaves the watch set; cleared if it returns |
 | `seen` | `[String]` | At most 500 IDs, oldest dropped first |
 | `lastMergeable` | `"MERGEABLE"` \| `"CONFLICTING"` \| null | `02` §3.1 |
+| `notifiedFailingHead` | String \| null | The head commit whose failing checks were last notified (FR-61); absent in files written before 1.1 and read as `null` |
 
 **Event IDs** are derived, not GitHub's: `<kind>:<item node ID>` for single items, so the ledger
 key of `@ana approved` is `reviewSubmitted:PRR_kw…`. A folded event uses the ID of the item that
@@ -209,7 +210,7 @@ your selection and tags, nothing else.
 | Not stored | Why |
 |---|---|
 | **The token** | Read from `gh` at launch and on `401` (D-02). A second copy would be a second thing to revoke and a second place to leak from |
-| **Comment and review bodies** | The notification is a pointer to the conversation, not a copy of it. Review `body` is read only to test emptiness (`02` §5.5) and discarded. The P1 `mention` kind (FR-64) will read comment bodies only to search for `@<login>`, and discard them the same way |
+| **Comment and review bodies** | The notification is a pointer to the conversation, not a copy of it. Review `body` is read only to test emptiness (`02` §5.5) and discarded; comment and review text is read only to extract the logins it mentions (`02` §5.3 `mention`), and discarded the same way |
 | **Diffs, file names, code** | Docket does not read them at all (`01-product.md` §6) |
 | **Notification history** | Only event IDs for deduplication. A history would be a second inbox, which is what Docket replaces |
 | **Avatars** | Logins are shown as text (`05-design.md`). Avatars would add an image host, a cache and colleagues' faces on disk for no decision they change |
