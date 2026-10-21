@@ -591,6 +591,12 @@ the ruleset on GitHub refuses it (D-13).
 Two workflows, plus `.github/dependabot.yml` proposing npm and Actions updates as ordinary pull
 requests through the loop. Neither workflow runs Swift on a pull request (D-12).
 
+**Dependabot pull requests are retitled before they merge.** Its titles start the subject with a
+capital (`chore(deps): Bump …`), which §4 rejects, so the agent edits the title to lower case, runs
+`scripts/ci.sh` on the checked-out branch, and merges. The branch's own commits fail `commit
+messages` and are expected to: squash merge replaces them with the title, which is what `pr-title`
+checks. Every other job must be green.
+
 ### 9.1 `pr` — the pull request title and secrets
 
 ```yaml
