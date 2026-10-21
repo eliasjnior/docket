@@ -113,11 +113,11 @@ struct WatchTests {
             mine("M3", .conflict, ageDays: 3), involved("V1", updated: 5), involved("V2", updated: 1), ignored,
         ]
         let sections = Sections(items)
-        #expect(sections.reviewRequested.map(\.repository) == ["acme/api", "acme/web"])
-        #expect(sections.reviewRequested[0].items.map(\.id) == ["R3", "R2"])
-        #expect(sections.reviewRequested[1].items.map(\.id) == ["R1", "R4"])
+        #expect(sections.reviewRequested.map(\.repository) == ["acme/web", "acme/api"])
+        #expect(sections.reviewRequested[0].items.map(\.id) == ["R4", "R1"])
+        #expect(sections.reviewRequested[1].items.map(\.id) == ["R2", "R3"])
         #expect(sections.reviewRequestedCount == 4)
-        #expect(sections.mine.map(\.id) == ["M3", "M2", "M1"])
+        #expect(sections.mine.map(\.id) == ["M2", "M3", "M1"])
         #expect(sections.involved.map(\.id) == ["V2", "V1"])
         #expect(sections.ignored.map(\.id) == ["I1"])
 

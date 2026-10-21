@@ -1,3 +1,4 @@
+import AppKit
 import DocketActivity
 import DocketCore
 import SwiftUI
@@ -42,14 +43,28 @@ struct TagChip: View {
     var action: (() -> Void)?
 
     var body: some View {
+        let color = Self.color(for: tag)
         Text(verbatim: tag)
-            .font(.subheadline)
-            .foregroundStyle(Color.textSecondary)
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(color)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(Capsule().fill(Color.fillTag))
+            .background(Capsule().fill(color.opacity(0.18)))
             .fixedSize()
             .onTapGesture { action?() }
+    }
+
+    /// One colour per tag name, stable across launches. Red, orange and green are left to status.
+    static func color(for tag: String) -> Color {
+        let palette: [NSColor] = [
+            .systemBlue, .systemPurple, .systemPink, .systemTeal, .systemIndigo, .systemCyan, .systemBrown, .systemMint,
+        ]
+        // FNV-1a: `hashValue` changes between launches.
+        var hash: UInt64 = 14_695_981_039_346_656_037
+        for byte in tag.utf8 {
+            hash = (hash ^ UInt64(byte)) &* 1_099_511_628_211
+        }
+        return Color(nsColor: palette[Int(hash % UInt64(palette.count))])
     }
 }
 

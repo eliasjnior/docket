@@ -15,12 +15,8 @@ final class PopoverModel {
 
     var tagFilter: String?
     var repositoryFilter: String?
-    var expanded: Set<Section> = [.reviewRequested, .mine]
+    var tab: Section = .reviewRequested
     var editingTags: WatchedPullRequest?
-
-    func toggle(_ section: Section) {
-        if expanded.contains(section) { expanded.remove(section) } else { expanded.insert(section) }
-    }
 
     /// `Escape`: the filter first, then the popover (`docs/05-design.md` §11).
     func clearFilter() -> Bool {

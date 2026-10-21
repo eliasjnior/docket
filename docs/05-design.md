@@ -109,22 +109,21 @@ opening the popover.
 
 ```
 ┌──────────────────────────────────────────────────── 380 pt ┐
-│  Docket                       [ All tags ⌄ ]    ⟳     ⚙    │  header, 40 pt
+│  Docket                                         ⟳     ⚙    │  header
+│  [ All repositories ⌄ ]  [ All tags ⌄ ]                     │  filters
 │  Updated 12 min ago                                         │  only when stale (FR-44)
 │  [ acme/api  ✕ ]                                            │  only when filtered (FR-59)
 ├─────────────────────────────────────────────────────────────┤
 │  ⚠  acme requires SAML authorization.        [Authorize]   │  banners, §7.2
 ├─────────────────────────────────────────────────────────────┤
-│  ⌄ Review requested                                    4    │  section header
+│  (Review requested 4 ●)  Mine 5   Involved 8 ●   Ignored 1  │  tabs; ● = marked rows inside
+├─────────────────────────────────────────────────────────────┤
 │     acme/api                                           3    │  repository group header
 │     ● row                                                   │
-│     row                                                     │
+│     ─────────────────────────────────────────────           │  separator between rows
 │     row                                                     │
 │     acme/web                                           1    │
 │     row                                                     │
-│  ⌄ Mine                                                5    │
-│     row …                                                   │
-│  › Involved                                            8 ●  │  collapsed; ● = marked rows inside
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -135,23 +134,26 @@ menu of `Settings…`, `Check for Updates…` and `Quit Docket`. The line `Updat
 only when the snapshot is older than two poll intervals (FR-44), in `.subheadline` and
 `text.secondary`; while a poll runs it reads `Updating…` instead.
 
-**Repository filter.** A click on a grouped notification opens the popover filtered to its
-repository (FR-59). The filter shows as a removable token under the header; `Escape` or its `✕`
-clears it. The tag filter and the repository filter combine.
+**Filters.** A second header line holds two borderless pop-ups: the repository, listing the
+repositories in the list with their row counts, most rows first, and the tag. A click on a grouped
+notification opens the popover with the repository filter set (FR-59); `Escape` clears the
+repository filter, then the tag filter. The two combine (FR-82).
 
 ### 5.3 Sections and order
 
-The three role sections are always present, so the layout does not shift between polls; a fourth,
-**Ignored**, follows them only while something is ignored. A section header
-is `.subheadline` semibold in `text.secondary` with a disclosure chevron and the number of rows on
-the right. The expanded state of each section is kept for the life of the process, not stored.
+The sections are **tabs** under the filters, so a long list of one role never pushes the others off
+screen: *Review requested*, *Mine* and *Involved* always, and **Ignored** only while something is
+ignored. Each tab shows its row count and the marked dot when a row inside is marked, so a reply in
+another tab is not missed. The selected tab is kept for the life of the process, not stored, and
+opens on *Review requested*. Rows are separated by a hairline inset to the text. The user chose
+tabs over collapsible sections and newest-first over oldest-first after using 0.2.0.
 
 | Section | Contains (role, `02` §2.2) | Default | Order |
 |---|---|---|---|
-| **Review requested** | `reviewRequested` | Expanded | Grouped by repository. Groups ordered by their oldest waiting request, oldest first; rows inside a group by waited time, longest first. Ties by `owner/name`, then `#number` |
-| **Mine** | `authored` | Expanded | By status in the precedence order of `02-activity-detection.md` §3.2 — `conflict` first, `noReviewers` last — then by age, oldest first. A draft sorts with its status (FR-31) |
-| **Involved** | `involved` | Collapsed (FR-41) | By `updatedAt`, most recent first |
-| **Ignored** | Any role, ignored (FR-49) | Collapsed | By `ignoredAt`, most recent first. Rows in `text.secondary`, no marked dot, no status colour: nothing here asks for attention |
+| **Review requested** | `reviewRequested` | The default tab | Grouped by repository. Groups ordered by their newest request, newest first; rows inside a group by request time, newest first. Ties by `owner/name`, then `#number` |
+| **Mine** | `authored` | Tab | By status in the precedence order of `02-activity-detection.md` §3.2 — `conflict` first, `noReviewers` last — then newest first. A draft sorts with its status (FR-31) |
+| **Involved** | `involved` | Tab (FR-41) | By `updatedAt`, most recent first |
+| **Ignored** | Any role, ignored (FR-49) | Tab, only while something is ignored | By `ignoredAt`, most recent first. Rows in `text.secondary`, no marked dot, no status colour: nothing here asks for attention |
 
 A repository group header reads `acme/api` in `.subheadline` with its row count on the right. Only
 *Review requested* is grouped: it is the section the reviewer batches per codebase (`01-product.md`
@@ -160,8 +162,8 @@ A repository group header reads `acme/api` in `.subheadline` with its row count 
 When a section holds more than its search returned, its last line reads `+N not shown`
 (`02-activity-detection.md` §2.1) in `text.tertiary`.
 
-A collapsed section whose rows include a marked one (FR-46) shows the marked dot after its count,
-so collapsing *Involved* cannot hide a reply.
+A tab whose rows include a marked one (FR-46) shows the marked dot after its count, so a reply in
+*Involved* is visible from *Review requested*.
 
 ## 6. The row
 
@@ -249,9 +251,11 @@ because they need different actions.
 
 ### 6.4 Tag chips
 
-`wip` in `.subheadline`, `text.secondary`, on a capsule of `fill.tag`, 6 pt × 2 pt padding. No
-colour per tag: a colour would be a second, unwritten meaning that the user would have to remember.
-A tag chip is clickable and sets the popover's tag filter to it.
+`wip` in `.subheadline` medium, in the tag's colour, on a capsule of the same colour at 18% opacity,
+6 pt × 2 pt padding. The colour comes from the tag's name (an FNV-1a hash into blue, purple, pink,
+teal, indigo, cyan, brown and mint), so a tag keeps its colour across launches and pull requests;
+red, orange and green are left to status. A first version had no colour per tag, and tags were hard
+to spot among many pull requests. A tag chip is clickable and sets the popover's tag filter to it.
 
 ### 6.5 Context menu
 

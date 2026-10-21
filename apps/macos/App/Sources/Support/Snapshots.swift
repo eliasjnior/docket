@@ -15,6 +15,8 @@ enum Snapshots {
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let scenarios = [
             Scenario(name: "popover", account: .ready, cache: SampleData.cache),
+            Scenario(name: "popover-mine", account: .ready, cache: SampleData.cache, tab: .mine),
+            Scenario(name: "popover-involved", account: .ready, cache: SampleData.cache, tab: .involved),
             Scenario(name: "popover-offline", account: .ready, problem: .offline, cache: SampleData.cache),
             Scenario(
                 name: "popover-empty", account: .ready,
@@ -30,7 +32,7 @@ enum Snapshots {
                 let watch = SampleData.watch(
                     account: scenario.account, problem: scenario.problem, cache: scenario.cache)
                 let model = PopoverModel()
-                model.expanded = [.reviewRequested, .mine, .involved, .ignored]
+                model.tab = scenario.tab
                 render(
                     PopoverView(
                         watch: watch, model: model, permission: NotificationPermission(), actions: SampleData.actions),
@@ -72,6 +74,7 @@ enum Snapshots {
         var account: AccountState
         var problem: PollProblem?
         var cache: SnapshotCache?
+        var tab: PopoverModel.Section = .reviewRequested
     }
 
     static func render(_ view: some View, appearance: NSAppearance.Name, to directory: URL, name: String) {
