@@ -190,7 +190,7 @@ enum SampleData {
             setMute: { _, _ in }, setIgnored: { _, _ in })
         return PopoverActions(
             refresh: {}, openSettings: {}, checkForUpdates: {}, quit: {}, retry: {}, chooseGhLocation: {},
-            launchAtLogin: { _ in },
+            launchAtLogin: { _ in }, deliverHeld: {},
             dismissBaselineNotice: {}, close: {}, row: row)
     }
 }

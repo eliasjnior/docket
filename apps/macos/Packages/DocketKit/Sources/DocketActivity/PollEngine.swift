@@ -43,6 +43,7 @@ public enum PollEngine {
         }
         run.keepFailed()
         run.markLeft()
+        run.endStaleHold()
         if run.isBaseline { run.state.baselineAt = input.now }
         let notifications = run.compose()
         let cache = SnapshotCache(
@@ -181,6 +182,30 @@ struct PollRun {
     }
 
     static let ledgerRetention: TimeInterval = 14 * 86400
+    static let holdLimit: TimeInterval = 12 * 3600
+
+    /// A hold that started 12 hours ago ends by itself: macOS may never say the Focus ended (§7.5).
+    mutating func endStaleHold() {
+        if let hold = state.focusHold, input.now.timeIntervalSince(hold.since) >= Self.holdLimit {
+            state.focusHold = nil
+        }
+    }
+
+    /// Once the hold is over: one digest per repository, dropping pull requests muted, ignored or gone.
+    private mutating func digest() -> [PlannedNotification] {
+        guard !state.held.isEmpty else { return [] }
+        let config = input.config
+        let kept = state.held.filter { held in
+            watchedIDs.contains(held.nodeID) && config.ignored[held.nodeID] == nil
+                && config.mutes[held.nodeID]?.scope != .all
+        }
+        state.held = []
+        let byRepository = Dictionary(grouping: kept) { $0.repository.lowercased() }
+        return byRepository.values.compactMap { events in
+            guard let first = events.first else { return nil }
+            return PlannedNotification(repository: first.repository, content: .digest(events.sorted { $0.at < $1.at }))
+        }
+    }
 
     /// Filter, fold, the ledger, marks, the per-kind switches, then groups and the cap (§5.4–§7.3).
     mutating func compose() -> [PlannedNotification] {
@@ -197,12 +222,20 @@ struct PollRun {
             context: Reminders.Context(
                 now: now, timeZone: input.timeZone, config: input.config, isBaseline: isBaseline,
                 newlyRequested: newlyRequested, holding: state.focusHold != nil))
-        let notifications = Coalesce.capped(Coalesce.groups(events: enabled, reminders: reminders))
         for event in enabled {
             state.delivered[event.id] = now
         }
         state.delivered = state.delivered.filter { now.timeIntervalSince($0.value) <= Self.ledgerRetention }
-        return notifications
+        if state.focusHold != nil {
+            // Held, not delivered: the digest says it when the Focus ends (§7.5).
+            state.held.append(contentsOf: enabled.map(HeldEvent.init))
+            if state.held.count > PersistedState.heldLimit {
+                state.held.removeFirst(state.held.count - PersistedState.heldLimit)
+            }
+            return []
+        }
+        let digests = digest()
+        return Coalesce.capped(digests + Coalesce.groups(events: enabled, reminders: reminders))
     }
 
     mutating func markLeft() {

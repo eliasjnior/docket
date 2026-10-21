@@ -1,3 +1,4 @@
+import AppKit
 import DocketActivity
 import DocketCore
 import DocketStores
@@ -8,6 +9,7 @@ struct NotificationsSettingsView: View {
     let configStore: ConfigStore
     let permission: NotificationPermission
     let requestPermission: () -> Void
+    var holdSince: Date?
     @State private var newBot = ""
     @State private var selectedBot: String?
 
@@ -61,6 +63,18 @@ struct NotificationsSettingsView: View {
                     isOn: binding(\.notifications.mention))
             }
             RemindersSection(configStore: configStore)
+            Section(String(localized: "Focus", comment: "Notifications settings section")) {
+                HStack {
+                    Text("To hold notifications during a Focus, add Docket's filter to it.", comment: "Focus setting")
+                    Spacer()
+                    Button(String(localized: "Open Focus Settings", comment: "Focus setting button")) {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.Focus-Settings.extension") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                }
+                Text(verbatim: holdState).foregroundStyle(Color.textSecondary)
+            }
             Section {
                 List(selection: $selectedBot) {
                     ForEach(configStore.config.botAllowlist, id: \.self) { Text(verbatim: $0).tag($0) }
@@ -93,6 +107,13 @@ struct NotificationsSettingsView: View {
             }
         }
         .formStyle(.grouped)
+    }
+
+    private var holdState: String {
+        guard let holdSince else { return String(localized: "Not holding", comment: "Focus hold state") }
+        return String(
+            localized: "Holding since \(holdSince.formatted(date: .omitted, time: .shortened))",
+            comment: "Focus hold state")
     }
 
     private func addBot() {

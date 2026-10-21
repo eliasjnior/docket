@@ -29,6 +29,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         statusBar = makeStatusBar(environment)
         Task {
             await environment.start()
+            await FocusBridge.connect { hold in await environment.poller.setHold(hold) }
             environment.reconcileLoginItem()
             await environment.requestNotificationPermission()
             if let lastShown = await environment.takeLastShownVersion(), lastShown < environment.info.semanticVersion {
@@ -121,9 +122,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func popoverActions(_ environment: AppEnvironment) -> PopoverActions {
+        let row = rowActions(environment)
+        return PopoverActions(
+            refresh: { [weak self] in self?.refresh() },
+            openSettings: { [weak self] in self?.openSettings() },
+            checkForUpdates: { [weak self] in
+                self?.statusBar?.close()
+                Task {
+                    await environment.updates.check(userInitiated: true)
+                    self?.updateWindows?.showPrompt()
+                }
+            },
+            quit: { NSApp.terminate(nil) },
+            retry: { environment.retryAuthentication() },
+            chooseGhLocation: { [weak self] in self?.chooseGhLocation() },
+            launchAtLogin: { environment.setLaunchAtLogin($0) },
+            deliverHeld: { Task { await environment.poller.setHold(false) } },
+            dismissBaselineNotice: {
+                Task { await environment.poller.updateState { $0.baselineNoticeDismissed = true } }
+            },
+            close: { [weak self] in self?.statusBar?.close() },
+            row: row)
+    }
+
+    private func rowActions(_ environment: AppEnvironment) -> RowActions {
         let configStore = environment.configStore
         let popover = popover
-        let row = RowActions(
+        return RowActions(
             open: { NSWorkspace.shared.open($0) },
             copy: { text in
                 NSPasteboard.general.clearContents()
@@ -152,25 +177,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             })
-        return PopoverActions(
-            refresh: { [weak self] in self?.refresh() },
-            openSettings: { [weak self] in self?.openSettings() },
-            checkForUpdates: { [weak self] in
-                self?.statusBar?.close()
-                Task {
-                    await environment.updates.check(userInitiated: true)
-                    self?.updateWindows?.showPrompt()
-                }
-            },
-            quit: { NSApp.terminate(nil) },
-            retry: { environment.retryAuthentication() },
-            chooseGhLocation: { [weak self] in self?.chooseGhLocation() },
-            launchAtLogin: { environment.setLaunchAtLogin($0) },
-            dismissBaselineNotice: {
-                Task { await environment.poller.updateState { $0.baselineNoticeDismissed = true } }
-            },
-            close: { [weak self] in self?.statusBar?.close() },
-            row: row)
     }
 
     private func chooseGhLocation() {

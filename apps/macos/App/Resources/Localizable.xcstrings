@@ -283,6 +283,12 @@
     "Current version" : {
       "comment" : "Updates setting"
     },
+    "Deliver Now" : {
+      "comment" : "Focus hold banner button"
+    },
+    "Docket" : {
+      "comment" : "Focus filter title"
+    },
     "Docket %@ is available" : {
       "comment" : "Update prompt title"
     },
@@ -313,6 +319,9 @@
     "Filter to %@" : {
       "comment" : "Row context menu"
     },
+    "Focus" : {
+      "comment" : "Notifications settings section"
+    },
     "From" : {
       "comment" : "Quiet hours start"
     },
@@ -339,6 +348,21 @@
     },
     "Granted" : {
       "comment" : "Scope state"
+    },
+    "Hold Docket's notifications until this Focus ends, then deliver one summary per repository." : {
+      "comment" : "Focus filter description"
+    },
+    "Hold notifications until this Focus ends" : {
+      "comment" : "Focus filter parameter"
+    },
+    "Holding %lld updates until your Focus ends." : {
+      "comment" : "Focus hold banner"
+    },
+    "Holding notifications" : {
+      "comment" : "Focus filter summary"
+    },
+    "Holding since %@" : {
+      "comment" : "Focus hold state"
     },
     "Ignore" : {
       "comment" : "Row context menu"
@@ -433,6 +457,12 @@
     "Not found, or you don't have access" : {
       "comment" : "Repository picker"
     },
+    "Not holding" : {
+      "comment" : "Focus hold state"
+    },
+    "Not holding notifications" : {
+      "comment" : "Focus filter summary"
+    },
     "Nothing here in %@." : {
       "comment" : "Empty repository filter"
     },
@@ -480,6 +510,9 @@
     },
     "Open Docket at login?" : {
       "comment" : "Launch at login banner"
+    },
+    "Open Focus Settings" : {
+      "comment" : "Focus setting button"
     },
     "Open System Settings" : {
       "comment" : "Notification permission button\nPermission banner button"
@@ -624,6 +657,9 @@
     },
     "To" : {
       "comment" : "Quiet hours end"
+    },
+    "To hold notifications during a Focus, add Docket's filter to it." : {
+      "comment" : "Focus setting"
     },
     "Try Again" : {
       "comment" : "Failed poll banner button\nFull screen button"
