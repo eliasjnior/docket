@@ -1,0 +1,9 @@
+{"data":{"search":{"pageInfo":{"hasNextPage":false,"endCursor":null},"nodes":[
+ {"id":"PR_1","mergedAt":"2026-10-21T12:00:00Z","author":{"__typename":"User","login":"you"},
+  "timelineItems":{"nodes":[
+   {"__typename":"ReviewRequestedEvent","id":"RRE_1","createdAt":"2026-10-21T08:00:00Z","actor":{"__typename":"User","login":"you"},"requestedReviewer":{"__typename":"User","login":"ana"}},
+   {"__typename":"PullRequestReview","id":"PRR_1","state":"APPROVED","submittedAt":"2026-10-21T09:00:00Z","author":{"__typename":"User","login":"ana"}},
+   {"__typename":"PullRequestCommit"}
+  ]}},
+ {}
+]},"rateLimit":{"cost":1,"remaining":4990,"limit":5000,"resetAt":"2026-10-21T13:00:00Z"}}}

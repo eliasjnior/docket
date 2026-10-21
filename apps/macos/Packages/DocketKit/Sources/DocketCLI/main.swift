@@ -15,7 +15,7 @@ struct DocketCLI {
             switch arguments.first {
             case "whoami": try await whoami(client)
             case "poll": try await poll(client, fresh: arguments.contains("--fresh"))
-            case "stats": try await Stats.run(client, arguments: Array(arguments.dropFirst()))
+            case "stats": try await StatsCommand.run(client, arguments: Array(arguments.dropFirst()))
             default:
                 print("usage: docket-cli <whoami | poll [--fresh] | stats [--days N]>")
                 exit(64)
@@ -115,6 +115,14 @@ struct DocketCLI {
         print("  poll total: \(total)  remaining: \(remaining)")
     }
 
+    static func day(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
     static func describe(_ rateLimit: RateLimit?) -> String {
         guard let rateLimit else { return "unknown" }
         return "\(rateLimit.remaining) of \(rateLimit.limit) remaining"
@@ -167,8 +175,42 @@ struct CLIState {
     }
 }
 
-enum Stats {
+enum StatsCommand {
     static func run(_ client: GraphQLClient, arguments: [String]) async throws {
-        print("stats arrives with M4 (docs/07-roadmap.md task 4.5)")
+        let days =
+            arguments.firstIndex(of: "--days").flatMap {
+                arguments.indices.contains($0 + 1) ? Int(arguments[$0 + 1]) : nil
+            } ?? 30
+        let login = try await client.viewer().value.login
+        let now = Date()
+        let since = DocketCLI.day(now.addingTimeInterval(-Double(days) * 86400))
+        let reviewed = try await client.history(query: "is:pr reviewed-by:\(login) -author:\(login) updated:>=\(since)")
+        let waiting = try await client.history(query: "is:pr is:open review-requested:\(login)")
+        let authored = try await client.history(query: "is:pr is:merged author:\(login) merged:>=\(since)")
+        var seen = Set<String>()
+        let candidates = (reviewed.value + waiting.value).filter { seen.insert($0.id).inserted }
+        let report = Stats.report(
+            reviewed: candidates, authored: authored.value, viewer: ViewerContext(login: login, teams: nil), now: now,
+            calendar: Calendar(identifier: .gregorian))
+        print("last \(days) days, for \(login)")
+        let median = report.medianTimeToFirstReview.map { RowFormat.duration($0) } ?? "n/a"
+        print(
+            "  median time from a review request to your first review: \(median) (\(report.answeredRequests) requests)")
+        print("  review requests that waited more than 2 working days: \(report.requestsOlderThanTwoWorkingDays)")
+        print(
+            "  your pull requests approved but not merged for more than 4 hours: "
+                + "\(report.approvedButUnmergedOverFourHours) of \(report.mergedPullRequests) merged")
+        let cost = [reviewed.meta, waiting.meta, authored.meta].compactMap(\.rateLimit).map(\.cost).reduce(0, +)
+        print("  cost: \(cost) points")
+    }
+}
+
+enum RowFormat {
+    static func duration(_ seconds: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = [.day, .hour, .minute]
+        formatter.maximumUnitCount = 2
+        return formatter.string(from: seconds) ?? "\(Int(seconds)) s"
     }
 }

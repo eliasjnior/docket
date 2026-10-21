@@ -166,7 +166,7 @@ public actor GraphQLClient: GitHubSource {
         return missing
     }
 
-    private func send<Payload: Decodable>(
+    func send<Payload: Decodable>(
         _ query: String, _ variables: [String: GraphQLValue], as type: Payload.Type
     ) async throws -> (Envelope<Payload>, ResponseMeta) {
         var request = URLRequest(url: endpoint)
