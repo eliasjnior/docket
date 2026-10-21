@@ -159,3 +159,25 @@ struct ComposedNotificationTests {
                 == .muteReminders(pullRequestID: "PR_1", ref: "acme/api#482"))
     }
 }
+
+struct LaterKindCopyTests {
+    @Test func checksClosedAndMentions() {
+        let now = Fixtures.now
+        func event(_ kind: EventKind, actor: String? = "bruno", merged: Bool? = nil) -> Event {
+            var event = Event(
+                kind: kind, itemID: "X", pullRequestID: "PR_1", repository: "acme/api", number: 470, title: "Cache it",
+                url: Fixtures.url("acme/api/pull/470"), actor: actor, at: now)
+            event.merged = merged
+            return event
+        }
+        func title(_ event: Event) -> String {
+            ComposedNotification(
+                PlannedNotification(repository: "acme/api", content: .events(event.kind, [event])), now: now
+            ).title
+        }
+        #expect(title(event(.checksFailed, actor: nil)) == "Checks failed")
+        #expect(title(event(.closedByOther, merged: true)) == "@bruno merged your pull request")
+        #expect(title(event(.closedByOther, merged: false)) == "@bruno closed your pull request")
+        #expect(title(event(.mention, actor: "carla")) == "@carla mentioned you")
+    }
+}

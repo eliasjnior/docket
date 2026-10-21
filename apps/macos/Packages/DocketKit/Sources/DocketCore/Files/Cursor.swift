@@ -11,10 +11,12 @@ public struct Cursor: Codable, Hashable, Sendable {
     public var leftAt: Date?
     public var seen: [String]
     public var lastMergeable: Mergeable?
+    /// The head commit whose failing checks were last notified (FR-61).
+    public var notifiedFailingHead: String?
 
     public init(
         ref: String, role: Role?, updatedAt: Date, enteredAt: Date, leftAt: Date? = nil, seen: [String] = [],
-        lastMergeable: Mergeable? = nil
+        lastMergeable: Mergeable? = nil, notifiedFailingHead: String? = nil
     ) {
         self.ref = ref
         self.role = role
@@ -23,6 +25,7 @@ public struct Cursor: Codable, Hashable, Sendable {
         self.leftAt = leftAt
         self.seen = seen
         self.lastMergeable = lastMergeable
+        self.notifiedFailingHead = notifiedFailingHead
     }
 
     /// Adds `ids` not yet seen, dropping the oldest beyond the limit.

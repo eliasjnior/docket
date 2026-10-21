@@ -76,7 +76,7 @@ public struct ComposedNotification: Hashable, Sendable {
             title = String(localized: "Checks failed", comment: "Checks failed on your pull request")
         case .closedByOther:
             title =
-                event.decision == .approved
+                event.merged == true
                 ? String(localized: "\(actor) merged your pull request", comment: "Merged by someone else")
                 : String(localized: "\(actor) closed your pull request", comment: "Closed by someone else")
         case .mention:

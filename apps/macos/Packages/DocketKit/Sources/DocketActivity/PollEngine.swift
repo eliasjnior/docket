@@ -22,6 +22,8 @@ public enum PollEngine {
     ) -> [String] {
         summaries.filter { pullRequest in
             let cursor = state.cursors[pullRequest.id]
+            // One last read of your own pull request as it closes, to learn who closed it (FR-62).
+            if cursor?.role == .authored, pullRequest.state != .open { return true }
             let candidate = Candidate(
                 pullRequest: pullRequest, detail: nil, hits: DiscoveryHits(discovery, id: pullRequest.id),
                 previous: cursor)
@@ -70,6 +72,8 @@ struct PollRun {
     var cached: [CachedPullRequest] = []
     var watchedIDs = Set<String>()
     var raw: [RawEvent] = []
+    /// Closed this poll: kept in `watchedIDs` only so their event survives the mark filter.
+    var closing = Set<String>()
     var events: [Event] = []
 
     init(input: PollInput) {
@@ -84,6 +88,9 @@ struct PollRun {
         let now = input.now
         let previous = state.cursors[pullRequest.id]
         let detail = input.details[pullRequest.id]
+        if previous?.role == .authored, pullRequest.state != .open, !isBaseline {
+            closed(pullRequest, detail: detail)
+        }
         let candidate = Candidate(
             pullRequest: pullRequest, detail: detail, hits: DiscoveryHits(input.discovery, id: pullRequest.id),
             previous: previous)
@@ -115,8 +122,37 @@ struct PollRun {
         cursor.role = role
         cursor.leftAt = nil
         if pullRequest.mergeable != .unknown { cursor.lastMergeable = pullRequest.mergeable }
+        checksFailed(pullRequest, role: role, cursor: &cursor, entering: entering)
         state.cursors[pullRequest.id] = cursor
         cached.append(cachedEntry(pullRequest, role: role, detail: detail))
+    }
+
+    /// `checksFailed`: once per failing head commit, recorded without notifying on entry (FR-61).
+    private mutating func checksFailed(_ pullRequest: PullRequest, role: Role, cursor: inout Cursor, entering: Bool) {
+        guard role == .authored, pullRequest.checks == .failure || pullRequest.checks == .error,
+            let head = pullRequest.headOID, head != cursor.notifiedFailingHead
+        else { return }
+        cursor.notifiedFailingHead = head
+        guard !entering, !isBaseline else { return }
+        let event = Event(
+            kind: .checksFailed, itemID: "\(pullRequest.id):\(head)", pullRequestID: pullRequest.id,
+            repository: pullRequest.repository, number: pullRequest.number, title: pullRequest.title,
+            url: pullRequest.url.appending(path: "checks"), actor: nil, at: input.now)
+        raw.append(RawEvent(event: event, author: nil))
+    }
+
+    /// `closedByOther`: your pull request merged or closed by someone else (FR-62).
+    private mutating func closed(_ pullRequest: PullRequest, detail: PullRequestDetail?) {
+        let merged = pullRequest.state == .merged
+        guard let closer = merged ? pullRequest.mergedBy : detail?.closedBy else { return }
+        var event = Event(
+            kind: .closedByOther, itemID: "\(pullRequest.id):\(pullRequest.state.rawValue)",
+            pullRequestID: pullRequest.id, repository: pullRequest.repository, number: pullRequest.number,
+            title: pullRequest.title, url: pullRequest.url, actor: closer, at: input.now)
+        event.merged = merged
+        raw.append(RawEvent(event: event, author: Actor(login: closer)))
+        watchedIDs.insert(pullRequest.id)
+        closing.insert(pullRequest.id)
     }
 
     private func cachedEntry(_ pullRequest: PullRequest, role: Role, detail: PullRequestDetail?) -> CachedPullRequest {
@@ -153,7 +189,7 @@ struct PollRun {
         let folded = Compose.fold(filtered).filter { state.delivered[$0.id] == nil }
         events = Compose.fold(raw)
         let marked = Set(state.marked).union(folded.map(\.pullRequestID))
-        state.marked = marked.filter(watchedIDs.contains).sorted()
+        state.marked = marked.filter { watchedIDs.contains($0) && !closing.contains($0) }.sorted()
         let enabled = folded.filter { input.config.notifications.isEnabled($0.kind) }
         let newlyRequested = Set(raw.filter { $0.event.kind == .reviewRequested }.map(\.event.pullRequestID))
         let reminders = Reminders.due(
@@ -170,7 +206,8 @@ struct PollRun {
     }
 
     mutating func markLeft() {
-        for (id, cursor) in state.cursors where cursor.role != nil && !watchedIDs.contains(id) {
+        for (id, cursor) in state.cursors where cursor.role != nil && (!watchedIDs.contains(id) || closing.contains(id))
+        {
             var left = cursor
             left.role = nil
             left.leftAt = input.now

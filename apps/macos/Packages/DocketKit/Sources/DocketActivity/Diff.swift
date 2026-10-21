@@ -67,6 +67,8 @@ public enum Diff {
             if case .team = request.reviewer { requested.team = request.reviewer }
             raw.append(RawEvent(event: requested, author: request.actor))
         }
+        let mentioned = mentions(in: detail, isNew: isNew, viewer: viewer, event: event)
+        raw.append(contentsOf: mentioned.events)
         if subject.role == .authored {
             for review in detail.reviews where isNew(review.id, review.submittedAt) {
                 guard [.approved, .changesRequested, .commented].contains(review.state), let at = review.submittedAt
@@ -77,15 +79,48 @@ public enum Diff {
                     RawEvent(
                         event: submitted, author: review.author, reviewID: review.id, bodyIsEmpty: review.bodyIsEmpty))
             }
-            for comment in detail.comments where isNew(comment.id, comment.createdAt) {
+            for comment in detail.comments
+            where isNew(comment.id, comment.createdAt) && !mentioned.items.contains(comment.id) {
                 raw.append(
                     RawEvent(
                         event: event(.commentAdded, comment.id, comment.url, comment.author, comment.createdAt),
                         author: comment.author))
             }
         }
-        raw.append(contentsOf: replies(in: detail, isNew: isNew, viewer: viewer, event: event))
+        raw.append(
+            contentsOf: replies(in: detail, isNew: isNew, viewer: viewer, event: event)
+                .filter { !mentioned.items.contains(String($0.event.id.dropFirst("threadReply:".count))) })
         return raw
+    }
+
+    /// `mention`: new items by someone else whose text names you (§5.3). Reviews on your own pull request
+    /// fire as reviews instead.
+    private static func mentions(
+        in detail: PullRequestDetail, isNew: (String, Date?) -> Bool, viewer: ViewerContext,
+        event: (EventKind, String, URL, Actor?, Date) -> Event
+    ) -> (events: [RawEvent], items: Set<String>) {
+        func mentionsYou(_ logins: [String], _ author: Actor?) -> Bool {
+            !viewer.isYou(author?.login) && logins.contains { viewer.isYou($0) }
+        }
+        var events: [RawEvent] = []
+        var items = Set<String>()
+        for comment in detail.comments
+        where isNew(comment.id, comment.createdAt) && mentionsYou(comment.mentions, comment.author) {
+            events.append(
+                RawEvent(
+                    event: event(.mention, comment.id, comment.url, comment.author, comment.createdAt),
+                    author: comment.author))
+            items.insert(comment.id)
+        }
+        for comment in detail.threads.flatMap(\.comments)
+        where isNew(comment.id, comment.createdAt) && mentionsYou(comment.mentions, comment.author) {
+            events.append(
+                RawEvent(
+                    event: event(.mention, comment.id, comment.url, comment.author, comment.createdAt),
+                    author: comment.author, reviewID: comment.reviewID))
+            items.insert(comment.id)
+        }
+        return (events, items)
     }
 
     /// New review-thread comments in a thread where an earlier comment is yours (§5.3 `threadReply`).

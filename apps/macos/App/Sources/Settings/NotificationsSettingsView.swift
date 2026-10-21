@@ -49,6 +49,16 @@ struct NotificationsSettingsView: View {
                 Toggle(
                     String(localized: "Reply to your comment", comment: "Notification kind"),
                     isOn: binding(\.notifications.threadReply))
+                Toggle(
+                    String(localized: "Checks failing on your pull request", comment: "Notification kind"),
+                    isOn: binding(\.notifications.checksFailed))
+                Toggle(
+                    String(
+                        localized: "Your pull request merged or closed by someone else", comment: "Notification kind"),
+                    isOn: binding(\.notifications.closedByOther))
+                Toggle(
+                    String(localized: "Mention of you", comment: "Notification kind"),
+                    isOn: binding(\.notifications.mention))
             }
             RemindersSection(configStore: configStore)
             Section {
