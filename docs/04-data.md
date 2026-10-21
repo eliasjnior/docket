@@ -40,6 +40,7 @@ written by a poll.
 | `notifications.reviewSubmitted` | Bool | `true` | |
 | `notifications.commentAdded` | Bool | `true` | |
 | `notifications.threadReply` | Bool | `true` | |
+| `notifications.checksFailed`, `.closedByOther`, `.mention` | Bool | `true` | The P1 kinds (FR-61, FR-62, FR-64); read only once they ship |
 | `reminders.enabled` | Bool | `true` | FR-66 |
 | `reminders.intervalMinutes` | `15` \| `30` \| `60` \| `120` \| `240` \| `480` | `60` | FR-66 |
 | `reminders.quietHours.enabled` | Bool | `false` | FR-67 |
@@ -134,6 +135,7 @@ Written by every poll that reaches step 8 of `02-activity-detection.md` §1, and
 | `lastShownVersion` | String | For What's New |
 | `skippedVersion` | String \| null | Update the user chose to skip |
 | `lastUpdateCheckAt` | timestamp \| null | Update cadence |
+| `baselineNoticeDismissed` | Bool | The first-run banner of `05-design.md` §7.2 was dismissed with `OK` |
 
 `Cursor`:
 
