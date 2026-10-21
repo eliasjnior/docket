@@ -14,6 +14,7 @@ final class AppEnvironment {
     let configStore: ConfigStore
     let watch: WatchStore
     let poller: Poller
+    private let github: GraphQLClient
     let tokens: GhTokenProvider
     let paths: AppPaths
     let permission = NotificationPermission()
@@ -38,8 +39,14 @@ final class AppEnvironment {
         let configuredPath: @Sendable () async -> String? = { await MainActor.run { configStore.config.ghPath } }
         let tokens = GhTokenProvider(configuredPath: configuredPath)
         self.tokens = tokens
-        poller = Poller(
-            github: GraphQLClient(tokens: tokens), tokens: tokens, storage: storage, notifications: notifications)
+        let github = GraphQLClient(tokens: tokens)
+        self.github = github
+        poller = Poller(github: github, tokens: tokens, storage: storage, notifications: notifications)
+    }
+
+    /// FR-73: one `repository(owner:, name:)` query.
+    func repositoryExists(_ name: String) async -> Bool {
+        (try? await github.repositoryExists(name)) ?? false
     }
 
     /// Clicks on notifications, routed to the app (`docs/02-activity-detection.md` §7.4).

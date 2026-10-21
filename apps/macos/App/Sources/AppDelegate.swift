@@ -31,7 +31,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 SettingsView(
                     watch: environment.watch, configStore: environment.configStore, account: account,
                     permission: environment.permission,
-                    requestPermission: { Task { await environment.requestNotificationPermission() } }))
+                    requestPermission: { Task { await environment.requestNotificationPermission() } },
+                    checkRepository: { await environment.repositoryExists($0) }))
         }
         let content = PopoverView(
             watch: environment.watch, model: popover, permission: environment.permission,

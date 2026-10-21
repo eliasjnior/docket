@@ -9,6 +9,7 @@ struct SettingsView: View {
     let account: AccountSettingsModel
     let permission: NotificationPermission
     let requestPermission: () -> Void
+    let checkRepository: (String) async -> Bool
 
     var body: some View {
         TabView {

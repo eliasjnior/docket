@@ -10,6 +10,10 @@ struct SectionsView: View {
     let actions: PopoverActions
     let now: Date
 
+    private var editor: TagEditorBinding {
+        TagEditorBinding(model: model, tags: TagStore(configStore: watch.configStore))
+    }
+
     var body: some View {
         let sections = watch.sections(tag: model.tagFilter, repository: model.repositoryFilter)
         let filtering = model.tagFilter != nil
@@ -46,7 +50,7 @@ struct SectionsView: View {
                     .padding(.top, 6)
                     .accessibilityAddTraits(.isHeader)
                     ForEach(group.items) {
-                        RowView(item: $0, placement: .reviewRequested, now: now, actions: actions.row)
+                        RowView(item: $0, placement: .reviewRequested, now: now, actions: actions.row, editor: editor)
                     }
                 }
                 notShown(.reviewRequested)
@@ -63,7 +67,9 @@ struct SectionsView: View {
                                 localized: "No open pull requests of yours in the watched repositories.",
                                 comment: "Empty state"))
                 }
-                ForEach(sections.mine) { RowView(item: $0, placement: .mine, now: now, actions: actions.row) }
+                ForEach(sections.mine) {
+                    RowView(item: $0, placement: .mine, now: now, actions: actions.row, editor: editor)
+                }
                 notShown(.authored)
             }
             section(
@@ -78,14 +84,18 @@ struct SectionsView: View {
                                 localized: "Nothing you commented on or reviewed in the last 30 days.",
                                 comment: "Empty state"))
                 }
-                ForEach(sections.involved) { RowView(item: $0, placement: .involved, now: now, actions: actions.row) }
+                ForEach(sections.involved) {
+                    RowView(item: $0, placement: .involved, now: now, actions: actions.row, editor: editor)
+                }
             }
             if !sections.ignored.isEmpty {
                 section(
                     .ignored, String(localized: "Ignored", comment: "Section header"), count: sections.ignored.count,
                     marked: false
                 ) {
-                    ForEach(sections.ignored) { RowView(item: $0, placement: .ignored, now: now, actions: actions.row) }
+                    ForEach(sections.ignored) {
+                        RowView(item: $0, placement: .ignored, now: now, actions: actions.row, editor: editor)
+                    }
                 }
             }
             if filtering, let tag = model.tagFilter,
