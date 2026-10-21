@@ -316,6 +316,9 @@
     "Every" : {
       "comment" : "Reminder interval"
     },
+    "Export…" : {
+      "comment" : "Export settings button"
+    },
     "Filter to %@" : {
       "comment" : "Row context menu"
     },
@@ -370,6 +373,9 @@
     "Ignored" : {
       "comment" : "Tab"
     },
+    "Import…" : {
+      "comment" : "Import settings button"
+    },
     "Install and Relaunch" : {
       "comment" : "Update prompt button"
     },
@@ -381,6 +387,9 @@
     },
     "Involved" : {
       "comment" : "Tab"
+    },
+    "Keyboard" : {
+      "comment" : "General settings section"
     },
     "Last checked" : {
       "comment" : "Updates setting"
@@ -487,6 +496,9 @@
     "OK" : {
       "comment" : "First-run banner button"
     },
+    "Off" : {
+      "comment" : "Global shortcut option"
+    },
     "Off in System Settings" : {
       "comment" : "Notification permission state"
     },
@@ -510,6 +522,9 @@
     },
     "Open Docket at login?" : {
       "comment" : "Launch at login banner"
+    },
+    "Open Docket with" : {
+      "comment" : "Global shortcut picker"
     },
     "Open Focus Settings" : {
       "comment" : "Focus setting button"
@@ -607,6 +622,9 @@
     "Settings" : {
       "comment" : "Gear menu button"
     },
+    "Settings file" : {
+      "comment" : "General settings section"
+    },
     "Settings…" : {
       "comment" : "Gear menu\nStatus item menu"
     },
@@ -642,6 +660,9 @@
     },
     "Tags: %@." : {
       "comment" : "VoiceOver: tags"
+    },
+    "That file is not a Docket settings file this version can read." : {
+      "comment" : "Import error"
     },
     "The GitHub CLI token is missing %@" : {
       "comment" : "Full screen title"

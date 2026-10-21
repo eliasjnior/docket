@@ -17,13 +17,15 @@ public struct Config: Codable, Hashable, Sendable {
     public var updates: Updates
     public var tags: [String: TagEntry]
     public var mutes: [String: MuteEntry]
+    /// The global shortcut that opens the popover (FR-48); `off` disables it.
+    public var shortcut: Shortcut
 
     public init(
         selection: Selection = Selection(), polling: Polling = Polling(), count: Count = Count(),
         notifications: Notifications = Notifications(), reminders: Reminders = Reminders(),
         ignored: [String: IgnoreEntry] = [:], botAllowlist: [String] = [], ghPath: String? = nil,
         launchAtLogin: Bool? = nil, updates: Updates = Updates(), tags: [String: TagEntry] = [:],
-        mutes: [String: MuteEntry] = [:]
+        mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD
     ) {
         version = Self.currentVersion
         self.selection = selection
@@ -38,6 +40,7 @@ public struct Config: Codable, Hashable, Sendable {
         self.updates = updates
         self.tags = tags
         self.mutes = mutes
+        self.shortcut = shortcut
     }
 
     public init(from decoder: Decoder) throws {
@@ -55,6 +58,34 @@ public struct Config: Codable, Hashable, Sendable {
         updates = c.value(.updates, default: Updates())
         tags = c.value(.tags, default: [:])
         mutes = c.value(.mutes, default: [:])
+        shortcut = c.value(.shortcut, default: .controlOptionCommandD)
+    }
+
+    public enum Shortcut: String, Codable, Hashable, Sendable, CaseIterable {
+        case off
+        case controlOptionCommandD
+        case optionCommandD
+        case controlOptionD
+    }
+
+    /// Reads a `config.json` exported from another install, through the same decoder as the file on disk
+    /// (FR-96). A file from a newer Docket is refused rather than half-read.
+    public static func imported(from data: Data) throws -> Config {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        struct Header: Decodable { var version: Int? }
+        let header = try decoder.decode(Header.self, from: data)
+        if let version = header.version, version > currentVersion {
+            throw PersistenceError.newerVersion(file: "config.json", version: version)
+        }
+        return try decoder.decode(Config.self, from: data)
+    }
+
+    public func exported() throws -> Data {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+        encoder.dateEncodingStrategy = .iso8601
+        return try encoder.encode(self)
     }
 
     public struct Polling: Codable, Hashable, Sendable {

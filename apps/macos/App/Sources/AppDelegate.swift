@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settings: SettingsWindowController?
     private let popover = PopoverModel()
     private var updateWindows: UpdateWindows?
+    private let shortcut = GlobalShortcut()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         let environment = AppEnvironment()
@@ -39,6 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         environment.updates.relaunch = { NSApp.terminate(nil) }
         environment.updates.startAutomaticChecks()
         observeUpdates(environment, windows: updateWindows)
+        observeContinuously(environment.configStore) { [weak self] store in
+            self?.shortcut.register(store.config.shortcut) { self?.statusBar?.show() }
+        }
     }
 
     private func makeSettings(_ environment: AppEnvironment, windows updateWindows: UpdateWindows)

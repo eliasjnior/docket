@@ -494,8 +494,7 @@ spoken logins.
 
 **Keyboard.** P0: `⌘R` refreshes, `⌘,` opens settings, `Escape` clears the filter then closes the
 popover, `Tab` moves through controls. P1, FR-47: `↑` and `↓` move a focus ring through rows across
-sections, `Return` opens the focused row, `T` opens its tag editor, `←` and `→` collapse and expand
-the focused section. FR-48 adds a global shortcut to open the popover.
+sections, `Return` opens the focused row, `T` opens its tag editor, `←` and `→` move between tabs. FR-48 adds a global shortcut to open the popover.
 
 ## 12. Copy rules
 

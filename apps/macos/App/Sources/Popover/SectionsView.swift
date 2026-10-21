@@ -90,7 +90,9 @@ struct SectionsView: View {
     /// Rows with a separator between each, inset to the text.
     private func rows(_ items: [WatchedPullRequest], _ placement: RowView.Placement) -> some View {
         ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-            RowView(item: item, placement: placement, now: now, actions: actions.row, editor: editor)
+            RowView(
+                item: item, placement: placement, now: now, actions: actions.row, editor: editor,
+                isFocused: model.focusedID == item.id)
             if index < items.count - 1 {
                 Divider().padding(.leading, 24).padding(.trailing, 12)
             }

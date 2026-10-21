@@ -88,3 +88,26 @@ struct ConfigTests {
         #expect(notifications.isEnabled(kind) == enabled)
     }
 }
+
+struct ExportImportTests {
+    @Test("M5 Done when: an exported config restores selection and tags on a fresh install")
+    func roundTrip() throws {
+        var config = Config(selection: Selection(mode: .only, includedRepositories: ["acme/api"]))
+        config.tags["PR_1"] = Config.TagEntry(
+            ref: "acme/api#482", tags: ["wip"], updatedAt: Date(timeIntervalSince1970: 1_792_584_000))
+        config.shortcut = .optionCommandD
+        #expect(try Config.imported(from: config.exported()) == config)
+    }
+
+    @Test func aNewerExportIsRefused() {
+        #expect(throws: PersistenceError.newerVersion(file: "config.json", version: 4)) {
+            try Config.imported(from: Data(#"{"version": 4}"#.utf8))
+        }
+        #expect(throws: (any Error).self) { try Config.imported(from: Data("not json".utf8)) }
+    }
+
+    @Test func theShortcutDefaultsAndToleratesUnknownValues() throws {
+        #expect(Config().shortcut == .controlOptionCommandD)
+        #expect(try Config.imported(from: Data(#"{"shortcut": "hyperD"}"#.utf8)).shortcut == .controlOptionCommandD)
+    }
+}
