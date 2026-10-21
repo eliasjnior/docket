@@ -454,15 +454,27 @@ NFR-09 is a threshold that fails the gate, so it is a script, not a number in a 
 #!/usr/bin/env bash
 # Enforces NFR-09 over the profile `swift test --enable-code-coverage` just wrote.
 set -euo pipefail
+# A decimal comma from the locale would break the comparison below.
+export LC_ALL=C
 kit="$(cd "$(dirname "$0")/../Packages/DocketKit" && pwd)"
 bin="$(swift build --package-path "$kit" --show-bin-path)"
 profile="$bin/codecov/default.profdata"
-binary="$bin/DocketKitPackageTests.xctest/Contents/MacOS/DocketKitPackageTests"
+
+# SwiftPM builds one bundle per test target; llvm-cov reads them all as one report.
+objects=()
+for bundle in "$bin"/*Tests.xctest; do
+  name=$(basename "$bundle" .xctest)
+  [ ${#objects[@]} -gt 0 ] && objects+=(-object)
+  objects+=("$bundle/Contents/MacOS/$name")
+done
+if [ ${#objects[@]} -eq 0 ]; then
+  echo "no test bundles in $bin"; exit 1
+fi
 
 # percent <path>: line coverage of the sources under <path>, from llvm-cov's TOTAL row
 # (column 8 is lines, column 9 missed lines).
 percent() {
-  xcrun llvm-cov report "$binary" -instr-profile "$profile" "$1" \
+  xcrun llvm-cov report "${objects[@]}" -instr-profile "$profile" "$1" \
     | awk '$1 == "TOTAL" && $8 > 0 { printf "%.2f", ($8 - $9) * 100 / $8 }'
 }
 
@@ -483,7 +495,9 @@ check "DocketKit" "$kit/Sources" 75
 exit $status
 ```
 
-Only `Sources/` is measured, so test code never counts toward its own coverage. The kit-wide 75%
+Only `Sources/` is measured, so test code never counts toward its own coverage. SwiftPM builds
+one bundle per test target, so the report reads every `*Tests.xctest` against the one merged
+profile; `LC_ALL=C` keeps a locale's decimal comma out of the comparison. The kit-wide 75%
 includes `DocketNotify` and `DocketUpdate`, whose system-facing halves are thin and partly
 untestable (§10.6); the threshold is set where the testable targets carry it. **Revisit if**
 `DocketKit` sits above 85% for a whole milestone — then the floor rises to meet it.
