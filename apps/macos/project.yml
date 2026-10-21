@@ -46,6 +46,7 @@ targets:
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSUIElement: true
+        DocketUpdatePublicKey: jQN1tZ7YnTQyKwXJiZpMwPb16+SB85e5CA3I8Nil9/Q=
         LSApplicationCategoryType: public.app-category.developer-tools
         NSHumanReadableCopyright: "Copyright © 2026 Elias Júnior"
     settings:
