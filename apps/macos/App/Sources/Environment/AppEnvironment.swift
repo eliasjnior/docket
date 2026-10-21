@@ -22,12 +22,16 @@ final class AppEnvironment {
     private let monitor = NWPathMonitor()
     private var observers: [NSObjectProtocol] = []
 
+    private var retention: Task<Void, Never>?
+    private let storage: FileStores
+
     init() {
         let paths =
             (try? AppPaths.applicationSupport())
             ?? AppPaths(root: FileManager.default.temporaryDirectory.appending(path: "Docket"))
         self.paths = paths
         let storage = FileStores(paths: paths)
+        self.storage = storage
         let configStore = ConfigStore(storage: storage)
         self.configStore = configStore
         watch = WatchStore(configStore: configStore)
@@ -76,6 +80,31 @@ final class AppEnvironment {
             await MainActor.run { watch.apply(snapshot) }
         }
         observeSystem()
+        startRetention()
+    }
+
+    /// Once at launch, after the first poll has a watch set, then daily (`docs/04-data.md` §4).
+    private func startRetention() {
+        retention = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(30))
+            while !Task.isCancelled {
+                await self?.retainOnce()
+                try? await Task.sleep(for: .seconds(86400))
+            }
+        }
+    }
+
+    private func retainOnce() async {
+        let pruned = await poller.retain(config: configStore.config) { config, state, watched, now in
+            let result = Retention.apply(config: config, state: state, watched: watched, now: now)
+            return (result.config, result.state)
+        }
+        configStore.update { config in
+            config.tags = pruned.tags
+            config.mutes = pruned.mutes
+            config.ignored = pruned.ignored
+        }
+        await storage.pruneCorruptFiles(now: Date())
     }
 
     /// `Try Again` on an account screen: forget the `gh` lookup and poll (`docs/05-design.md` §7.1).
