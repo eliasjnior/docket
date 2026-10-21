@@ -1,0 +1,30 @@
+pre-commit:
+  parallel: true
+  jobs:
+    - name: biome
+      glob: "*.{js,mjs,cjs,json,jsonc}"
+      run: pnpm exec biome check --no-errors-on-unmatched --files-ignore-unknown=true {staged_files}
+    - name: swift-format
+      root: apps/macos/
+      glob: "*.swift"
+      run: swift format lint --strict {staged_files}
+    - name: swiftlint
+      root: apps/macos/
+      glob: "*.swift"
+      run: swiftlint lint --strict --quiet {staged_files}
+    - name: gitleaks
+      run: gitleaks git --staged --redact --no-banner
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}
+
+pre-push:
+  piped: true
+  jobs:
+    - name: push guard
+      use_stdin: true
+      run: ./scripts/check-push.sh
+    - name: ci
+      run: ./scripts/ci.sh

@@ -1,1 +1,22 @@
 .DS_Store
+node_modules/
+
+# Xcode / SwiftPM
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+.build/
+.swiftpm/
+build/
+dist/
+*.dSYM.zip
+
+# Local secrets
+.env
+.env.*
+*.pem
+*.key
+*.p12
+update-signing-key*
+apps/macos/App/Info.plist
