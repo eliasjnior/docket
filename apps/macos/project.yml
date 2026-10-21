@@ -21,6 +21,10 @@ settings:
     CODE_SIGN_STYLE: Manual
     DEVELOPMENT_TEAM: ""
 
+packages:
+  DocketKit:
+    path: Packages/DocketKit
+
 targets:
   Docket:
     type: application
@@ -29,6 +33,11 @@ targets:
       - path: App/Sources
       - path: CHANGELOG.md
         buildPhase: resources
+    dependencies:
+      - package: DocketKit
+        product: DocketCore
+      - package: DocketKit
+        product: DocketStores
     info:
       path: App/Info.plist
       properties:
