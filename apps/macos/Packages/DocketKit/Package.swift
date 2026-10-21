@@ -31,6 +31,9 @@ let package = Package(
         .testTarget(name: "DocketPersistenceTests", dependencies: ["DocketPersistence"]),
         .testTarget(name: "DocketNotifyTests", dependencies: ["DocketNotify"]),
         .testTarget(name: "DocketUpdateTests", dependencies: ["DocketUpdate"]),
-        .testTarget(name: "DocketStoresTests", dependencies: ["DocketStores", "DocketTestSupport"]),
+        .testTarget(
+            name: "DocketStoresTests",
+            dependencies: ["DocketStores", "DocketTestSupport", "DocketGitHub", "DocketPersistence"]
+        ),
     ]
 )
