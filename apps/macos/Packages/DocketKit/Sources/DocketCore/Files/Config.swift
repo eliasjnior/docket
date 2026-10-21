@@ -1,0 +1,234 @@
+import Foundation
+
+/// `config.json`: what the user decided (`docs/04-data.md` §2.1). Never written by a poll.
+public struct Config: Codable, Hashable, Sendable {
+    public static let currentVersion = 1
+
+    public var version: Int
+    public var selection: Selection
+    public var polling: Polling
+    public var count: Count
+    public var notifications: Notifications
+    public var reminders: Reminders
+    public var ignored: [String: IgnoreEntry]
+    public var botAllowlist: [String]
+    public var ghPath: String?
+    public var launchAtLogin: Bool?
+    public var updates: Updates
+    public var tags: [String: TagEntry]
+    public var mutes: [String: MuteEntry]
+
+    public init(
+        selection: Selection = Selection(), polling: Polling = Polling(), count: Count = Count(),
+        notifications: Notifications = Notifications(), reminders: Reminders = Reminders(),
+        ignored: [String: IgnoreEntry] = [:], botAllowlist: [String] = [], ghPath: String? = nil,
+        launchAtLogin: Bool? = nil, updates: Updates = Updates(), tags: [String: TagEntry] = [:],
+        mutes: [String: MuteEntry] = [:]
+    ) {
+        version = Self.currentVersion
+        self.selection = selection
+        self.polling = polling
+        self.count = count
+        self.notifications = notifications
+        self.reminders = reminders
+        self.ignored = ignored
+        self.botAllowlist = botAllowlist
+        self.ghPath = ghPath
+        self.launchAtLogin = launchAtLogin
+        self.updates = updates
+        self.tags = tags
+        self.mutes = mutes
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        version = c.value(.version, default: Self.currentVersion)
+        selection = c.value(.selection, default: Selection())
+        polling = c.value(.polling, default: Polling())
+        count = c.value(.count, default: Count())
+        notifications = c.value(.notifications, default: Notifications())
+        reminders = c.value(.reminders, default: Reminders())
+        ignored = c.value(.ignored, default: [:])
+        botAllowlist = c.value(.botAllowlist, default: [])
+        ghPath = c.value(.ghPath, default: nil)
+        launchAtLogin = c.value(.launchAtLogin, default: nil)
+        updates = c.value(.updates, default: Updates())
+        tags = c.value(.tags, default: [:])
+        mutes = c.value(.mutes, default: [:])
+    }
+
+    public struct Polling: Codable, Hashable, Sendable {
+        public static let allowedIntervals = [30, 60, 120, 300]
+        public var intervalSeconds: Int
+
+        public init(intervalSeconds: Int = 60) {
+            self.intervalSeconds = intervalSeconds
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            let value = c.value(.intervalSeconds, default: 60)
+            intervalSeconds = Self.allowedIntervals.contains(value) ? value : 60
+        }
+    }
+
+    public struct Count: Codable, Hashable, Sendable {
+        public var includeReviewRequests: Bool
+        public var includeBlockedAuthored: Bool
+
+        public init(includeReviewRequests: Bool = true, includeBlockedAuthored: Bool = true) {
+            self.includeReviewRequests = includeReviewRequests
+            self.includeBlockedAuthored = includeBlockedAuthored
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            includeReviewRequests = c.value(.includeReviewRequests, default: true)
+            includeBlockedAuthored = c.value(.includeBlockedAuthored, default: true)
+        }
+    }
+
+    public struct Notifications: Codable, Hashable, Sendable {
+        public var reviewRequested: Bool
+        public var reviewSubmitted: Bool
+        public var commentAdded: Bool
+        public var threadReply: Bool
+        public var checksFailed: Bool
+        public var closedByOther: Bool
+        public var mention: Bool
+
+        public init(
+            reviewRequested: Bool = true, reviewSubmitted: Bool = true, commentAdded: Bool = true,
+            threadReply: Bool = true, checksFailed: Bool = true, closedByOther: Bool = true, mention: Bool = true
+        ) {
+            self.reviewRequested = reviewRequested
+            self.reviewSubmitted = reviewSubmitted
+            self.commentAdded = commentAdded
+            self.threadReply = threadReply
+            self.checksFailed = checksFailed
+            self.closedByOther = closedByOther
+            self.mention = mention
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            reviewRequested = c.value(.reviewRequested, default: true)
+            reviewSubmitted = c.value(.reviewSubmitted, default: true)
+            commentAdded = c.value(.commentAdded, default: true)
+            threadReply = c.value(.threadReply, default: true)
+            checksFailed = c.value(.checksFailed, default: true)
+            closedByOther = c.value(.closedByOther, default: true)
+            mention = c.value(.mention, default: true)
+        }
+
+        public func isEnabled(_ kind: EventKind) -> Bool {
+            switch kind {
+            case .reviewRequested: reviewRequested
+            case .reviewSubmitted: reviewSubmitted
+            case .commentAdded: commentAdded
+            case .threadReply: threadReply
+            case .checksFailed: checksFailed
+            case .closedByOther: closedByOther
+            case .mention: mention
+            }
+        }
+    }
+
+    public struct Reminders: Codable, Hashable, Sendable {
+        public static let allowedIntervals = [15, 30, 60, 120, 240, 480]
+        public var enabled: Bool
+        public var intervalMinutes: Int
+        public var quietHours: QuietHours
+
+        public init(enabled: Bool = true, intervalMinutes: Int = 60, quietHours: QuietHours = QuietHours()) {
+            self.enabled = enabled
+            self.intervalMinutes = intervalMinutes
+            self.quietHours = quietHours
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            enabled = c.value(.enabled, default: true)
+            let minutes = c.value(.intervalMinutes, default: 60)
+            intervalMinutes = Self.allowedIntervals.contains(minutes) ? minutes : 60
+            quietHours = c.value(.quietHours, default: QuietHours())
+        }
+
+        public var interval: TimeInterval { TimeInterval(intervalMinutes * 60) }
+    }
+
+    public struct QuietHours: Codable, Hashable, Sendable {
+        public var enabled: Bool
+        /// `HH:mm`, local time.
+        public var start: String
+        public var end: String
+
+        public init(enabled: Bool = false, start: String = "22:00", end: String = "08:00") {
+            self.enabled = enabled
+            self.start = start
+            self.end = end
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            enabled = c.value(.enabled, default: false)
+            start = c.value(.start, default: "22:00")
+            end = c.value(.end, default: "08:00")
+        }
+    }
+
+    public struct Updates: Codable, Hashable, Sendable {
+        public var automaticChecks: Bool
+        public var automaticInstall: Bool
+
+        public init(automaticChecks: Bool = true, automaticInstall: Bool = false) {
+            self.automaticChecks = automaticChecks
+            self.automaticInstall = automaticInstall
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            automaticChecks = c.value(.automaticChecks, default: true)
+            automaticInstall = c.value(.automaticInstall, default: false)
+        }
+    }
+
+    public struct TagEntry: Codable, Hashable, Sendable {
+        public var ref: String
+        public var tags: [String]
+        public var updatedAt: Date
+
+        public init(ref: String, tags: [String], updatedAt: Date) {
+            self.ref = ref
+            self.tags = tags
+            self.updatedAt = updatedAt
+        }
+    }
+
+    public struct MuteEntry: Codable, Hashable, Sendable {
+        public enum Scope: String, Codable, Hashable, Sendable {
+            case reminders
+            case all
+        }
+
+        public var ref: String
+        public var scope: Scope
+        public var mutedAt: Date
+
+        public init(ref: String, scope: Scope, mutedAt: Date) {
+            self.ref = ref
+            self.scope = scope
+            self.mutedAt = mutedAt
+        }
+    }
+
+    public struct IgnoreEntry: Codable, Hashable, Sendable {
+        public var ref: String
+        public var ignoredAt: Date
+
+        public init(ref: String, ignoredAt: Date) {
+            self.ref = ref
+            self.ignoredAt = ignoredAt
+        }
+    }
+}
