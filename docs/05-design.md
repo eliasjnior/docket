@@ -344,7 +344,7 @@ bringing Docket forward.
 
 ## 9. Settings
 
-A window with a native settings toolbar (`NSTabViewController`, `.toolbar` style), one SF Symbol per tab, each tab a hosted SwiftUI grouped `Form` 560 pt wide. A SwiftUI `TabView` in a plain window was the first version; it drew its own segmented bar, crowded against the title bar once there were seven tabs. Every
+A window with a native settings toolbar (`NSTabViewController`, `.toolbar` style), one SF Symbol per tab, each tab a hosted SwiftUI grouped `Form` 560 pt wide. *Notifications* and *AI* are 560 pt tall at most and scroll inside; the other tabs are as tall as their content. A SwiftUI `TabView` in a plain window was the first version; it drew its own segmented bar, crowded against the title bar once there were seven tabs. Every
 control writes `config.json` on change (`04-data.md` §2.1); there is no Apply button.
 
 | Tab | Symbol | Contents |
