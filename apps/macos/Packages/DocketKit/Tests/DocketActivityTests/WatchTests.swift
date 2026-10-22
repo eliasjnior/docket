@@ -117,7 +117,9 @@ struct WatchTests {
         #expect(sections.reviewRequested[0].items.map(\.id) == ["R4", "R1"])
         #expect(sections.reviewRequested[1].items.map(\.id) == ["R2", "R3"])
         #expect(sections.reviewRequestedCount == 4)
-        #expect(sections.mine.map(\.id) == ["M2", "M3", "M1"])
+        // Ready first, then blocked by precedence (spec §7).
+        #expect(sections.mine.map(\.id) == ["M1", "M2", "M3"])
+        #expect(sections.mineGroups.map(\.kind) == [.ready, .blocked])
         #expect(sections.involved.map(\.id) == ["V2", "V1"])
         #expect(sections.ignored.map(\.id) == ["I1"])
 

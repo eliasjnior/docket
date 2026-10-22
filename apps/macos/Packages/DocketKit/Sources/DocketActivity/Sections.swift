@@ -9,16 +9,39 @@ public struct Sections: Hashable, Sendable {
         public var id: String { repository }
     }
 
+    public struct MineGroup: Hashable, Sendable, Identifiable {
+        public var kind: MineKind
+        public var items: [WatchedPullRequest]
+        public var id: MineKind { kind }
+    }
+
     public var reviewRequested: [RepositoryGroup]
-    public var mine: [WatchedPullRequest]
+    /// Ready, then blocked, then drafts; empty groups left out.
+    public var mineGroups: [MineGroup]
     public var involved: [WatchedPullRequest]
     public var ignored: [WatchedPullRequest]
 
+    public var mine: [WatchedPullRequest] { mineGroups.flatMap(\.items) }
     public var reviewRequestedCount: Int { reviewRequested.reduce(0) { $0 + $1.items.count } }
 
-    public init(_ items: [WatchedPullRequest], tag: String? = nil, repository: String? = nil) {
+    /// The review requests of one sub-tab, still grouped by repository in the same order.
+    public func reviewRequested(_ triage: Triage) -> [RepositoryGroup] {
+        reviewRequested.compactMap { group in
+            let items = group.items.filter { $0.triage == triage }
+            return items.isEmpty ? nil : RepositoryGroup(repository: group.repository, items: items)
+        }
+    }
+
+    public var triageCounts: [Triage: Int] {
+        Dictionary(grouping: reviewRequested.flatMap(\.items), by: { $0.triage ?? .humans }).mapValues(\.count)
+    }
+
+    public init(
+        _ items: [WatchedPullRequest], filter: PopoverFilter = PopoverFilter(), tag: String? = nil,
+        repository: String? = nil
+    ) {
         let filtered = items.filter { item in
-            (tag.map { item.tags.contains($0) } ?? true)
+            filter.matches(item) && (tag.map { item.tags.contains($0) } ?? true)
                 && (repository.map { item.pullRequest.repository.caseInsensitiveCompare($0) == .orderedSame } ?? true)
         }
         let active = filtered.filter { !$0.isIgnored }
@@ -36,12 +59,16 @@ public struct Sections: Hashable, Sendable {
                 return lhs.repository.lowercased() < rhs.repository.lowercased()
             }
 
-        mine = active.filter { $0.role == .authored }.sorted { lhs, rhs in
+        let mine = active.filter { $0.role == .authored }.sorted { lhs, rhs in
             if lhs.status != rhs.status { return lhs.status < rhs.status }
             if lhs.pullRequest.createdAt != rhs.pullRequest.createdAt {
                 return lhs.pullRequest.createdAt > rhs.pullRequest.createdAt
             }
             return Self.byReference(lhs, rhs)
+        }
+        let byKind = Dictionary(grouping: mine, by: MineKind.of)
+        mineGroups = MineKind.allCases.compactMap { kind in
+            byKind[kind].map { MineGroup(kind: kind, items: $0) }
         }
         involved = active.filter { $0.role == .involved }.sorted { lhs, rhs in
             if lhs.pullRequest.updatedAt != rhs.pullRequest.updatedAt {
