@@ -141,7 +141,7 @@ The IDs are kept so references stay valid.
 | **FR-83** | *Mine* is grouped into Ready, Blocked and Draft, shown as stacked sections or as a board, chosen in settings | P0 |
 | **FR-84** | *Retired*: tag retention | — |
 | **FR-85** | Docket never writes labels or anything else to GitHub (non-negotiable 5) | P0 |
-| **FR-86** | *Open in Jira* opens the issue: a Jira link in the description, else a key in the title, else in the branch, against a configured Jira site | P1 |
+| **FR-86** | *Open in Jira* opens the issue linked in the description; without one, a key in the title or branch on the Jira site the other pull requests link to. Nothing to configure | P1 |
 | **FR-87** | *Review with AI* and *Summarize with AI* run an editable command in the chosen terminal, in the repository's local clone when one is set, else in a temporary folder (D-28) | P1 |
 
 ### 3.8 The app

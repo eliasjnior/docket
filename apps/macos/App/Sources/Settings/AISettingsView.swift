@@ -5,7 +5,7 @@ import DocketStores
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// Settings → AI & Jira (spec §9): the terminal, the two commands, local clones and the Jira base URL.
+/// Settings → AI (spec §9.2): the terminal, the two commands and local clones.
 struct AISettingsView: View {
     let configStore: ConfigStore
     @State private var newRepository = ""
@@ -67,23 +67,6 @@ struct AISettingsView: View {
                 Text(
                     "The command runs in the clone of the pull request's repository, or in a new temporary folder.",
                     comment: "Clones caption"
-                )
-                .font(.caption).foregroundStyle(Color.textSecondary)
-            }
-            Section {
-                TextField(
-                    String(localized: "Jira site", comment: "Jira setting"),
-                    text: Binding(
-                        get: { integrations.jiraBaseURL ?? "" },
-                        set: { value in configStore.update { $0.integrations.jiraBaseURL = value.isEmpty ? nil : value }
-                        }),
-                    prompt: Text(verbatim: "https://acme.atlassian.net"))
-            } header: {
-                Text("Jira", comment: "AI settings section")
-            } footer: {
-                Text(
-                    "Open in Jira uses a link in the description, else an issue key in the title or branch.",
-                    comment: "Jira caption"
                 )
                 .font(.caption).foregroundStyle(Color.textSecondary)
             }

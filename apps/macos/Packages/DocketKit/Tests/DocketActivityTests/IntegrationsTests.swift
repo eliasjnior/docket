@@ -12,29 +12,32 @@ struct IntegrationsTests {
         return pullRequest
     }
 
-    @Test func jiraPrefersBodyLink() {
+    private let site = ["https://acme.atlassian.net/browse/OPS-1"]
+
+    @Test func jiraUsesTheDescriptionLink() {
         let pullRequest = pullRequest(
-            title: "API-7 Fix login", branch: "api-8-login",
-            links: ["https://other.atlassian.net/browse/X-1", "https://acme.atlassian.net/browse/API-12"])
-        #expect(
-            Jira.link(for: pullRequest, base: "https://acme.atlassian.net/")?.absoluteString
-                == "https://acme.atlassian.net/browse/API-12")
+            title: "API-7 Fix login", branch: "api-8-login", links: ["https://other.atlassian.net/browse/X-1"])
+        #expect(Jira.link(for: pullRequest, among: [])?.absoluteString == "https://other.atlassian.net/browse/X-1")
     }
 
-    @Test func jiraFallsBackToTitleThenBranch() {
+    @Test func withoutADescriptionLinkTheKeyUsesTheSiteOthersLinkTo() {
+        let others = [
+            pullRequest(links: site), pullRequest(links: site), pullRequest(links: ["https://b.example/browse/B-1"]),
+        ]
         #expect(
-            Jira.link(for: pullRequest(title: "[API-7] Fix login", branch: "api-8"), base: "acme.atlassian.net")?
-                .absoluteString == "https://acme.atlassian.net/browse/API-7")
+            Jira.link(for: pullRequest(title: "[API-7] Fix login", branch: "api-8"), among: others)?.absoluteString
+                == "https://acme.atlassian.net/browse/API-7")
         #expect(
-            Jira.link(
-                for: pullRequest(title: "Bump node-18", branch: "feature/api-8-login"), base: "acme.atlassian.net")?
+            Jira.link(for: pullRequest(title: "Bump node-18", branch: "feature/api-8-login"), among: others)?
                 .absoluteString == "https://acme.atlassian.net/browse/API-8")
-        #expect(Jira.link(for: pullRequest(title: "Fix login", branch: "main"), base: "acme.atlassian.net") == nil)
+        #expect(Jira.link(for: pullRequest(title: "Fix login", branch: "main"), among: others) == nil)
+        #expect(Jira.link(for: pullRequest(title: "API-7"), among: []) == nil)
     }
 
     @Test func namesThatLookLikeKeysAreNotIssues() {
+        let others = [pullRequest(links: site)]
         for title in ["Decode UTF-8 names", "Pin SHA-256 digests", "Parse ISO-8601 dates"] {
-            #expect(Jira.link(for: pullRequest(title: title), base: "acme.atlassian.net") == nil)
+            #expect(Jira.link(for: pullRequest(title: title), among: others) == nil)
         }
     }
 
@@ -42,11 +45,6 @@ struct IntegrationsTests {
         #expect(CommandScript.titleStandsAlone("tool {title}"))
         #expect(!CommandScript.titleStandsAlone(#"tool "{title}" {url}"#))
         #expect(!CommandScript.titleStandsAlone(Config.Integrations.defaultReviewCommand))
-    }
-
-    @Test func jiraNilWithoutBase() {
-        #expect(Jira.link(for: pullRequest(title: "API-7"), base: nil) == nil)
-        #expect(Jira.link(for: pullRequest(title: "API-7"), base: "  ") == nil)
     }
 
     @Test func placeholdersAreQuotedForWhereTheySit() {

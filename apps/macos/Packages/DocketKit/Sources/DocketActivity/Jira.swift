@@ -1,15 +1,26 @@
 import DocketCore
 import Foundation
 
-/// *Open in Jira* (spec §9.1): a link in the body on the base's host, else a key in the title, else in the branch.
+/// *Open in Jira* (spec §9.1). The description almost always links the issue, so that link wins. Without one, a
+/// key in the title or the branch is opened on the Jira site the other pull requests link to.
 public enum Jira {
-    public static func link(for pullRequest: PullRequest, base: String?) -> URL? {
-        guard let base = normalized(base), let host = URL(string: base)?.host?.lowercased() else { return nil }
-        if let link = pullRequest.issueLinks.first(where: { $0.host?.lowercased() == host }) { return link }
+    public static func link(for pullRequest: PullRequest, among others: [PullRequest]) -> URL? {
+        if let link = pullRequest.issueLinks.first { return link }
+        guard let site = site(of: others) else { return nil }
         let key =
             self.key(in: pullRequest.title)
             ?? pullRequest.headRefName.flatMap { self.key(in: $0, caseInsensitive: true) }
-        return key.flatMap { URL(string: "\(base)/browse/\($0)") }
+        return key.flatMap { URL(string: "\(site)/browse/\($0)") }
+    }
+
+    /// The Jira site most of the listed pull requests link to, as `https://host`.
+    static func site(of pullRequests: [PullRequest]) -> String? {
+        let hosts = pullRequests.flatMap(\.issueLinks).compactMap { link -> String? in
+            guard let host = link.host?.lowercased() else { return nil }
+            return "\(link.scheme ?? "https")://\(host)"
+        }
+        let counts = Dictionary(grouping: hosts, by: { $0 }).mapValues(\.count)
+        return counts.max { ($0.value, $1.key) < ($1.value, $0.key) }?.key
     }
 
     /// The first `ABC-123`. A branch is often lower case (`abc-123-fix`), so it may be read case-insensitively;
@@ -29,12 +40,4 @@ public enum Jira {
     static let notIssues: Set<String> = [
         "UTF", "SHA", "ISO", "HTTP", "HTTPS", "TLS", "SSL", "RFC", "MD", "IPV", "ES", "PEP", "CVE", "GPT", "H", "X",
     ]
-
-    /// `acme.atlassian.net` or `https://acme.atlassian.net/` as `https://acme.atlassian.net`.
-    static func normalized(_ base: String?) -> String? {
-        guard var text = base?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return nil }
-        if !text.contains("://") { text = "https://" + text }
-        while text.hasSuffix("/") { text.removeLast() }
-        return text
-    }
 }

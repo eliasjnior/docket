@@ -69,7 +69,7 @@ public struct Config: Codable, Hashable, Sendable {
         integrations = c.value(.integrations, default: Integrations())
     }
 
-    /// *Open in Jira* and the AI actions (spec §9).
+    /// The AI actions (spec §9.2).
     public struct Integrations: Codable, Hashable, Sendable {
         public static let defaultReviewCommand =
             #"claude "Review the pull request {url}. Read the diff, the description and the review comments with gh. "#
@@ -77,7 +77,6 @@ public struct Config: Codable, Hashable, Sendable {
         public static let defaultSummarizeCommand =
             #"claude "Summarize the pull request {url} in a few sentences: what it changes and why. Read it with gh.""#
 
-        public var jiraBaseURL: String?
         /// The terminal app's path; `nil` opens the script with the app macOS uses for `.command` files.
         public var terminalApp: String?
         public var reviewCommand: String
@@ -86,10 +85,9 @@ public struct Config: Codable, Hashable, Sendable {
         public var clones: [String: String]
 
         public init(
-            jiraBaseURL: String? = nil, terminalApp: String? = nil, reviewCommand: String = defaultReviewCommand,
+            terminalApp: String? = nil, reviewCommand: String = defaultReviewCommand,
             summarizeCommand: String = defaultSummarizeCommand, clones: [String: String] = [:]
         ) {
-            self.jiraBaseURL = jiraBaseURL
             self.terminalApp = terminalApp
             self.reviewCommand = reviewCommand
             self.summarizeCommand = summarizeCommand
@@ -98,7 +96,6 @@ public struct Config: Codable, Hashable, Sendable {
 
         public init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
-            jiraBaseURL = c.value(.jiraBaseURL, default: nil)
             terminalApp = c.value(.terminalApp, default: nil)
             reviewCommand = c.value(.reviewCommand, default: Self.defaultReviewCommand)
             summarizeCommand = c.value(.summarizeCommand, default: Self.defaultSummarizeCommand)

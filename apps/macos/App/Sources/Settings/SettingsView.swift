@@ -40,7 +40,7 @@ struct SettingsView: View {
                 .tabItem { Label(String(localized: "General", comment: "Settings tab"), systemImage: "gearshape") }
             AISettingsView(configStore: configStore)
                 .tabItem {
-                    Label(String(localized: "AI & Jira", comment: "Settings tab"), systemImage: "sparkles")
+                    Label(String(localized: "AI", comment: "Settings tab"), systemImage: "sparkles")
                 }
             UpdatesSettingsView(
                 configStore: configStore, updates: updates, info: info, showWhatsNew: showWhatsNew,

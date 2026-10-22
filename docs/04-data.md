@@ -43,7 +43,6 @@ written by a poll.
 | `triage.countDrafts` | Bool | `false` | `02` §3.6 |
 | `triage.notifyBots` | Bool | `false` | Review-request notifications and reminders for bot pull requests, `02` §3.6 |
 | `mineLayout` | `"list"` \| `"board"` | `"list"` | How *Mine* is shown, `05-design.md` §5.3 |
-| `integrations.jiraBaseURL` | String \| null | `null` | The Jira site of *Open in Jira* (FR-86) |
 | `integrations.terminalApp` | String \| null | `null` | Path of the terminal app; `null` uses the `.command` handler (FR-87) |
 | `integrations.reviewCommand` | String | A `claude` command | The template of *Review with AI*; `{url}`, `{repo}`, `{number}`, `{title}`, `{branch}` |
 | `integrations.summarizeCommand` | String | A `claude` command | The template of *Summarize with AI* |
