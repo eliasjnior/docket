@@ -1,4 +1,5 @@
 import AppKit
+import DocketActivity
 import DocketCore
 import DocketStores
 import SwiftUI
@@ -191,7 +192,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             },
-            markSeen: { ids in Task { await environment.poller.markSeen(ids) } })
+            markSeen: { ids in Task { await environment.poller.markSeen(ids) } },
+            jiraLink: { Jira.link(for: $0.pullRequest, base: configStore.config.integrations.jiraBaseURL) },
+            reviewWithAI: {
+                TerminalLauncher.run(.review, for: $0.pullRequest, integrations: configStore.config.integrations)
+            },
+            summarizeWithAI: {
+                TerminalLauncher.run(.summarize, for: $0.pullRequest, integrations: configStore.config.integrations)
+            })
     }
 
     private func chooseGhLocation() {

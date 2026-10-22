@@ -141,13 +141,15 @@ The IDs are kept so references stay valid.
 | **FR-83** | *Mine* is grouped into Ready, Blocked and Draft, shown as stacked sections or as a board, chosen in settings | P0 |
 | **FR-84** | *Retired*: tag retention | — |
 | **FR-85** | Docket never writes labels or anything else to GitHub (non-negotiable 5) | P0 |
+| **FR-86** | *Open in Jira* opens the issue: a Jira link in the description, else a key in the title, else in the branch, against a configured Jira site | P1 |
+| **FR-87** | *Review with AI* and *Summarize with AI* run an editable command in the chosen terminal, in the repository's local clone when one is set, else in a temporary folder (D-28) | P1 |
 
 ### 3.8 The app
 
 | ID | Requirement | Priority |
 |---|---|---|
 | **FR-90** | Launch at login, offered on first run and on by default once accepted | P0 |
-| **FR-91** | Settings in six sections: General (menu bar count, poll interval, launch at login), Account, Repositories, Notifications (kinds, bot allowlist, permission), Updates, About | P0 |
+| **FR-91** | Settings in seven sections (AI & Jira added for FR-86 and FR-87): General (menu bar count, poll interval, launch at login), Account, Repositories, Notifications (kinds, bot allowlist, permission), Updates, About | P0 |
 | **FR-92** | Poll interval of 30 s, 60 s (default), 2 min or 5 min | P0 |
 | **FR-93** | Self-update from GitHub Releases, as in Lookout (D-14) | P0 |
 | **FR-94** | What's New after an update, from the bundled changelog | P0 |

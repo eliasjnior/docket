@@ -153,6 +153,12 @@ struct RowMenu: View {
         }
         Button(String(localized: "Copy Reference", comment: "Row context menu")) { actions.copy(pullRequest.ref) }
         Divider()
+        let jira = actions.jiraLink(item)
+        Button(String(localized: "Open in Jira", comment: "Row context menu")) { jira.map(actions.open) }
+            .disabled(jira == nil)
+        Button(String(localized: "Review with AI", comment: "Row context menu")) { actions.reviewWithAI(item) }
+        Button(String(localized: "Summarize with AI", comment: "Row context menu")) { actions.summarizeWithAI(item) }
+        Divider()
         Button(String(localized: "Filter to \(pullRequest.repository)", comment: "Row context menu")) {
             actions.filterRepository(pullRequest.repository)
         }

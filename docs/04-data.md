@@ -41,6 +41,11 @@ written by a poll.
 | `triage.countBots` | Bool | `true` | `02` §3.6 |
 | `triage.countStale` | Bool | `false` | `02` §3.6 |
 | `mineLayout` | `"list"` \| `"board"` | `"list"` | How *Mine* is shown, `05-design.md` §5.3 |
+| `integrations.jiraBaseURL` | String \| null | `null` | The Jira site of *Open in Jira* (FR-86) |
+| `integrations.terminalApp` | String \| null | `null` | Path of the terminal app; `null` uses the `.command` handler (FR-87) |
+| `integrations.reviewCommand` | String | A `claude` command | The template of *Review with AI*; `{url}`, `{repo}`, `{number}`, `{title}`, `{branch}` |
+| `integrations.summarizeCommand` | String | A `claude` command | The template of *Summarize with AI* |
+| `integrations.clones` | `{owner/name: path}` | `{}` | Local clones the commands run in |
 | `notifications.reviewRequested` | Bool | `true` | FR-60, one per kind of `02` §5.3 |
 | `notifications.reviewSubmitted` | Bool | `true` | |
 | `notifications.commentAdded` | Bool | `true` | |
