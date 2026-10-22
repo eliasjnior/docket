@@ -39,10 +39,12 @@ public enum Reminders {
         /// Pull requests whose `reviewRequested` event is new in this poll.
         public var newlyRequested: Set<String>
         public var holding: Bool
+        /// Review requests left out by their triage (`docs/02-activity-detection.md` §3.6).
+        public var excluded: Set<String>
 
         public init(
             now: Date, timeZone: TimeZone, config: Config, isBaseline: Bool, newlyRequested: Set<String>,
-            holding: Bool = false
+            holding: Bool = false, excluded: Set<String> = []
         ) {
             self.now = now
             self.timeZone = timeZone
@@ -50,6 +52,7 @@ public enum Reminders {
             self.isBaseline = isBaseline
             self.newlyRequested = newlyRequested
             self.holding = holding
+            self.excluded = excluded
         }
     }
 
@@ -62,7 +65,7 @@ public enum Reminders {
         var next: [String: ReminderRecord] = [:]
         var due: [Reminder] = []
         let quiet = inQuietHours(now, settings.quietHours, timeZone: context.timeZone)
-        for entry in watched where isPending(entry, config: context.config) {
+        for entry in watched where isPending(entry, config: context.config) && !context.excluded.contains(entry.id) {
             let requestedAt = entry.request?.requestedAt ?? entry.pullRequest.createdAt
             var record: ReminderRecord
             if context.newlyRequested.contains(entry.id), records[entry.id]?.requestedAt != requestedAt {

@@ -12,11 +12,13 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
     public var mute: Config.MuteEntry.Scope?
     public var ignoredAt: Date?
     public var isMarked: Bool
+    /// Set for review requests only.
+    public var triage: Triage?
 
     public init(
         pullRequest: PullRequest, role: Role, status: Status, request: RequestInfo? = nil,
         reviewers: [ReviewerEntry] = [], tags: [String] = [], mute: Config.MuteEntry.Scope? = nil,
-        ignoredAt: Date? = nil, isMarked: Bool = false
+        ignoredAt: Date? = nil, isMarked: Bool = false, triage: Triage? = nil
     ) {
         self.pullRequest = pullRequest
         self.role = role
@@ -27,6 +29,7 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
         self.mute = mute
         self.ignoredAt = ignoredAt
         self.isMarked = isMarked
+        self.triage = triage
     }
 
     public var id: String { pullRequest.id }
@@ -37,7 +40,7 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
 
 public enum Watch {
     /// The rows for the cached summaries, with the selection applied (FR-74).
-    public static func items(cache: [CachedPullRequest], config: Config, state: PersistedState)
+    public static func items(cache: [CachedPullRequest], config: Config, state: PersistedState, now: Date)
         -> [WatchedPullRequest]
     {
         let marked = Set(state.marked)
@@ -55,7 +58,8 @@ public enum Watch {
                 tags: config.tags[pullRequest.id]?.tags ?? [],
                 mute: ignored == nil ? config.mutes[pullRequest.id]?.scope : nil,
                 ignoredAt: ignored?.ignoredAt,
-                isMarked: ignored == nil && marked.contains(pullRequest.id)
+                isMarked: ignored == nil && marked.contains(pullRequest.id),
+                triage: cached.role == .reviewRequested ? Triage.of(cached, config: config, now: now) : nil
             )
         }
     }

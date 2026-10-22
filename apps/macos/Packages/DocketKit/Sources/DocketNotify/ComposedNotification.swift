@@ -62,7 +62,7 @@ public struct ComposedNotification: Hashable, Sendable {
         url = event.url
         switch kind {
         case .reviewRequested:
-            title = String(localized: "Review requested by \(actor)", comment: "One review request")
+            title = String(localized: "\(actor) is waiting for your review", comment: "One review request")
             if let team = event.team {
                 body += " · " + String(localized: "via \(team.handle)", comment: "Team request")
             }

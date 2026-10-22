@@ -169,7 +169,8 @@ struct ReminderTests {
         detail.requestEvents.append(Fixtures.request("E2", at: timeline.now))
         let again = timeline.poll([pullRequest], [detail])
         #expect(again.notifications.isEmpty)
-        let items = Watch.items(cache: again.cache.pullRequests, config: timeline.config, state: again.state)
+        let items = Watch.items(
+            cache: again.cache.pullRequests, config: timeline.config, state: again.state, now: Fixtures.now)
         #expect(Count.count(items) == 1)
     }
 

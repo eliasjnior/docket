@@ -27,7 +27,7 @@ struct ComposedNotificationTests {
     @Test func oneReviewRequestNamesTheRequesterAndTeam() {
         let one = compose(
             .reviewRequested, [event(.reviewRequested, "E1", team: .team(organization: "acme", slug: "backend"))])
-        #expect(one.title == "Review requested by @ana")
+        #expect(one.title == "@ana is waiting for your review")
         #expect(one.subtitle == "acme/api #482")
         #expect(one.body == "Fix login redirect loop · via @acme/backend")
         #expect(one.category == .single)

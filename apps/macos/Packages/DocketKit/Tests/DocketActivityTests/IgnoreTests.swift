@@ -19,7 +19,8 @@ struct IgnoreTests {
         let output = timeline.poll([pullRequest], [detail])
         #expect(output.notifications.isEmpty)
         #expect(output.state.reminders.isEmpty)
-        let items = Watch.items(cache: output.cache.pullRequests, config: timeline.config, state: output.state)
+        let items = Watch.items(
+            cache: output.cache.pullRequests, config: timeline.config, state: output.state, now: Fixtures.now)
         #expect(Count.count(items) == 0)
         #expect(Sections(items).ignored.map(\.id) == [pullRequest.id])
         #expect(Sections(items).reviewRequested.isEmpty)
@@ -43,7 +44,8 @@ struct IgnoreTests {
         timeline.advance(60)
         let output = timeline.poll([pullRequest], [detail])
         #expect(output.notifications.allSatisfy { if case .reminders = $0.content { true } else { false } })
-        let items = Watch.items(cache: output.cache.pullRequests, config: timeline.config, state: output.state)
+        let items = Watch.items(
+            cache: output.cache.pullRequests, config: timeline.config, state: output.state, now: Fixtures.now)
         #expect(Count.count(items) == 1)
         #expect(Sections(items).reviewRequested.first?.items.map(\.id) == [pullRequest.id])
     }

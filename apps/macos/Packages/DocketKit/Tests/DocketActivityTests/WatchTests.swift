@@ -75,7 +75,7 @@ struct WatchTests {
                 "PR_3": Cursor(ref: "", role: .authored, updatedAt: now, enteredAt: now, lastMergeable: .conflicting)
             ],
             marked: ["PR_1", "PR_3"])
-        let items = Watch.items(cache: [api, legacy, mine], config: config, state: state)
+        let items = Watch.items(cache: [api, legacy, mine], config: config, state: state, now: Fixtures.now)
         #expect(items.map(\.id) == ["PR_1", "PR_3"])
         #expect(items[0].tags == ["wip"])
         #expect(items[0].mute == .all)

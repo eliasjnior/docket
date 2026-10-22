@@ -62,7 +62,8 @@ struct PollEngineTests {
         #expect(output.events.isEmpty)
         #expect(output.state.baselineAt == now)
         #expect(output.cache.pullRequests.count == 4)
-        let items = Watch.items(cache: output.cache.pullRequests, config: Config(), state: output.state)
+        let items = Watch.items(
+            cache: output.cache.pullRequests, config: Config(), state: output.state, now: Fixtures.now)
         #expect(Count.count(items) == 4)
         #expect(output.state.cursors["PR_1"]?.seen == ["E_PR_1"])
         #expect(output.state.cursors["PR_1"]?.enteredAt == now)

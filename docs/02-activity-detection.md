@@ -201,11 +201,32 @@ The cache keeps the latest review, comment or request per actor as it was read, 
 detail is read only when a pull request changed (§1), so the stamps from the last read are kept until
 the next one.
 
+### 3.6 Triage: Humans, Bots, Stale
+
+Every `reviewRequested` pull request is in exactly one of three groups, which the popover shows as
+sub-tabs:
+
+| Triage | When | Default outside the popover |
+|---|---|---|
+| `stale` | No human activity (§3.5) for `triage.staleAfterDays` (default 7), counting the pull request's creation | Left out (`countStale` off) |
+| `bots` | Not stale, and the author is a bot (§3.5) | Counted (`countBots` on) |
+| `humans` | Everything else | Counted |
+
+Stale is tested first, so an abandoned Dependabot pull request is stale, not a bot's. A review
+request made by a human is human activity, so a fresh request on an old pull request leaves *Stale*.
+
+A triage that is **left out** does three things. Its pull requests leave the menu bar count (§4), and
+they produce no `reviewRequested` notification and no reminder (§5.7). The other event kinds on them,
+such as a review on your own pull request, follow their own rules. When a left-out pull request
+comes back, by human activity or because the setting changed, it is tracked for reminders from that
+poll, without a burst for the time it was out.
+
 ## 4. The "needs you" count
 
 The number in the menu bar (FR-40) is the sum of:
 
-- every pull request with role `reviewRequested`; and
+- every pull request with role `reviewRequested`, except those whose triage (§3.6) is left out:
+  `Stale` by default, `Bots` when `triage.countBots` is off; and
 - every pull request with role `authored`, not a draft, whose status is `conflict`,
   `checksFailing`, `changesRequested` or `readyToMerge`;
 
@@ -477,13 +498,13 @@ dropped, not queued.
 
 ### 7.1 Coalescing
 
-Events left after §5.4 and §5.5 are grouped by `(repository, kind)`. Each group becomes one
-notification. Within a group, items are ordered oldest first.
+Events left after §5.4 and §5.5 are grouped by `(repository, kind)`, except `reviewRequested`,
+which is grouped by pull request: every new request is its own notification, because each is a
+person waiting on you. Each group becomes one notification. Within a group, items are ordered oldest first.
 
 | Group size | Title | Subtitle | Body |
 |---|---|---|---|
-| 1 × `reviewRequested` | `Review requested by @ana` | `acme/api #482` | `Fix login redirect loop` · `via @acme/backend` when through a team |
-| n × `reviewRequested` | `3 reviews requested` | `acme/api` | One line per pull request: `#482 Fix login redirect loop` |
+| 1 × `reviewRequested` | `@ana is waiting for your review` | `acme/api #482` | `Fix login redirect loop` · `via @acme/backend` when through a team |
 | 1 × `reviewSubmitted` | `@bruno approved` / `@bruno requested changes` / `@bruno commented` | `acme/api #470` | The pull request title |
 | n × `reviewSubmitted` | `2 reviews on your pull requests` | `acme/api` | `@bruno approved #470`, `@carla requested changes #471` |
 | 1 × `threadReply` | `@carla replied to your comment` | `acme/web #88` | The pull request title |
@@ -567,7 +588,7 @@ Each row is a test in `DocketActivityTests`, built from synthetic snapshots. Log
 | # | Given | Expected | Why |
 |---|---|---|---|
 | 1 | Fresh install; 4 pending review requests in 2 repositories | 0 notifications; count 4 | D-19. The naive answer — 4 notifications, or 2 grouped — makes the first launch a burst of things you already knew |
-| 2 | Saved state; Docket quit for 2 h; `ana` requested your review on `acme/api#482` meanwhile | 1 notification, `Review requested by @ana` | The saved cursors are the baseline, so time closed is not time lost |
+| 2 | Saved state; Docket quit for 2 h; `ana` requested your review on `acme/api#482` meanwhile | 1 notification, `@ana is waiting for your review` | The saved cursors are the baseline, so time closed is not time lost |
 | 3 | You reviewed `acme/api#482`; `ana` re-requests | 1 `reviewRequested` | A new `ReviewRequestedEvent` ID, and the role is `reviewRequested` again |
 | 4 | `ana` requests and withdraws your review between two polls | 0 notifications | The role check fails at the poll that sees the event |
 | 5 | `ana` approves your `acme/api#470` with 3 inline comments | 1 notification, `@ana approved` | §5.5 rule 1. The naive answer is 4 |
@@ -624,6 +645,15 @@ The P1 kinds:
 | 40 | On `carla`'s `acme/web#88`, `carla` writes `@you can you check the migration?` in the conversation | 1 `mention` | A conversation comment on someone else's pull request fires only as a mention |
 | 41 | On your `acme/api#470`, `dave` comments `ping @you` | 1 `mention`, no `commentAdded` | The mention replaces the comment for the same item |
 | 42 | `dave` writes `@acme/backend please look` or `@youngster` | 0 mentions | A team, or a longer login, is not you |
+
+Triage and one notification per request (§3.6, §7.1):
+
+| # | Given | Expected | Why |
+|---|---|---|---|
+| 43 | `ana`, `bruno` and `carla` each request your review in `acme/api` in one poll | 3 notifications, `@ana is waiting for your review`, … | A request is one person waiting; folding them hid who |
+| 44 | Seven requests arrive in one poll across five repositories | 5 notifications: four requests, then `3 more updates in 3 repositories` | The cap of §7.3 still holds |
+| 45 | `acme/api#482` was opened 20 days ago with no human activity since; a request arrives from a login in `extraBotLogins` | 0 notifications, no reminder, not in the count | Stale by default is left out; a bot's request is not human activity |
+| 46 | The same, but the request comes from `ana` | 1 notification | A human request is activity, so the pull request is no longer stale |
 
 ## 9. What can go wrong
 

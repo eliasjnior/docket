@@ -9,9 +9,11 @@ import Observation
 public final class WatchStore {
     public private(set) var snapshot = WatchSnapshot()
     @ObservationIgnored public let configStore: ConfigStore
+    @ObservationIgnored private let now: @Sendable () -> Date
 
-    public init(configStore: ConfigStore) {
+    public init(configStore: ConfigStore, now: @escaping @Sendable () -> Date = { Date() }) {
         self.configStore = configStore
+        self.now = now
     }
 
     public func apply(_ snapshot: WatchSnapshot) {
@@ -26,10 +28,10 @@ public final class WatchStore {
     public var hasCache: Bool { snapshot.cache != nil }
 
     public var items: [WatchedPullRequest] {
-        Watch.items(cache: snapshot.cache?.pullRequests ?? [], config: config, state: snapshot.state)
+        Watch.items(cache: snapshot.cache?.pullRequests ?? [], config: config, state: snapshot.state, now: now())
     }
 
-    public var count: Int { Count.count(items, settings: config.count) }
+    public var count: Int { Count.count(items, settings: config.count, triage: config.triage) }
 
     public func sections(tag: String? = nil, repository: String? = nil) -> Sections {
         Sections(items, tag: tag, repository: repository)

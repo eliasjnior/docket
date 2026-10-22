@@ -49,7 +49,12 @@ public enum Coalesce {
 
     public static func groups(events: [Event], reminders: [Reminder] = []) -> [PlannedNotification] {
         var groups: [PlannedNotification] = []
-        let byKey = Dictionary(grouping: events) { "\($0.repository.lowercased())|\($0.kind.rawValue)" }
+        // A review request is one notification per pull request: "@ana is waiting for your review".
+        let byKey = Dictionary(grouping: events) { event in
+            event.kind == .reviewRequested
+                ? "\(event.pullRequestID)|\(event.kind.rawValue)"
+                : "\(event.repository.lowercased())|\(event.kind.rawValue)"
+        }
         for (_, members) in byKey {
             let sorted = members.sorted { $0.at < $1.at }
             guard let first = sorted.first else { continue }
