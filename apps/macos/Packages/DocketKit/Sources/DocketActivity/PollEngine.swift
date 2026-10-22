@@ -168,7 +168,9 @@ struct PollRun {
         let commenters =
             detail.map { Reviewers.commenters(in: $0, pullRequest: pullRequest, viewer: viewer) }
             ?? old?.commenters ?? []
-        return CachedPullRequest(pullRequest: pullRequest, role: role, request: request, commenters: commenters)
+        let activity = detail.map(HumanActivity.stamps(in:)) ?? old?.activity ?? []
+        return CachedPullRequest(
+            pullRequest: pullRequest, role: role, request: request, commenters: commenters, activity: activity)
     }
 
     /// A node that failed this poll keeps its previous snapshot (`docs/02-activity-detection.md` §9).

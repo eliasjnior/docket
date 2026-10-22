@@ -41,12 +41,27 @@ public struct CachedPullRequest: Codable, Hashable, Sendable, Identifiable {
     public var request: RequestInfo?
     /// Reviewers whose only reviews are `COMMENTED` (`docs/02-activity-detection.md` §3.3).
     public var commenters: [String]
+    /// The latest review, comment or request per actor, from the last detail read.
+    public var activity: [ActivityStamp]
 
-    public init(pullRequest: PullRequest, role: Role, request: RequestInfo? = nil, commenters: [String] = []) {
+    public init(
+        pullRequest: PullRequest, role: Role, request: RequestInfo? = nil, commenters: [String] = [],
+        activity: [ActivityStamp] = []
+    ) {
         self.pullRequest = pullRequest
         self.role = role
         self.request = request
         self.commenters = commenters
+        self.activity = activity
+    }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        pullRequest = try c.decode(PullRequest.self, forKey: .pullRequest)
+        role = try c.decode(Role.self, forKey: .role)
+        request = c.value(.request, default: nil)
+        commenters = c.value(.commenters, default: [])
+        activity = c.value(.activity, default: [])
     }
 
     public var id: String { pullRequest.id }

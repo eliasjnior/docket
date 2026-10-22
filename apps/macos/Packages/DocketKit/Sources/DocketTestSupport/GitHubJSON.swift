@@ -38,10 +38,26 @@ enum GitHubJSON {
                     [
                         "commit": [
                             "oid": optional(pullRequest.headOID),
+                            "committedDate": date(pullRequest.headCommit?.at),
+                            "author": optional(
+                                pullRequest.headCommit.map { commit in
+                                    [
+                                        "name": commit.isBot ? "bot[bot]" : "Someone",
+                                        "user": optional(commit.login.map { ["login": $0] }),
+                                    ] as [String: Any]
+                                }),
                             "statusCheckRollup": optional(pullRequest.checks.map { ["state": $0.rawValue] }),
                         ]
                     ]
                 ]
+            ],
+            "body": pullRequest.issueLinks.map { "See \($0.absoluteString)" }.joined(separator: "\n"),
+            "headRefName": optional(pullRequest.headRefName),
+            "labels": ["nodes": pullRequest.labels.map { ["name": $0.name, "color": $0.color] }],
+            "timelineItems": [
+                "nodes": pullRequest.lastForcePush.map { push in
+                    [["createdAt": date(push.at), "actor": actor(Actor(login: push.login, isBot: push.isBot))]]
+                } ?? []
             ],
             "reviewRequests": ["nodes": pullRequest.reviewRequests.map { ["requestedReviewer": reviewer($0)] }],
             "latestOpinionatedReviews": [

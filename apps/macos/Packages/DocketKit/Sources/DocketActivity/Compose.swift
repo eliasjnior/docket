@@ -8,7 +8,9 @@ public enum Compose {
         let allowlist = Set(config.botAllowlist.map { $0.lowercased() })
         return raw.filter { item in
             if viewer.isYou(item.author?.login) { return false }
-            if let author = item.author, author.isAnyBot, !allowlist.contains(author.login.lowercased()) {
+            if let author = item.author, Bots.isBot(author, extra: config.triage.extraBotLogins),
+                !allowlist.contains(author.login.lowercased())
+            {
                 return false
             }
             let id = item.event.pullRequestID

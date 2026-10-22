@@ -16,6 +16,16 @@ struct PullRequestDTO: Decodable {
         var requestedReviewer: RequestedReviewerDTO?
     }
 
+    struct LabelNode: Decodable {
+        var name: String
+        var color: String
+    }
+
+    struct ForcePushNode: Decodable {
+        var createdAt: Date?
+        var actor: ActorDTO?
+    }
+
     struct LatestReviewNode: Decodable {
         struct Login: Decodable { var login: String }
         var author: Login?
@@ -38,6 +48,10 @@ struct PullRequestDTO: Decodable {
     var reviewRequests: Connection<RequestNode>?
     var latestOpinionatedReviews: Connection<LatestReviewNode>?
     var mergedBy: LatestReviewNode.Login?
+    var body: String?
+    var headRefName: String?
+    var labels: Connection<LabelNode>?
+    var timelineItems: Connection<ForcePushNode>?
 
     var value: PullRequest? {
         guard let id, let number, let title, let url, let createdAt, let updatedAt, let repository else { return nil }
@@ -54,8 +68,38 @@ struct PullRequestDTO: Decodable {
                 guard let login = node.author?.login, let state = ReviewState(rawValue: node.state) else { return nil }
                 return LatestReview(login: login, state: state)
             } ?? [],
-            mergedBy: mergedBy?.login
+            mergedBy: mergedBy?.login,
+            labels: labels?.values.map { Label(name: $0.name, color: $0.color) } ?? [],
+            headRefName: headRefName, issueLinks: IssueLinks.urls(in: body),
+            headCommit: head.flatMap { commit in
+                commit.committedDate.map {
+                    CommitStamp(
+                        login: commit.author?.user?.login,
+                        isBot: (commit.author?.name ?? "").hasSuffix("[bot]"), at: $0)
+                }
+            },
+            lastForcePush: timelineItems?.values.last.flatMap { node in
+                guard let at = node.createdAt, let actor = node.actor?.value else { return nil }
+                return ActivityStamp(login: actor.login, isBot: actor.isBot, at: at)
+            }
         )
+    }
+}
+
+/// Links to issues in a pull request body, such as Jira's `…/browse/ABC-123`. The body itself is dropped.
+enum IssueLinks {
+    static func urls(in body: String?) -> [URL] {
+        guard let body, !body.isEmpty else { return [] }
+        let pattern = #"https?://[^\s)\]>"']+/browse/[A-Z][A-Z0-9]+-\d+"#
+        guard let regex = try? NSRegularExpression(pattern: pattern) else { return [] }
+        let range = NSRange(body.startIndex..., in: body)
+        var seen = Set<String>()
+        return regex.matches(in: body, range: range).compactMap { match in
+            guard let span = Range(match.range, in: body) else { return nil }
+            let text = String(body[span])
+            guard seen.insert(text).inserted else { return nil }
+            return URL(string: text)
+        }
     }
 }
 
@@ -140,7 +184,15 @@ struct DetailDTO: Decodable {
 
 struct CommitDTO: Decodable {
     struct Rollup: Decodable { var state: String? }
+    struct Author: Decodable {
+        struct User: Decodable { var login: String }
+        var name: String?
+        var user: User?
+    }
+
     var oid: String?
+    var committedDate: Date?
+    var author: Author?
     var statusCheckRollup: Rollup?
 }
 

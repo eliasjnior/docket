@@ -19,13 +19,14 @@ public struct Config: Codable, Hashable, Sendable {
     public var mutes: [String: MuteEntry]
     /// The global shortcut that opens the popover (FR-48); `off` disables it.
     public var shortcut: Shortcut
+    public var triage: Triage
 
     public init(
         selection: Selection = Selection(), polling: Polling = Polling(), count: Count = Count(),
         notifications: Notifications = Notifications(), reminders: Reminders = Reminders(),
         ignored: [String: IgnoreEntry] = [:], botAllowlist: [String] = [], ghPath: String? = nil,
         launchAtLogin: Bool? = nil, updates: Updates = Updates(), tags: [String: TagEntry] = [:],
-        mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD
+        mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD, triage: Triage = Triage()
     ) {
         version = Self.currentVersion
         self.selection = selection
@@ -41,6 +42,7 @@ public struct Config: Codable, Hashable, Sendable {
         self.tags = tags
         self.mutes = mutes
         self.shortcut = shortcut
+        self.triage = triage
     }
 
     public init(from decoder: Decoder) throws {
@@ -59,6 +61,7 @@ public struct Config: Codable, Hashable, Sendable {
         tags = c.value(.tags, default: [:])
         mutes = c.value(.mutes, default: [:])
         shortcut = c.value(.shortcut, default: .controlOptionCommandD)
+        triage = c.value(.triage, default: Triage())
     }
 
     public enum Shortcut: String, Codable, Hashable, Sendable, CaseIterable {
@@ -86,6 +89,34 @@ public struct Config: Codable, Hashable, Sendable {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
         encoder.dateEncodingStrategy = .iso8601
         return try encoder.encode(self)
+    }
+
+    /// How *Review requested* splits into Humans, Bots and Stale, and what the last two do outside the popover.
+    public struct Triage: Codable, Hashable, Sendable {
+        public static let allowedStaleDays = [3, 5, 7, 14, 30]
+        public var staleAfterDays: Int
+        /// Logins treated as bots although GitHub types them as users.
+        public var extraBotLogins: [String]
+        public var countBots: Bool
+        public var countStale: Bool
+
+        public init(
+            staleAfterDays: Int = 7, extraBotLogins: [String] = [], countBots: Bool = true, countStale: Bool = false
+        ) {
+            self.staleAfterDays = staleAfterDays
+            self.extraBotLogins = extraBotLogins
+            self.countBots = countBots
+            self.countStale = countStale
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            let days = c.value(.staleAfterDays, default: 7)
+            staleAfterDays = Self.allowedStaleDays.contains(days) ? days : 7
+            extraBotLogins = c.value(.extraBotLogins, default: [])
+            countBots = c.value(.countBots, default: true)
+            countStale = c.value(.countStale, default: false)
+        }
     }
 
     public struct Polling: Codable, Hashable, Sendable {

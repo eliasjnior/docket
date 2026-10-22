@@ -36,6 +36,10 @@ written by a poll.
 | `polling.intervalSeconds` | `30` \| `60` \| `120` \| `300` | `60` | FR-92 |
 | `count.includeReviewRequests` | Bool | `true` | `02` §4 |
 | `count.includeBlockedAuthored` | Bool | `true` | `02` §4 |
+| `triage.staleAfterDays` | `3` \| `5` \| `7` \| `14` \| `30` | `7` | `02` §3.6 |
+| `triage.extraBotLogins` | `[String]` | `[]` | Logins treated as bots, `02` §3.5 |
+| `triage.countBots` | Bool | `true` | `02` §3.6 |
+| `triage.countStale` | Bool | `false` | `02` §3.6 |
 | `notifications.reviewRequested` | Bool | `true` | FR-60, one per kind of `02` §5.3 |
 | `notifications.reviewSubmitted` | Bool | `true` | |
 | `notifications.commentAdded` | Bool | `true` | |
@@ -166,7 +170,7 @@ summaries by `DocketActivity`, so a rule change in an update applies to cached d
 | `version` | integer | §1 |
 | `fetchedAt` | timestamp | Drives "updated N min ago" |
 | `viewerLogin` | String | A mismatch with `state.json` discards the cache |
-| `pullRequests` | `[PullRequestSummary]` | The fields of the summary query in `02` §6.1, plus each pull request's latest review-request time and requester for display |
+| `pullRequests` | `[PullRequestSummary]` | The fields of the summary query in `02` §6.1, plus each pull request's latest review-request time and requester for display, and `activity`: the latest review, comment or request per actor from the last detail read (`02` §3.5) |
 | `knownRepositories` | `[{name, lastSeenAt}]` | Repositories seen in the last 90 days, for the selection picker (FR-73) |
 
 `cache/` is marked `isExcludedFromBackup`: it is rebuilt by one poll and holds titles from private
@@ -215,7 +219,8 @@ your selection and tags, nothing else.
 | **Diffs, file names, code** | Docket does not read them at all (`01-product.md` §6) |
 | **Notification history** | Only event IDs for deduplication. A history would be a second inbox, which is what Docket replaces |
 | **Avatars** | Logins are shown as text (`05-design.md`). Avatars would add an image host, a cache and colleagues' faces on disk for no decision they change |
-| **E-mail addresses, names, other profile fields** | Not queried |
+| **E-mail addresses, names, other profile fields** | Not queried, except the head commit's git author name, read only to tell a bot's commit (`dependabot[bot]`) and discarded |
+| **Pull request bodies** | Read only to extract issue links for *Open in Jira* (`02` §6.1); the links are kept, the text is discarded |
 | **GitHub's notification inbox** | Never read (D-07) |
 | **Anything about pull requests outside the watch set** | Discovery returns IDs; only watched ones are summarized |
 
