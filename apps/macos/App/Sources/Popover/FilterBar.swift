@@ -19,14 +19,14 @@ struct FilterBar: View {
                         subTab(triage, count: sections.triageCounts[triage] ?? 0)
                     }
                     Spacer(minLength: 0)
-                    ActionsMenu(model: model, sections: sections, actions: actions)
+                    ActionsMenu(model: model, sections: sections, layout: watch.config.mineLayout, actions: actions)
                 }
             }
             HStack(spacing: 6) {
                 FilterChips(watch: watch, model: model)
                 Spacer(minLength: 0)
                 if model.tab != .reviewRequested {
-                    ActionsMenu(model: model, sections: sections, actions: actions)
+                    ActionsMenu(model: model, sections: sections, layout: watch.config.mineLayout, actions: actions)
                 }
             }
         }
@@ -65,6 +65,7 @@ extension Triage {
         switch self {
         case .humans: String(localized: "Humans", comment: "Review requested sub-tab")
         case .bots: String(localized: "Bots", comment: "Review requested sub-tab")
+        case .drafts: String(localized: "Drafts", comment: "Review requested sub-tab")
         case .stale: String(localized: "Stale", comment: "Review requested sub-tab")
         }
     }
@@ -74,12 +75,13 @@ extension Triage {
 struct ActionsMenu: View {
     let model: PopoverModel
     let sections: Sections
+    let layout: Config.MineLayout
     let actions: PopoverActions
 
     var body: some View {
         Menu {
             Button(String(localized: "Mark All as Seen", comment: "Actions menu")) {
-                actions.row.markSeen(PopoverView.visibleItems(sections, model: model).map(\.id))
+                actions.row.markSeen(PopoverView.visibleItems(sections, model: model, layout: layout).map(\.id))
             }
         } label: {
             Image(systemName: "ellipsis")

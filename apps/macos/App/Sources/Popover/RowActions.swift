@@ -11,6 +11,10 @@ struct RowActions {
     var setIgnored: (WatchedPullRequest, Bool) -> Void
     /// Opened from Docket, or *Mark All as Seen* (spec §4).
     var markSeen: ([String]) -> Void
+    /// The issue link of *Open in Jira*, or `nil` when there is none (spec §9.1).
+    var jiraLink: (WatchedPullRequest) -> URL? = { _ in nil }
+    var reviewWithAI: (WatchedPullRequest) -> Void = { _ in }
+    var summarizeWithAI: (WatchedPullRequest) -> Void = { _ in }
 
     enum MuteChoice {
         case reminders

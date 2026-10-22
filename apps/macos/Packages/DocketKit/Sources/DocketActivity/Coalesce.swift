@@ -56,7 +56,9 @@ public enum Coalesce {
                 : "\(event.repository.lowercased())|\(event.kind.rawValue)"
         }
         for (_, members) in byKey {
-            let sorted = members.sorted { $0.at < $1.at }
+            var sorted = members.sorted { $0.at < $1.at }
+            // Requested from you and a team of yours in one poll: one person waiting, one notification.
+            if let last = sorted.last, last.kind == .reviewRequested { sorted = [last] }
             guard let first = sorted.first else { continue }
             groups.append(PlannedNotification(repository: first.repository, content: .events(first.kind, sorted)))
         }

@@ -28,7 +28,9 @@ public final class WatchStore {
     public var hasCache: Bool { snapshot.cache != nil }
 
     public var items: [WatchedPullRequest] {
-        Watch.items(cache: snapshot.cache?.pullRequests ?? [], config: config, state: snapshot.state, now: now())
+        Watch.items(
+            cache: snapshot.cache?.pullRequests ?? [], config: config, state: snapshot.state,
+            now: now().addingTimeInterval(snapshot.state.lastPoll?.serverTimeOffset ?? 0))
     }
 
     public var count: Int { Count.count(items, settings: config.count, triage: config.triage) }

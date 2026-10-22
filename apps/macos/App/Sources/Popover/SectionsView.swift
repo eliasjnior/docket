@@ -18,7 +18,7 @@ struct SectionsView: View {
             {
                 EmptyLine(text: String(localized: "No repositories selected.", comment: "Empty state in only mode"))
                 Button(
-                    String(localized: "Choose Repositories…", comment: "Empty state button"),
+                    String(localized: "Choose Repositories", comment: "Empty state button"),
                     action: actions.openSettings
                 )
                 .padding(.horizontal, 16)
@@ -38,7 +38,7 @@ struct SectionsView: View {
             case .mine:
                 if sections.mine.isEmpty { EmptyLine(text: emptyText(.mine)) }
                 if watch.config.mineLayout == .board {
-                    MineBoard(groups: sections.mineGroups, now: now, actions: actions.row)
+                    MineBoard(groups: sections.mineGroups, now: now, actions: actions.row, focusedID: model.focusedID)
                 } else {
                     ForEach(sections.mineGroups) { group in
                         let collapsed = group.kind == .draft && !model.draftsExpanded
@@ -92,6 +92,7 @@ struct SectionsView: View {
             return switch model.triage {
             case .humans: String(localized: "No reviews waiting on you.", comment: "Empty state")
             case .bots: String(localized: "No review requests from bots.", comment: "Empty state")
+            case .drafts: String(localized: "No drafts waiting on you.", comment: "Empty state")
             case .stale: String(localized: "Nothing stale.", comment: "Empty state")
             }
         case .mine:

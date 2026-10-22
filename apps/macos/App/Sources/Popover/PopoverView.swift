@@ -5,7 +5,7 @@ import SwiftUI
 
 /// The popover of `docs/05-design.md` §5: header, banners, tabs, filters, then the list or a full screen.
 struct PopoverView: View {
-    static let width: CGFloat = 400
+    static let width: CGFloat = 460
     static let boardWidth: CGFloat = 640
 
     let watch: WatchStore
@@ -48,6 +48,8 @@ struct PopoverView: View {
             }
         }
         .frame(width: isBoard ? Self.boardWidth : Self.width)
+        // Solid, not the popover's vibrant material: through vibrancy the text read pale and see-through.
+        .background(Color(nsColor: .windowBackgroundColor))
         .focusable()
         .focusEffectDisabled()
         .onKeyPress(.downArrow) { move(1) }
@@ -72,13 +74,18 @@ struct PopoverView: View {
 extension PopoverView {
     /// The rows of the current tab and sub-tab, in display order.
     var visibleItems: [WatchedPullRequest] {
-        Self.visibleItems(watch.sections(filter: model.filter), model: model)
+        Self.visibleItems(watch.sections(filter: model.filter), model: model, layout: watch.config.mineLayout)
     }
 
-    static func visibleItems(_ sections: Sections, model: PopoverModel) -> [WatchedPullRequest] {
+    /// What is on screen: a collapsed Draft group is not.
+    static func visibleItems(_ sections: Sections, model: PopoverModel, layout: Config.MineLayout)
+        -> [WatchedPullRequest]
+    {
         switch model.tab {
         case .reviewRequested: sections.reviewRequested(model.triage).flatMap(\.items)
-        case .mine: sections.mine
+        case .mine:
+            sections.mineGroups.filter { $0.kind != .draft || layout == .board || model.draftsExpanded }
+                .flatMap(\.items)
         case .involved: sections.involved
         case .ignored: sections.ignored
         }
@@ -98,7 +105,7 @@ extension PopoverView {
 
     func switchTab(_ step: Int) -> KeyPress.Result {
         var tabs: [PopoverModel.Section] = [.reviewRequested, .mine, .involved]
-        if !watch.sections().ignored.isEmpty { tabs.append(.ignored) }
+        if !watch.sections(filter: model.filter).ignored.isEmpty { tabs.append(.ignored) }
         guard let index = tabs.firstIndex(of: model.tab) else { return .ignored }
         model.tab = tabs[(index + step + tabs.count) % tabs.count]
         model.focusedID = nil
@@ -127,8 +134,8 @@ struct PopoverHeader: View {
                     ? Text("Refreshing", comment: "Refresh button while a poll runs")
                     : Text("Refresh", comment: "Refresh button"))
             Menu {
-                Button(String(localized: "Settings…", comment: "Gear menu"), action: actions.openSettings)
-                Button(String(localized: "Check for Updates…", comment: "Gear menu"), action: actions.checkForUpdates)
+                Button(String(localized: "Settings", comment: "Gear menu"), action: actions.openSettings)
+                Button(String(localized: "Check for Updates", comment: "Gear menu"), action: actions.checkForUpdates)
                 Divider()
                 Button(String(localized: "Quit Docket", comment: "Gear menu"), action: actions.quit)
             } label: {

@@ -68,6 +68,9 @@ enum Snapshots {
             .frame(width: 520, height: 320),
             appearance: appearance, to: directory, name: "settings-repositories-\(suffix)")
         render(
+            AISettingsView(configStore: configStore).frame(width: 520),
+            appearance: appearance, to: directory, name: "settings-ai-\(suffix)")
+        render(
             GeneralSettingsView(configStore: configStore).frame(width: 520),
             appearance: appearance, to: directory, name: "settings-general-\(suffix)")
     }

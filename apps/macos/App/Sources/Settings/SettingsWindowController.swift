@@ -1,13 +1,15 @@
 import AppKit
 import SwiftUI
 
+/// The settings window: a native toolbar of tabs, as macOS's own settings, each tab a hosted SwiftUI form. A
+/// SwiftUI `TabView` in a plain window drew its own segmented bar instead, crowded against the title bar.
 @MainActor
 final class SettingsWindowController {
     private var window: NSWindow?
-    private let makeContent: () -> AnyView
+    private let makeTabs: () -> [SettingsTab]
 
-    init(makeContent: @escaping () -> AnyView) {
-        self.makeContent = makeContent
+    init(makeTabs: @escaping () -> [SettingsTab]) {
+        self.makeTabs = makeTabs
     }
 
     func show() {
@@ -18,9 +20,19 @@ final class SettingsWindowController {
     }
 
     private func makeWindow() -> NSWindow {
-        let controller = NSHostingController(rootView: makeContent())
-        controller.sizingOptions = [.preferredContentSize]
-        let window = NSWindow(contentViewController: controller)
+        let tabs = NSTabViewController()
+        tabs.tabStyle = .toolbar
+        tabs.transitionOptions = [.allowUserInteraction]
+        for tab in makeTabs() {
+            let controller = NSHostingController(rootView: tab.content)
+            controller.sizingOptions = [.preferredContentSize]
+            controller.title = tab.title
+            let item = NSTabViewItem(viewController: controller)
+            item.label = tab.title
+            item.image = NSImage(systemSymbolName: tab.symbol, accessibilityDescription: tab.title)
+            tabs.addTabViewItem(item)
+        }
+        let window = NSWindow(contentViewController: tabs)
         window.title = String(localized: "Docket Settings", comment: "Settings window title")
         window.styleMask = [.titled, .closable, .miniaturizable]
         window.toolbarStyle = .preference

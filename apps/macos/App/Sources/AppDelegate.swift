@@ -1,4 +1,5 @@
 import AppKit
+import DocketActivity
 import DocketCore
 import DocketStores
 import SwiftUI
@@ -61,14 +62,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             chooseLocation: { [weak self] in self?.chooseGhLocation() },
             retry: { environment.retryAuthentication() })
         return SettingsWindowController {
-            AnyView(
-                SettingsView(
-                    watch: environment.watch, configStore: environment.configStore, account: account,
-                    permission: environment.permission,
-                    requestPermission: { Task { await environment.requestNotificationPermission() } },
-                    checkRepository: { await environment.repositoryExists($0) }, updates: environment.updates,
-                    info: environment.info, loginItem: environment.loginItem, dataFolder: environment.paths.root,
-                    showWhatsNew: { updateWindows.showWhatsNew() }, showPrompt: { updateWindows.showPrompt() }))
+            (SettingsView(
+                watch: environment.watch, configStore: environment.configStore, account: account,
+                permission: environment.permission,
+                requestPermission: { Task { await environment.requestNotificationPermission() } },
+                checkRepository: { await environment.repositoryExists($0) }, updates: environment.updates,
+                info: environment.info, loginItem: environment.loginItem, dataFolder: environment.paths.root,
+                showWhatsNew: { updateWindows.showWhatsNew() }, showPrompt: { updateWindows.showPrompt() })).tabs
         }
     }
 
@@ -114,7 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             title: String(localized: "Refresh", comment: "Status item menu"), action: #selector(refresh),
             keyEquivalent: "r")
         let settings = NSMenuItem(
-            title: String(localized: "Settings…", comment: "Status item menu"), action: #selector(openSettings),
+            title: String(localized: "Settings", comment: "Status item menu"), action: #selector(openSettings),
             keyEquivalent: ",")
         let quit = NSMenuItem(
             title: String(localized: "Quit Docket", comment: "Status item menu"),
@@ -160,8 +160,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func rowActions(_ environment: AppEnvironment) -> RowActions {
         let configStore = environment.configStore
         let popover = popover
+        // The popover stays open over a context menu's action, so leaving for another app closes it by hand.
+        let close = { [weak self] in self?.statusBar?.close() }
         return RowActions(
-            open: { NSWorkspace.shared.open($0) },
+            open: { url in
+                NSWorkspace.shared.open(url)
+                close()
+            },
             copy: { text in
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(text, forType: .string)
@@ -191,7 +196,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     }
                 }
             },
-            markSeen: { ids in Task { await environment.poller.markSeen(ids) } })
+            markSeen: { ids in Task { await environment.poller.markSeen(ids) } },
+            jiraLink: { item in
+                Jira.link(for: item.pullRequest, among: environment.watch.items.map(\.pullRequest))
+            },
+            reviewWithAI: {
+                TerminalLauncher.run(.review, for: $0.pullRequest, integrations: configStore.config.integrations)
+                close()
+            },
+            summarizeWithAI: {
+                TerminalLauncher.run(.summarize, for: $0.pullRequest, integrations: configStore.config.integrations)
+                close()
+            })
     }
 
     private func chooseGhLocation() {

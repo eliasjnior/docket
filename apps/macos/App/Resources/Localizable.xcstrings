@@ -140,6 +140,9 @@
         }
       }
     },
+    "AI" : {
+      "comment" : "Settings tab"
+    },
     "About" : {
       "comment" : "Settings tab"
     },
@@ -158,8 +161,17 @@
     "Add bot" : {
       "comment" : "Bot allowlist button"
     },
+    "All repositories except these" : {
+      "comment" : "Selection mode"
+    },
     "All repositories, except…" : {
       "comment" : "Selection mode"
+    },
+    "Allow" : {
+      "comment" : "Notification permission button"
+    },
+    "Allow in System Settings" : {
+      "comment" : "Login item button"
     },
     "Allow in System Settings…" : {
       "comment" : "Login item button"
@@ -191,11 +203,11 @@
     "Bots" : {
       "comment" : "Notifications settings section\nReview requested sub-tab"
     },
-    "Bots and stale pull requests" : {
-      "comment" : "Notifications settings section"
-    },
     "Bots never notify unless they are listed here." : {
       "comment" : "Bot allowlist caption"
+    },
+    "Bots, drafts and stale pull requests" : {
+      "comment" : "Notifications settings section"
     },
     "By %@." : {
       "comment" : "VoiceOver: author"
@@ -214,6 +226,9 @@
     },
     "Check Now" : {
       "comment" : "Updates button"
+    },
+    "Check for Updates" : {
+      "comment" : "Gear menu"
     },
     "Check for Updates…" : {
       "comment" : "Gear menu"
@@ -239,11 +254,29 @@
     "Checks running" : {
       "comment" : "Status chip"
     },
+    "Choose Folder" : {
+      "comment" : "Clones button"
+    },
+    "Choose Folder…" : {
+      "comment" : "Clones button"
+    },
+    "Choose Location" : {
+      "comment" : "Account setting button\nFull screen button"
+    },
     "Choose Location…" : {
       "comment" : "Account setting button\nFull screen button"
     },
+    "Choose Repositories" : {
+      "comment" : "Empty state button"
+    },
     "Choose Repositories…" : {
       "comment" : "Empty state button"
+    },
+    "Choose Terminal" : {
+      "comment" : "Terminal picker button"
+    },
+    "Choose Terminal…" : {
+      "comment" : "Terminal picker button"
     },
     "Choose the gh executable" : {
       "comment" : "Open panel message"
@@ -281,10 +314,13 @@
     "Couldn't update. Showing data from %@." : {
       "comment" : "Failed poll banner"
     },
-    "Count and notify bot pull requests" : {
+    "Count and notify drafts" : {
       "comment" : "Triage setting"
     },
     "Count and notify stale pull requests" : {
+      "comment" : "Triage setting"
+    },
+    "Count bot pull requests" : {
       "comment" : "Triage setting"
     },
     "Count review requests" : {
@@ -295,6 +331,9 @@
     },
     "Current version" : {
       "comment" : "Updates setting"
+    },
+    "Default for .command files" : {
+      "comment" : "Terminal picker"
     },
     "Deliver Now" : {
       "comment" : "Focus hold banner button"
@@ -323,8 +362,14 @@
     "Draft" : {
       "comment" : "Mine group\nThe draft modifier beside the status chip"
     },
+    "Drafts" : {
+      "comment" : "Review requested sub-tab"
+    },
     "Every" : {
       "comment" : "Reminder interval"
+    },
+    "Export" : {
+      "comment" : "Export settings button"
     },
     "Export…" : {
       "comment" : "Export settings button"
@@ -386,8 +431,14 @@
     "Ignored" : {
       "comment" : "Tab"
     },
+    "Import" : {
+      "comment" : "Import settings button"
+    },
     "Import…" : {
       "comment" : "Import settings button"
+    },
+    "Inside single quotes, {%@} is not replaced." : {
+      "comment" : "Command warning"
     },
     "Install and Relaunch" : {
       "comment" : "Update prompt button"
@@ -428,6 +479,9 @@
     "Loading pull requests…" : {
       "comment" : "First poll of a launch with no cache"
     },
+    "Local clones" : {
+      "comment" : "AI settings section"
+    },
     "Mark All as Seen" : {
       "comment" : "Actions menu"
     },
@@ -457,6 +511,9 @@
     },
     "Muted." : {
       "comment" : "VoiceOver: muted"
+    },
+    "No drafts waiting on you." : {
+      "comment" : "Empty state"
     },
     "No open pull requests of yours in the watched repositories." : {
       "comment" : "Empty state"
@@ -521,6 +578,9 @@
     "Notifications are off for Docket." : {
       "comment" : "Permission banner"
     },
+    "Notify about bot pull requests" : {
+      "comment" : "Triage setting"
+    },
     "Notify me about" : {
       "comment" : "Notifications settings section"
     },
@@ -569,7 +629,13 @@
     "Open for %@" : {
       "comment" : "VoiceOver: age"
     },
+    "Open in" : {
+      "comment" : "Terminal picker"
+    },
     "Open in Browser" : {
+      "comment" : "Row context menu"
+    },
+    "Open in Jira" : {
       "comment" : "Row context menu"
     },
     "Org" : {
@@ -589,6 +655,9 @@
     },
     "Poll interval" : {
       "comment" : "General settings section"
+    },
+    "Put {title} inside quotes: a title starting with - would be read as an option." : {
+      "comment" : "Command warning"
     },
     "Quiet hours" : {
       "comment" : "Reminders setting"
@@ -623,6 +692,9 @@
     "Remove bot" : {
       "comment" : "Bot allowlist button"
     },
+    "Remove clone" : {
+      "comment" : "Clones button"
+    },
     "Reply to your comment" : {
       "comment" : "Notification kind"
     },
@@ -632,14 +704,23 @@
     "Repositories" : {
       "comment" : "Settings tab"
     },
+    "Repository" : {
+      "comment" : "Clones field"
+    },
     "Requested from team %@." : {
       "comment" : "VoiceOver: team"
+    },
+    "Reset to Default" : {
+      "comment" : "Command button"
     },
     "Review on your pull request" : {
       "comment" : "Notification kind"
     },
     "Review requested" : {
       "comment" : "Notification kind\nTab"
+    },
+    "Review with AI" : {
+      "comment" : "AI settings section\nRow context menu"
     },
     "Reviewers: %@." : {
       "comment" : "VoiceOver: reviewers"
@@ -651,7 +732,7 @@
       "comment" : "Account settings section"
     },
     "Settings" : {
-      "comment" : "Gear menu button"
+      "comment" : "Gear menu\nGear menu button\nStatus item menu"
     },
     "Settings file" : {
       "comment" : "General settings section"
@@ -689,11 +770,20 @@
     "Stop Ignoring" : {
       "comment" : "Row context menu"
     },
+    "Summarize with AI" : {
+      "comment" : "AI settings section\nRow context menu"
+    },
+    "Terminal" : {
+      "comment" : "AI settings section"
+    },
     "That file is not a Docket settings file this version can read." : {
       "comment" : "Import error"
     },
     "The GitHub CLI token is missing %@" : {
       "comment" : "Full screen title"
+    },
+    "The command runs in the clone of the pull request's repository, or in a new temporary folder." : {
+      "comment" : "Clones caption"
     },
     "The pull requests waiting on you, from the menu bar." : {
       "comment" : "About: tagline"
@@ -823,6 +913,9 @@
     },
     "via a team" : {
       "comment" : "A review request through a team Docket cannot name"
+    },
+    "{url}, {repo}, {number}, {title} and {branch} are replaced." : {
+      "comment" : "Command caption"
     }
   },
   "version" : "1.0"

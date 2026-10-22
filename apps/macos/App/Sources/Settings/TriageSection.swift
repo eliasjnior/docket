@@ -18,11 +18,17 @@ struct TriageSection: View {
                 }
             }
             Toggle(
-                String(localized: "Count and notify bot pull requests", comment: "Triage setting"),
+                String(localized: "Count bot pull requests", comment: "Triage setting"),
                 isOn: binding(\.triage.countBots))
+            Toggle(
+                String(localized: "Notify about bot pull requests", comment: "Triage setting"),
+                isOn: binding(\.triage.notifyBots))
             Toggle(
                 String(localized: "Count and notify stale pull requests", comment: "Triage setting"),
                 isOn: binding(\.triage.countStale))
+            Toggle(
+                String(localized: "Count and notify drafts", comment: "Triage setting"),
+                isOn: binding(\.triage.countDrafts))
             TextField(
                 String(localized: "Also bots", comment: "Extra bot logins field"), text: $extraBots,
                 prompt: Text("renovate, ci-user", comment: "Extra bot logins placeholder")
@@ -31,7 +37,7 @@ struct TriageSection: View {
             .onAppear { extraBots = configStore.config.triage.extraBotLogins.joined(separator: ", ") }
             .onDisappear(perform: saveExtraBots)
         } header: {
-            Text("Bots and stale pull requests", comment: "Notifications settings section")
+            Text("Bots, drafts and stale pull requests", comment: "Notifications settings section")
         } footer: {
             Text(
                 "When off, they leave the menu bar count, review-request notifications and reminders.",

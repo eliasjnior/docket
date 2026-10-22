@@ -21,6 +21,7 @@ public struct Config: Codable, Hashable, Sendable {
     public var triage: Triage
     /// How *Mine* is laid out: stacked sections or a board (spec §7).
     public var mineLayout: MineLayout
+    public var integrations: Integrations
 
     public init(
         selection: Selection = Selection(), polling: Polling = Polling(), count: Count = Count(),
@@ -28,7 +29,7 @@ public struct Config: Codable, Hashable, Sendable {
         ignored: [String: IgnoreEntry] = [:], botAllowlist: [String] = [], ghPath: String? = nil,
         launchAtLogin: Bool? = nil, updates: Updates = Updates(),
         mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD, triage: Triage = Triage(),
-        mineLayout: MineLayout = .list
+        mineLayout: MineLayout = .list, integrations: Integrations = Integrations()
     ) {
         version = Self.currentVersion
         self.selection = selection
@@ -45,6 +46,7 @@ public struct Config: Codable, Hashable, Sendable {
         self.shortcut = shortcut
         self.triage = triage
         self.mineLayout = mineLayout
+        self.integrations = integrations
     }
 
     public init(from decoder: Decoder) throws {
@@ -64,6 +66,46 @@ public struct Config: Codable, Hashable, Sendable {
         shortcut = c.value(.shortcut, default: .controlOptionCommandD)
         triage = c.value(.triage, default: Triage())
         mineLayout = c.value(.mineLayout, default: .list)
+        integrations = c.value(.integrations, default: Integrations())
+    }
+
+    /// The AI actions (spec §9.2).
+    public struct Integrations: Codable, Hashable, Sendable {
+        public static let defaultReviewCommand =
+            #"claude "Review the pull request {url}. Read the diff, the description and the review comments with gh. "#
+            + #"Report bugs, risky changes and missing tests, citing file and line.""#
+        public static let defaultSummarizeCommand =
+            #"claude "Summarize the pull request {url} in a few sentences: what it changes and why. Read it with gh.""#
+
+        /// The terminal app's path; `nil` opens the script with the app macOS uses for `.command` files.
+        public var terminalApp: String?
+        public var reviewCommand: String
+        public var summarizeCommand: String
+        /// `owner/name` to a local clone the command runs in.
+        public var clones: [String: String]
+
+        public init(
+            terminalApp: String? = nil, reviewCommand: String = defaultReviewCommand,
+            summarizeCommand: String = defaultSummarizeCommand, clones: [String: String] = [:]
+        ) {
+            self.terminalApp = terminalApp
+            self.reviewCommand = reviewCommand
+            self.summarizeCommand = summarizeCommand
+            self.clones = clones
+        }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            terminalApp = c.value(.terminalApp, default: nil)
+            reviewCommand = c.value(.reviewCommand, default: Self.defaultReviewCommand)
+            summarizeCommand = c.value(.summarizeCommand, default: Self.defaultSummarizeCommand)
+            clones = c.value(.clones, default: [:])
+        }
+
+        /// The clone of `repository`, matched case-insensitively.
+        public func clone(of repository: String) -> String? {
+            clones.first { $0.key.caseInsensitiveCompare(repository) == .orderedSame }?.value
+        }
     }
 
     public enum MineLayout: String, Codable, Hashable, Sendable, CaseIterable {
@@ -106,14 +148,20 @@ public struct Config: Codable, Hashable, Sendable {
         public var extraBotLogins: [String]
         public var countBots: Bool
         public var countStale: Bool
+        public var countDrafts: Bool
+        /// Review-request notifications and reminders for bot pull requests; off by default.
+        public var notifyBots: Bool
 
         public init(
-            staleAfterDays: Int = 7, extraBotLogins: [String] = [], countBots: Bool = true, countStale: Bool = false
+            staleAfterDays: Int = 7, extraBotLogins: [String] = [], countBots: Bool = true, countStale: Bool = false,
+            countDrafts: Bool = false, notifyBots: Bool = false
         ) {
             self.staleAfterDays = staleAfterDays
             self.extraBotLogins = extraBotLogins
             self.countBots = countBots
             self.countStale = countStale
+            self.countDrafts = countDrafts
+            self.notifyBots = notifyBots
         }
 
         public init(from decoder: Decoder) throws {
@@ -123,6 +171,8 @@ public struct Config: Codable, Hashable, Sendable {
             extraBotLogins = c.value(.extraBotLogins, default: [])
             countBots = c.value(.countBots, default: true)
             countStale = c.value(.countStale, default: false)
+            countDrafts = c.value(.countDrafts, default: false)
+            notifyBots = c.value(.notifyBots, default: false)
         }
     }
 

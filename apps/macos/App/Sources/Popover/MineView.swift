@@ -81,6 +81,7 @@ struct MineBoard: View {
     let groups: [Sections.MineGroup]
     let now: Date
     let actions: RowActions
+    var focusedID: String?
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
@@ -95,7 +96,7 @@ struct MineBoard: View {
                     }
                     .font(.subheadline)
                     .padding(.bottom, 2)
-                    ForEach(items) { BoardCard(item: $0, now: now, actions: actions) }
+                    ForEach(items) { BoardCard(item: $0, now: now, actions: actions, isFocused: $0.id == focusedID) }
                     if items.isEmpty {
                         Text("Nothing here", comment: "Empty board column").font(.subheadline)
                             .foregroundStyle(Color.textTertiary)
@@ -114,6 +115,7 @@ struct BoardCard: View {
     let item: WatchedPullRequest
     let now: Date
     let actions: RowActions
+    var isFocused = false
     @State private var isHovered = false
 
     var body: some View {
@@ -148,7 +150,11 @@ struct BoardCard: View {
                 item.isUnseen ? Color.accent.opacity(0.12) : Color(nsColor: .controlBackgroundColor).opacity(0.6))
         )
         .overlay {
-            if isHovered { RoundedRectangle(cornerRadius: 7).strokeBorder(Color.accent.opacity(0.6), lineWidth: 1) }
+            if isFocused {
+                RoundedRectangle(cornerRadius: 7).strokeBorder(Color.accent, lineWidth: 2)
+            } else if isHovered {
+                RoundedRectangle(cornerRadius: 7).strokeBorder(Color.accent.opacity(0.6), lineWidth: 1)
+            }
         }
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }

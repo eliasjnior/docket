@@ -43,16 +43,20 @@ public struct CachedPullRequest: Codable, Hashable, Sendable, Identifiable {
     public var commenters: [String]
     /// The latest review, comment or request per actor, from the last detail read.
     public var activity: [ActivityStamp]
+    /// Whether a detail was ever read into `activity`. A cache written before stamps existed has none, and the
+    /// next poll reads those details once instead of judging the pull requests stale (§3.5).
+    public var activityRead: Bool
 
     public init(
         pullRequest: PullRequest, role: Role, request: RequestInfo? = nil, commenters: [String] = [],
-        activity: [ActivityStamp] = []
+        activity: [ActivityStamp] = [], activityRead: Bool = false
     ) {
         self.pullRequest = pullRequest
         self.role = role
         self.request = request
         self.commenters = commenters
         self.activity = activity
+        self.activityRead = activityRead
     }
 
     public init(from decoder: Decoder) throws {
@@ -62,6 +66,7 @@ public struct CachedPullRequest: Codable, Hashable, Sendable, Identifiable {
         request = c.value(.request, default: nil)
         commenters = c.value(.commenters, default: [])
         activity = c.value(.activity, default: [])
+        activityRead = c.value(.activityRead, default: false)
     }
 
     public var id: String { pullRequest.id }

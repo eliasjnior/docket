@@ -24,6 +24,15 @@ struct TriageTests {
         #expect(Triage.of(cached(createdDaysAgo: 8), config: config, now: now) == .bots)
     }
 
+    @Test func draftsComeFirstAndAreLeftOutByDefault() {
+        var draft = cached(author: "renovate", isBot: true, createdDaysAgo: 30)
+        draft.pullRequest.isDraft = true
+        #expect(Triage.of(draft, config: Config(), now: now) == .drafts)
+        #expect(Triage.isExcluded(.drafts, settings: Config.Triage()))
+        #expect(!Triage.isExcluded(.drafts, settings: Config.Triage(countDrafts: true)))
+        #expect(Triage.silenced([draft], config: Config(), now: now) == [draft.id])
+    }
+
     @Test func staleWinsOverBots() {
         #expect(
             Triage.of(cached(author: "renovate", isBot: true, createdDaysAgo: 30), config: Config(), now: now) == .stale
@@ -54,7 +63,10 @@ struct TriageTests {
             Count.count(Watch.items(cache: entries, config: quiet, state: state, now: now), triage: quiet.triage) == 1)
         let all = Config(triage: Config.Triage(countStale: true))
         #expect(Count.count(Watch.items(cache: entries, config: all, state: state, now: now), triage: all.triage) == 3)
-        #expect(Triage.excluded(entries, config: Config(), now: now) == ["PR_2"])
+        // Bots count but are silent by default; stale neither counts nor notifies.
+        #expect(Triage.silenced(entries, config: Config(), now: now) == ["PR_1", "PR_2"])
+        let loud = Config(triage: Config.Triage(notifyBots: true))
+        #expect(Triage.silenced(entries, config: loud, now: now) == ["PR_2"])
     }
 
     @Test func staleRequestDoesNotNotifyOrRemind() {
@@ -80,6 +92,24 @@ struct TriageTests {
         let counted = timeline.poll([old])
         #expect(counted.notifications.isEmpty)
         #expect(counted.state.reminders[old.id] != nil)
+    }
+
+    @Test func youAndYourTeamRequestedIsOneNotification() {
+        var timeline = Timeline()
+        timeline.poll([])
+        timeline.advance(Fixtures.hours(1))
+        let pullRequest = Fixtures.pullRequest(requests: [
+            .user(login: "you"), .team(organization: "acme", slug: "backend"),
+        ])
+        let detail = PullRequestDetail(
+            id: pullRequest.id,
+            requestEvents: [
+                Fixtures.request("E1", at: timeline.now.addingTimeInterval(-60)),
+                Fixtures.request("E2", to: .team(organization: "acme", slug: "backend"), at: timeline.now),
+            ])
+        let output = timeline.poll([pullRequest], [detail])
+        #expect(output.notifications.count == 1)
+        #expect(output.notifications.first?.events.map(\.at) == [timeline.now])
     }
 
     @Test func manyRequestsStillCapped() {

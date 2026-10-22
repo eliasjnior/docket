@@ -20,7 +20,8 @@ expected output, and that is the form every test of the rules takes.
 apps/macos/
   App/
     Sources/
-      Environment/          AppEnvironment: the composition root, builds stores with real adapters
+      Environment/          AppEnvironment: the composition root, builds stores with real adapters;
+                            TerminalLauncher: writes the AI command script and opens it in the terminal (D-28)
       StatusBar/            The NSStatusItem, its count, the hosted popover
       Popover/              Sections, rows, chips, tag editor, account and error screens
       Settings/             The settings window, one view per section

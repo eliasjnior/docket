@@ -73,8 +73,8 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 | **FR-33** | Each review request shows how long the request has waited, measured from the latest request to you | P0 |
 | **FR-34** | Ages past 3 days are marked as ageing and past 7 days as stale, by a style that does not rely on colour alone | P0 |
 | **FR-35** | Authored pull requests show the requested reviewers and the latest decision of each reviewer | P0 |
-| **FR-36** | *Review requested* splits into **Humans**, **Bots** and **Stale** (`02-activity-detection.md` §3.6); every request is in exactly one | P0 |
-| **FR-37** | Whether Bots and Stale count in the menu bar and notify is a setting each; by default bots count and stale pull requests do not | P0 |
+| **FR-36** | *Review requested* splits into **Humans**, **Bots**, **Drafts** and **Stale** (`02-activity-detection.md` §3.6); every request is in exactly one | P0 |
+| **FR-37** | Whether Bots, Drafts and Stale count in the menu bar and notify are settings; by default bots count but do not notify, and drafts and stale pull requests do neither | P0 |
 
 ### 3.4 Menu bar and popover
 
@@ -141,13 +141,15 @@ The IDs are kept so references stay valid.
 | **FR-83** | *Mine* is grouped into Ready, Blocked and Draft, shown as stacked sections or as a board, chosen in settings | P0 |
 | **FR-84** | *Retired*: tag retention | — |
 | **FR-85** | Docket never writes labels or anything else to GitHub (non-negotiable 5) | P0 |
+| **FR-86** | *Open in Jira* opens the issue linked in the description; without one, a key in the title or branch on the Jira site the other pull requests link to. Nothing to configure | P1 |
+| **FR-87** | *Review with AI* and *Summarize with AI* run an editable command in the chosen terminal, in the repository's local clone when one is set, else in a temporary folder (D-28) | P1 |
 
 ### 3.8 The app
 
 | ID | Requirement | Priority |
 |---|---|---|
 | **FR-90** | Launch at login, offered on first run and on by default once accepted | P0 |
-| **FR-91** | Settings in six sections: General (menu bar count, poll interval, launch at login), Account, Repositories, Notifications (kinds, bot allowlist, permission), Updates, About | P0 |
+| **FR-91** | Settings in seven sections (AI & Jira added for FR-86 and FR-87): General (menu bar count, poll interval, launch at login), Account, Repositories, Notifications (kinds, bot allowlist, permission), Updates, About | P0 |
 | **FR-92** | Poll interval of 30 s, 60 s (default), 2 min or 5 min | P0 |
 | **FR-93** | Self-update from GitHub Releases, as in Lookout (D-14) | P0 |
 | **FR-94** | What's New after an update, from the bundled changelog | P0 |

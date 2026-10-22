@@ -13,7 +13,7 @@ struct RepositoriesSettingsView: View {
     var body: some View {
         Form {
             Picker(selection: Binding(get: { selection.mode }, set: { selection.setMode($0) })) {
-                Text("All repositories, except…", comment: "Selection mode").tag(Selection.Mode.all)
+                Text("All repositories except these", comment: "Selection mode").tag(Selection.Mode.all)
                 Text("Only these repositories", comment: "Selection mode").tag(Selection.Mode.only)
             } label: {
                 EmptyView()

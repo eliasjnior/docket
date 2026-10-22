@@ -117,7 +117,8 @@ public actor Poller {
     /// Opened from Docket, or *Mark All as Seen* (spec §4).
     public func markSeen(_ ids: [String]) async {
         guard !ids.isEmpty else { return }
-        let now = clock.now()
+        // Compared with GitHub's timestamps, so on the server's clock like a poll's `now`.
+        let now = clock.now().addingTimeInterval(snapshot.state.lastPoll?.serverTimeOffset ?? 0)
         await updateState { state in
             for id in ids { state.seen[id] = now }
         }
@@ -258,7 +259,7 @@ public actor Poller {
         let viewer = ViewerContext(login: login, teams: teams(in: state))
         let detailIDs = PollEngine.detailIDs(
             summaries: summaries.value.pullRequests, discovery: discovery.value, state: state, viewer: viewer,
-            now: started)
+            now: started, previousCache: cache)
         let details = detailIDs.isEmpty ? GitHubResponse(value: []) : try await github.details(ids: detailIDs)
         metas.append(details.meta)
 
@@ -272,6 +273,7 @@ public actor Poller {
                 details: Dictionary(details.value.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })))
 
         var newState = output.state
+        newState.keepSeen(from: snapshot.state)
         newState.viewerLogin = login
         newState.unauthorizedOwners = meta.samlOrganizations
         if let rateLimit = meta.rateLimit {
@@ -351,6 +353,15 @@ public actor Poller {
 
     private func emit() async {
         await publish?(snapshot)
+    }
+}
+
+extension PersistedState {
+    /// A row opened while a poll waited on the network was saved meanwhile; the poll's state must keep it.
+    mutating func keepSeen(from other: PersistedState) {
+        for (id, at) in other.seen where (seen[id] ?? .distantPast) < at {
+            seen[id] = at
+        }
     }
 }
 
