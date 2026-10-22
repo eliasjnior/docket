@@ -91,11 +91,18 @@ struct GraphQLClientTests {
         #expect(first.reviewDecision == .reviewRequired)
         #expect(first.reviewRequests == [.user(login: "you"), .team(organization: "acme", slug: "backend")])
         #expect(first.latestReviews == [LatestReview(login: "bruno", state: .approved)])
+        #expect(first.labels == [Label(name: "backend", color: "0e8a16")])
+        #expect(first.headRefName == "api-12-login-loop")
+        #expect(first.issueLinks.map(\.absoluteString) == ["https://acme.atlassian.net/browse/API-12"])
+        #expect(first.headCommit == CommitStamp(login: "ana", at: Date(timeIntervalSince1970: 1_792_573_200)))
+        #expect(first.lastForcePush?.login == "dependabot")
+        #expect(first.lastForcePush?.isBot == true)
         let draft = try #require(batch.pullRequests.last)
         #expect(draft.isDraft && draft.isArchived)
         #expect(draft.author?.isBot == true)
         #expect(draft.mergeable == .unknown)
         #expect(draft.checks == nil)
+        #expect(draft.labels.isEmpty && draft.issueLinks.isEmpty && draft.headCommit == nil)
     }
 
     @Test func summariesAreReadInBatchesOfAHundred() async throws {

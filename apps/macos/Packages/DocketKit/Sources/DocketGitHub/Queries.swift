@@ -35,11 +35,17 @@ enum Queries {
         query($ids: [ID!]!) {
           nodes(ids: $ids) {
             ... on PullRequest {
-              id number title url state isDraft createdAt updatedAt
+              id number title url state isDraft createdAt updatedAt body headRefName
               author { \(actor) }
               repository { nameWithOwner isArchived }
               mergeable reviewDecision mergedBy { login }
-              commits(last: 1) { nodes { commit { oid statusCheckRollup { state } } } }
+              labels(first: 10) { nodes { name color } }
+              commits(last: 1) {
+                nodes { commit { oid committedDate author { name user { login } } statusCheckRollup { state } } }
+              }
+              timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT]) {
+                nodes { ... on HeadRefForcePushedEvent { createdAt actor { \(actor) } } }
+              }
               reviewRequests(first: 10) { nodes { \(reviewer) } }
               latestOpinionatedReviews(first: 10) { nodes { author { login } state } }
             }

@@ -183,6 +183,24 @@ pull request.
 Monday morning and marked ageing. Working hours would need a calendar and a timezone per
 colleague; **revisit if** weekends make the ageing marker useless in practice.
 
+### 3.5 Human activity
+
+One bot test serves the *Review requested* sub-tabs, seen state and §5.4: an actor is a bot when its
+`__typename` is `Bot`, its login ends in `[bot]`, or its login is in `config.triage.extraBotLogins`.
+A commit is a bot's when its author's login or name passes the same test.
+
+**Human activity** is the latest of:
+
+- a review, comment, thread comment or review request by a non-bot, from the detail read;
+- the head commit, when its author is not a bot;
+- the last force push, when its actor is not a bot.
+
+The cache keeps the latest review, comment or request per actor as it was read, bots included
+(`04-data.md` §2.3), and the test runs when the list is derived. A login added to
+`extraBotLogins` therefore takes effect at once, without waiting for the pull request to change. A
+detail is read only when a pull request changed (§1), so the stamps from the last read are kept until
+the next one.
+
 ## 4. The "needs you" count
 
 The number in the menu bar (FR-40) is the sum of:
@@ -378,11 +396,17 @@ Every query includes `rateLimit { cost remaining limit resetAt }`, and the cost 
 ```graphql
 nodes(ids: $ids) {
   ... on PullRequest {
-    id number title url state isDraft createdAt updatedAt
+    id number title url state isDraft createdAt updatedAt body headRefName
     author { __typename login }
     repository { nameWithOwner isArchived }
     mergeable reviewDecision
-    commits(last: 1) { nodes { commit { oid statusCheckRollup { state } } } }
+    labels(first: 10) { nodes { name color } }
+    commits(last: 1) {
+      nodes { commit { oid committedDate author { name user { login } } statusCheckRollup { state } } }
+    }
+    timelineItems(last: 1, itemTypes: [HEAD_REF_FORCE_PUSHED_EVENT]) {
+      nodes { ... on HeadRefForcePushedEvent { createdAt actor { __typename login } } }
+    }
     reviewRequests(first: 10) {
       nodes { requestedReviewer { __typename ... on User { login } ... on Team { slug organization { login } } } }
     }
@@ -411,7 +435,9 @@ nodes(ids: $ids) {
 ```
 
 Review `body` is read only to decide whether it is empty (§5.5) and is never stored or shown
-(`04-data.md` §5).
+(`04-data.md` §5). The pull request `body` is read only to extract issue links (URLs whose path is
+`/browse/KEY-123`, for *Open in Jira*) and is dropped after that. The head commit's author and the
+last force push tell human activity from a bot's rebase (§3.5).
 
 ### 6.2 Cost
 
@@ -421,11 +447,11 @@ request per connection plus one per nested connection per parent, divided by 100
 | Query | Requests | Points |
 |---|---|---|
 | Discovery: 4 searches × `first: 50`, no nested connections | 4 | 1 |
-| Summary: 100 IDs × 3 nested connections | ~300 | 3 |
+| Summary: 100 IDs × 5 nested connections | ~500 | 5 |
 | Detail: 10 IDs × (4 connections + 30 threads' comments) | ~340 | 4 |
 
-A quiet poll with up to 100 watched pull requests costs about 4 points; at the default 60 s
-interval that is about 240 points an hour, under 5% of the 5000-point budget, which is what NFR-01
+A quiet poll with up to 100 watched pull requests costs about 6 points; at the default 60 s
+interval that is about 360 points an hour, under 5% of the 5000-point budget, which is what NFR-01
 and D-06 rest on. These are estimates from GitHub's published formula. **The logged
 `rateLimit.cost` is the authority**, and `docket-cli poll` prints it so the estimate can be checked
 against a real account.
