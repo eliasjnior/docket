@@ -2,7 +2,7 @@ import DocketActivity
 import DocketStores
 import SwiftUI
 
-/// The sections as a segmented control: the label centred, its count in a circle at the trailing edge
+/// The sections as a segmented control of equal segments, each with its label and count circle centred together
 /// (`docs/05-design.md` §5.3). *Ignored* appears only while something is ignored.
 struct TabBar: View {
     let watch: WatchStore
@@ -10,7 +10,7 @@ struct TabBar: View {
 
     var body: some View {
         let sections = watch.sections(filter: model.filter)
-        SegmentLayout(spacing: 2) {
+        HStack(spacing: 2) {
             segment(
                 .reviewRequested, String(localized: "Review requested", comment: "Tab"), sections.reviewRequestedCount)
             segment(.mine, String(localized: "Mine", comment: "Tab"), sections.mine.count)
@@ -30,16 +30,13 @@ struct TabBar: View {
             model.tab = section
             model.focusedID = nil
         } label: {
-            ZStack {
+            HStack(spacing: 5) {
                 Text(verbatim: title)
                     .lineLimit(1)
-                    .padding(.horizontal, 30)
-                HStack {
-                    Spacer(minLength: 0)
-                    CountBadge(count: count, selected: selected)
-                }
-                .padding(.trailing, 6)
+                    .minimumScaleFactor(0.75)
+                CountBadge(count: count, selected: selected)
             }
+            .padding(.horizontal, 2)
             .font(.subheadline.weight(selected ? .semibold : .medium))
             .foregroundStyle(selected ? Color.white : Color.textPrimary)
             .frame(maxWidth: .infinity, minHeight: 32)
@@ -66,41 +63,5 @@ struct CountBadge: View {
             .background(Capsule().fill(selected ? Color.white : Color.fillBadge))
             .fixedSize()
             .accessibilityHidden(true)
-    }
-}
-
-/// Lays segments out on one line: each gets its ideal width plus an equal share of what is left, and all
-/// shrink in proportion when they do not fit, so a long label never pushes the others off.
-struct SegmentLayout: Layout {
-    var spacing: CGFloat = 0
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let ideals = subviews.map { $0.sizeThatFits(.unspecified) }
-        let height = ideals.map(\.height).max() ?? 0
-        let natural = ideals.map(\.width).reduce(0, +) + spacing * CGFloat(max(subviews.count - 1, 0))
-        return CGSize(width: proposal.width ?? natural, height: height)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        let widths = Self.widths(
-            ideals: subviews.map { $0.sizeThatFits(.unspecified).width },
-            available: bounds.width - spacing * CGFloat(max(subviews.count - 1, 0)))
-        var x = bounds.minX
-        for (subview, width) in zip(subviews, widths) {
-            subview.place(
-                at: CGPoint(x: x, y: bounds.midY), anchor: .leading,
-                proposal: ProposedViewSize(width: width, height: bounds.height))
-            x += width + spacing
-        }
-    }
-
-    static func widths(ideals: [CGFloat], available: CGFloat) -> [CGFloat] {
-        let total = ideals.reduce(0, +)
-        guard !ideals.isEmpty, total > 0 else { return ideals }
-        if total <= available {
-            let extra = (available - total) / CGFloat(ideals.count)
-            return ideals.map { $0 + extra }
-        }
-        return ideals.map { $0 * available / total }
     }
 }

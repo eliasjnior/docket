@@ -100,7 +100,7 @@ opening the popover.
 
 | Property | Value | Why |
 |---|---|---|
-| Width | 400 pt; 640 pt while *Mine* is shown as a board | The tab labels stay centred with their count circles; three board columns need the room |
+| Width | 420 pt; 640 pt while *Mine* is shown as a board | Three equal tabs fit `Review requested` and its count circle at full size; three board columns need the room |
 | Height | Content height, at most 640 pt or the screen's visible height minus 40 pt, whichever is smaller | A short list does not leave an empty panel; a long one never runs off a 13-inch screen |
 | Scrolling | The list scrolls; the header, tabs and filters stay fixed. The list's height is measured, not estimated: a lazy stack's estimate left empty space around a short list | Refresh and the filters are always reachable |
 | Background | The popover's own material; group headers add a raised band | §2 |
@@ -108,7 +108,7 @@ opening the popover.
 ### 5.2 Layout
 
 ```
-┌──────────────────────────────────────────────────── 400 pt ┐
+┌──────────────────────────────────────────────────── 420 pt ┐
 │  [icon] Docket                                    ⟳     ⚙  │  header
 │  ⚠  acme requires SAML authorization.        [Authorize]   │  banners, §7.2
 │ ┌─────────────────────────────────────────────────────────┐ │
@@ -130,11 +130,12 @@ opening the popover.
 `Updated N min ago` (FR-44, §7.2).
 
 **Tabs.** A segmented control the width of the popover, 32 pt tall: *Review requested*, *Mine*,
-*Involved*, and *Ignored* while something is ignored. Each label is centred in its segment, and its
-count sits in a circle pinned to the trailing edge, the number centred in the circle. The selected
+*Involved*, and *Ignored* while something is ignored. The segments are of equal width, and each
+centres its label and its count circle together, the number centred in the circle. The selected
 segment is filled with the accent colour, its label white and its circle white with accent digits.
-Segments take their natural width plus an equal share of the rest, and shrink in proportion when
-four do not fit.
+When four segments do not fit, a label shrinks to 75% before it truncates. A first version pinned the
+circle to the trailing edge with the label centred across the segment; a long label then ran into its
+circle.
 
 **Sub-tabs.** In *Review requested* only: `Humans`, `Bots` and `Stale` (`02` §3.6) as pills with
 the same count circle, `Humans` selected by default. The selected sub-tab is kept for the life of the

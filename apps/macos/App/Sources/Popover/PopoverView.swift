@@ -5,7 +5,7 @@ import SwiftUI
 
 /// The popover of `docs/05-design.md` §5: header, banners, tabs, filters, then the list or a full screen.
 struct PopoverView: View {
-    static let width: CGFloat = 400
+    static let width: CGFloat = 420
     static let boardWidth: CGFloat = 640
 
     let watch: WatchStore
