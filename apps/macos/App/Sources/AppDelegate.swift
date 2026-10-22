@@ -161,8 +161,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func rowActions(_ environment: AppEnvironment) -> RowActions {
         let configStore = environment.configStore
         let popover = popover
+        // The popover stays open over a context menu's action, so leaving for another app closes it by hand.
+        let close = { [weak self] in self?.statusBar?.close() }
         return RowActions(
-            open: { NSWorkspace.shared.open($0) },
+            open: { url in
+                NSWorkspace.shared.open(url)
+                close()
+            },
             copy: { text in
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(text, forType: .string)
@@ -196,9 +201,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             jiraLink: { Jira.link(for: $0.pullRequest, base: configStore.config.integrations.jiraBaseURL) },
             reviewWithAI: {
                 TerminalLauncher.run(.review, for: $0.pullRequest, integrations: configStore.config.integrations)
+                close()
             },
             summarizeWithAI: {
                 TerminalLauncher.run(.summarize, for: $0.pullRequest, integrations: configStore.config.integrations)
+                close()
             })
     }
 
