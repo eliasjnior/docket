@@ -20,13 +20,16 @@ public struct Config: Codable, Hashable, Sendable {
     /// The global shortcut that opens the popover (FR-48); `off` disables it.
     public var shortcut: Shortcut
     public var triage: Triage
+    /// How *Mine* is laid out: stacked sections or a board (spec §7).
+    public var mineLayout: MineLayout
 
     public init(
         selection: Selection = Selection(), polling: Polling = Polling(), count: Count = Count(),
         notifications: Notifications = Notifications(), reminders: Reminders = Reminders(),
         ignored: [String: IgnoreEntry] = [:], botAllowlist: [String] = [], ghPath: String? = nil,
         launchAtLogin: Bool? = nil, updates: Updates = Updates(), tags: [String: TagEntry] = [:],
-        mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD, triage: Triage = Triage()
+        mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD, triage: Triage = Triage(),
+        mineLayout: MineLayout = .list
     ) {
         version = Self.currentVersion
         self.selection = selection
@@ -43,6 +46,7 @@ public struct Config: Codable, Hashable, Sendable {
         self.mutes = mutes
         self.shortcut = shortcut
         self.triage = triage
+        self.mineLayout = mineLayout
     }
 
     public init(from decoder: Decoder) throws {
@@ -62,6 +66,12 @@ public struct Config: Codable, Hashable, Sendable {
         mutes = c.value(.mutes, default: [:])
         shortcut = c.value(.shortcut, default: .controlOptionCommandD)
         triage = c.value(.triage, default: Triage())
+        mineLayout = c.value(.mineLayout, default: .list)
+    }
+
+    public enum MineLayout: String, Codable, Hashable, Sendable, CaseIterable {
+        case list
+        case board
     }
 
     public enum Shortcut: String, Codable, Hashable, Sendable, CaseIterable {

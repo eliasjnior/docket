@@ -133,7 +133,7 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §5 and 
 |---|---|---|
 | **FR-80** | Any watched pull request can carry up to five tags, added and removed from the row | P0 |
 | **FR-81** | Tags are normalized: lower case, `[a-z0-9-]`, 1–24 characters; anything else is rejected with the reason | P0 |
-| **FR-82** | The popover filters by one tag and by one repository, separately or together | P0 |
+| **FR-82** | The popover filters by organization, repository, label and status, several values each: OR within one, AND across them | P0 |
 | **FR-83** | The tag editor suggests tags already in use, most used first, and `wip` when none are | P0 |
 | **FR-84** | A tag survives its pull request closing for 30 days, so a reopened pull request keeps it | P0 |
 | **FR-85** | Tags never leave the Mac and are never written to GitHub | P0 |

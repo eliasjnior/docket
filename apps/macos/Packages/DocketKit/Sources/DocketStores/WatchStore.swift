@@ -33,8 +33,10 @@ public final class WatchStore {
 
     public var count: Int { Count.count(items, settings: config.count, triage: config.triage) }
 
-    public func sections(tag: String? = nil, repository: String? = nil) -> Sections {
-        Sections(items, tag: tag, repository: repository)
+    public func sections(filter: PopoverFilter = PopoverFilter(), tag: String? = nil, repository: String? = nil)
+        -> Sections
+    {
+        Sections(items, filter: filter, tag: tag, repository: repository)
     }
 
     /// Tags in use, most used first (FR-82, FR-83).

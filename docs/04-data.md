@@ -40,6 +40,7 @@ written by a poll.
 | `triage.extraBotLogins` | `[String]` | `[]` | Logins treated as bots, `02` §3.5 |
 | `triage.countBots` | Bool | `true` | `02` §3.6 |
 | `triage.countStale` | Bool | `false` | `02` §3.6 |
+| `mineLayout` | `"list"` \| `"board"` | `"list"` | How *Mine* is shown, `05-design.md` §5.3 |
 | `notifications.reviewRequested` | Bool | `true` | FR-60, one per kind of `02` §5.3 |
 | `notifications.reviewSubmitted` | Bool | `true` | |
 | `notifications.commentAdded` | Bool | `true` | |

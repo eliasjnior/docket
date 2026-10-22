@@ -151,7 +151,7 @@ tabs over collapsible sections and newest-first over oldest-first after using 0.
 | Section | Contains (role, `02` §2.2) | Default | Order |
 |---|---|---|---|
 | **Review requested** | `reviewRequested` | The default tab | Grouped by repository. Groups ordered by their newest request, newest first; rows inside a group by request time, newest first. Ties by `owner/name`, then `#number` |
-| **Mine** | `authored` | Tab | By status in the precedence order of `02-activity-detection.md` §3.2 — `conflict` first, `noReviewers` last — then newest first. A draft sorts with its status (FR-31) |
+| **Mine** | `authored` | Tab | Three groups in this order: **Ready** (not a draft, not blocked), **Blocked** (not a draft; `conflict`, `checksFailing` or `changesRequested`), **Draft** (every draft). Inside a group, by status in the precedence order of `02-activity-detection.md` §3.2, then newest first. Shown as stacked sections or as a board (`config.mineLayout`) |
 | **Involved** | `involved` | Tab (FR-41) | By `updatedAt`, most recent first |
 | **Ignored** | Any role, ignored (FR-49) | Tab, only while something is ignored | By `ignoredAt`, most recent first. Rows in `text.secondary`, no marked dot, no status colour: nothing here asks for attention |
 
