@@ -45,6 +45,7 @@ public enum PollEngine {
         run.markLeft()
         run.endStaleHold()
         if run.isBaseline { run.state.baselineAt = input.now }
+        run.seenBaseline()
         let notifications = run.compose()
         let cache = SnapshotCache(
             fetchedAt: input.now, viewerLogin: input.viewer.login, pullRequests: run.cached,
@@ -241,6 +242,13 @@ struct PollRun {
         }
         let digests = digest()
         return Coalesce.capped(digests + Coalesce.groups(events: enabled, reminders: reminders))
+    }
+
+    /// The first poll with seen state marks everything listed as seen, so an upgrade does not light up every row.
+    mutating func seenBaseline() {
+        guard state.seenBaselineAt == nil else { return }
+        for entry in cached { state.seen[entry.id] = input.now }
+        state.seenBaselineAt = input.now
     }
 
     mutating func markLeft() {

@@ -114,6 +114,15 @@ public actor Poller {
 
     public func current() -> WatchSnapshot { snapshot }
 
+    /// Opened from Docket, or *Mark All as Seen* (spec §4).
+    public func markSeen(_ ids: [String]) async {
+        guard !ids.isEmpty else { return }
+        let now = clock.now()
+        await updateState { state in
+            for id in ids { state.seen[id] = now }
+        }
+    }
+
     /// A Focus filter turned holding on or off (`docs/02-activity-detection.md` §7.5). Ending a hold polls at
     /// once, and that poll delivers the digest.
     public func setHold(_ holding: Bool) async {

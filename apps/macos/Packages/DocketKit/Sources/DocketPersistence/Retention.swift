@@ -23,6 +23,7 @@ public enum Retention {
         state.marked.removeAll { !watched.contains($0) }
         // A tag, mute or ignore lives while its pull request has a role or a cursor (FR-84).
         let alive = Set(state.cursors.keys).union(watched)
+        state.seen = state.seen.filter { alive.contains($0.key) }
         var config = config
         config.tags = config.tags.filter { alive.contains($0.key) }
         config.mutes = config.mutes.filter { alive.contains($0.key) }

@@ -14,11 +14,13 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
     public var isMarked: Bool
     /// Set for review requests only.
     public var triage: Triage?
+    /// Never opened from Docket, or a human other than you acted on it since (spec §4).
+    public var isUnseen: Bool
 
     public init(
         pullRequest: PullRequest, role: Role, status: Status, request: RequestInfo? = nil,
         reviewers: [ReviewerEntry] = [], tags: [String] = [], mute: Config.MuteEntry.Scope? = nil,
-        ignoredAt: Date? = nil, isMarked: Bool = false, triage: Triage? = nil
+        ignoredAt: Date? = nil, isMarked: Bool = false, triage: Triage? = nil, isUnseen: Bool = false
     ) {
         self.pullRequest = pullRequest
         self.role = role
@@ -30,6 +32,7 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
         self.ignoredAt = ignoredAt
         self.isMarked = isMarked
         self.triage = triage
+        self.isUnseen = isUnseen
     }
 
     public var id: String { pullRequest.id }
@@ -39,6 +42,13 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
 }
 
 public enum Watch {
+    public static func isUnseen(_ cached: CachedPullRequest, config: Config, state: PersistedState) -> Bool {
+        guard let seenAt = state.seen[cached.id] else { return true }
+        let others = HumanActivity.last(
+            cached, excluding: state.viewerLogin, extra: config.triage.extraBotLogins)
+        return others.map { $0 > seenAt } ?? false
+    }
+
     /// The rows for the cached summaries, with the selection applied (FR-74).
     public static func items(cache: [CachedPullRequest], config: Config, state: PersistedState, now: Date)
         -> [WatchedPullRequest]
@@ -59,7 +69,8 @@ public enum Watch {
                 mute: ignored == nil ? config.mutes[pullRequest.id]?.scope : nil,
                 ignoredAt: ignored?.ignoredAt,
                 isMarked: ignored == nil && marked.contains(pullRequest.id),
-                triage: cached.role == .reviewRequested ? Triage.of(cached, config: config, now: now) : nil
+                triage: cached.role == .reviewRequested ? Triage.of(cached, config: config, now: now) : nil,
+                isUnseen: ignored == nil && isUnseen(cached, config: config, state: state)
             )
         }
     }

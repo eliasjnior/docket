@@ -22,6 +22,10 @@ public struct PersistedState: Codable, Hashable, Sendable {
     public var skippedVersion: String?
     public var lastUpdateCheckAt: Date?
     public var baselineNoticeDismissed: Bool
+    /// When you last opened each pull request from Docket (spec §4).
+    public var seen: [String: Date]
+    /// The first poll that recorded seen state: everything listed then started as seen.
+    public var seenBaselineAt: Date?
 
     public init(
         viewerLogin: String? = nil, baselineAt: Date? = nil, cursors: [String: Cursor] = [:],
@@ -29,7 +33,7 @@ public struct PersistedState: Codable, Hashable, Sendable {
         held: [HeldEvent] = [], marked: [String] = [], popoverOpenedAt: Date? = nil,
         teams: [String: TeamCache] = [:], unauthorizedOwners: [String] = [], lastPoll: LastPoll? = nil,
         lastShownVersion: String? = nil, skippedVersion: String? = nil, lastUpdateCheckAt: Date? = nil,
-        baselineNoticeDismissed: Bool = false
+        baselineNoticeDismissed: Bool = false, seen: [String: Date] = [:], seenBaselineAt: Date? = nil
     ) {
         version = Self.currentVersion
         self.viewerLogin = viewerLogin
@@ -48,6 +52,8 @@ public struct PersistedState: Codable, Hashable, Sendable {
         self.skippedVersion = skippedVersion
         self.lastUpdateCheckAt = lastUpdateCheckAt
         self.baselineNoticeDismissed = baselineNoticeDismissed
+        self.seen = seen
+        self.seenBaselineAt = seenBaselineAt
     }
 
     public init(from decoder: Decoder) throws {
@@ -69,6 +75,8 @@ public struct PersistedState: Codable, Hashable, Sendable {
         skippedVersion = c.value(.skippedVersion, default: nil)
         lastUpdateCheckAt = c.value(.lastUpdateCheckAt, default: nil)
         baselineNoticeDismissed = c.value(.baselineNoticeDismissed, default: false)
+        seen = c.value(.seen, default: [:])
+        seenBaselineAt = c.value(.seenBaselineAt, default: nil)
     }
 }
 
