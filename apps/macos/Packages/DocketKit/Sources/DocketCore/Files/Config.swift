@@ -151,14 +151,17 @@ public struct Config: Codable, Hashable, Sendable {
         public var extraBotLogins: [String]
         public var countBots: Bool
         public var countStale: Bool
+        public var countDrafts: Bool
 
         public init(
-            staleAfterDays: Int = 7, extraBotLogins: [String] = [], countBots: Bool = true, countStale: Bool = false
+            staleAfterDays: Int = 7, extraBotLogins: [String] = [], countBots: Bool = true, countStale: Bool = false,
+            countDrafts: Bool = false
         ) {
             self.staleAfterDays = staleAfterDays
             self.extraBotLogins = extraBotLogins
             self.countBots = countBots
             self.countStale = countStale
+            self.countDrafts = countDrafts
         }
 
         public init(from decoder: Decoder) throws {
@@ -168,6 +171,7 @@ public struct Config: Codable, Hashable, Sendable {
             extraBotLogins = c.value(.extraBotLogins, default: [])
             countBots = c.value(.countBots, default: true)
             countStale = c.value(.countStale, default: false)
+            countDrafts = c.value(.countDrafts, default: false)
         }
     }
 

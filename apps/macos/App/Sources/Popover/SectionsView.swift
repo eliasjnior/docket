@@ -92,6 +92,7 @@ struct SectionsView: View {
             return switch model.triage {
             case .humans: String(localized: "No reviews waiting on you.", comment: "Empty state")
             case .bots: String(localized: "No review requests from bots.", comment: "Empty state")
+            case .drafts: String(localized: "No drafts waiting on you.", comment: "Empty state")
             case .stale: String(localized: "Nothing stale.", comment: "Empty state")
             }
         case .mine:

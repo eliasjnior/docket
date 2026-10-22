@@ -204,16 +204,18 @@ next poll reads those details once, so an upgrade does not judge every unchanged
 
 ### 3.6 Triage: Humans, Bots, Stale
 
-Every `reviewRequested` pull request is in exactly one of three groups, which the popover shows as
+Every `reviewRequested` pull request is in exactly one of four groups, which the popover shows as
 sub-tabs:
 
 | Triage | When | Default outside the popover |
 |---|---|---|
+| `drafts` | A draft, whoever wrote it | Left out (`countDrafts` off) |
 | `stale` | No human activity (§3.5) for `triage.staleAfterDays` (default 7), counting the pull request's creation | Left out (`countStale` off) |
-| `bots` | Not stale, and the author is a bot (§3.5) | Counted (`countBots` on) |
+| `bots` | Not a draft, not stale, and the author is a bot (§3.5) | Counted (`countBots` on) |
 | `humans` | Everything else | Counted |
 
-Stale is tested first, so an abandoned Dependabot pull request is stale, not a bot's. A review
+A draft is tested first: its author has said it is not ready, so it waits on nobody yet. Stale
+comes next, so an abandoned Dependabot pull request is stale, not a bot's. A review
 request made by a human is human activity, so a fresh request on an old pull request leaves *Stale*.
 
 A triage that is **left out** does three things. Its pull requests leave the menu bar count (§4), and

@@ -1,16 +1,20 @@
 import DocketCore
 import Foundation
 
-/// The three sub-tabs of *Review requested* (`docs/02-activity-detection.md` §3.6). Every request is in one.
+/// The sub-tabs of *Review requested* (`docs/02-activity-detection.md` §3.6), in display order. Every request is
+/// in exactly one.
 public enum Triage: String, CaseIterable, Hashable, Sendable {
     case humans
     case bots
+    case drafts
     case stale
 
-    /// Stale wins: no human activity for `staleAfterDays`, counting the pull request's creation.
+    /// A draft first: its author said it is not ready. Then stale: no human activity for `staleAfterDays`,
+    /// counting the pull request's creation. Then bots.
     public static func of(_ cached: CachedPullRequest, config: Config, now: Date) -> Triage {
         let settings = config.triage
         let pullRequest = cached.pullRequest
+        if pullRequest.isDraft { return .drafts }
         let last = max(
             HumanActivity.last(cached, extra: settings.extraBotLogins) ?? .distantPast, pullRequest.createdAt)
         if now.timeIntervalSince(last) >= TimeInterval(settings.staleAfterDays) * 86400 { return .stale }
@@ -22,6 +26,7 @@ public enum Triage: String, CaseIterable, Hashable, Sendable {
         switch triage {
         case .humans: false
         case .bots: !settings.countBots
+        case .drafts: !settings.countDrafts
         case .stale: !settings.countStale
         }
     }

@@ -65,6 +65,7 @@ extension Triage {
         switch self {
         case .humans: String(localized: "Humans", comment: "Review requested sub-tab")
         case .bots: String(localized: "Bots", comment: "Review requested sub-tab")
+        case .drafts: String(localized: "Drafts", comment: "Review requested sub-tab")
         case .stale: String(localized: "Stale", comment: "Review requested sub-tab")
         }
     }

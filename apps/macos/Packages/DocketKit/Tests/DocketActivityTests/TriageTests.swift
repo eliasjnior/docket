@@ -24,6 +24,15 @@ struct TriageTests {
         #expect(Triage.of(cached(createdDaysAgo: 8), config: config, now: now) == .bots)
     }
 
+    @Test func draftsComeFirstAndAreLeftOutByDefault() {
+        var draft = cached(author: "renovate", isBot: true, createdDaysAgo: 30)
+        draft.pullRequest.isDraft = true
+        #expect(Triage.of(draft, config: Config(), now: now) == .drafts)
+        #expect(Triage.isExcluded(.drafts, settings: Config.Triage()))
+        #expect(!Triage.isExcluded(.drafts, settings: Config.Triage(countDrafts: true)))
+        #expect(Triage.excluded([draft], config: Config(), now: now) == [draft.id])
+    }
+
     @Test func staleWinsOverBots() {
         #expect(
             Triage.of(cached(author: "renovate", isBot: true, createdDaysAgo: 30), config: Config(), now: now) == .stale

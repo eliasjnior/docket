@@ -200,6 +200,9 @@
     "Bots never notify unless they are listed here." : {
       "comment" : "Bot allowlist caption"
     },
+    "Bots, drafts and stale pull requests" : {
+      "comment" : "Notifications settings section"
+    },
     "By %@." : {
       "comment" : "VoiceOver: author"
     },
@@ -293,6 +296,9 @@
     "Count and notify bot pull requests" : {
       "comment" : "Triage setting"
     },
+    "Count and notify drafts" : {
+      "comment" : "Triage setting"
+    },
     "Count and notify stale pull requests" : {
       "comment" : "Triage setting"
     },
@@ -334,6 +340,9 @@
     },
     "Draft" : {
       "comment" : "Mine group\nThe draft modifier beside the status chip"
+    },
+    "Drafts" : {
+      "comment" : "Review requested sub-tab"
     },
     "Every" : {
       "comment" : "Reminder interval"
@@ -481,6 +490,9 @@
     },
     "Muted." : {
       "comment" : "VoiceOver: muted"
+    },
+    "No drafts waiting on you." : {
+      "comment" : "Empty state"
     },
     "No open pull requests of yours in the watched repositories." : {
       "comment" : "Empty state"
