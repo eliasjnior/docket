@@ -62,14 +62,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             chooseLocation: { [weak self] in self?.chooseGhLocation() },
             retry: { environment.retryAuthentication() })
         return SettingsWindowController {
-            AnyView(
-                SettingsView(
-                    watch: environment.watch, configStore: environment.configStore, account: account,
-                    permission: environment.permission,
-                    requestPermission: { Task { await environment.requestNotificationPermission() } },
-                    checkRepository: { await environment.repositoryExists($0) }, updates: environment.updates,
-                    info: environment.info, loginItem: environment.loginItem, dataFolder: environment.paths.root,
-                    showWhatsNew: { updateWindows.showWhatsNew() }, showPrompt: { updateWindows.showPrompt() }))
+            (SettingsView(
+                watch: environment.watch, configStore: environment.configStore, account: account,
+                permission: environment.permission,
+                requestPermission: { Task { await environment.requestNotificationPermission() } },
+                checkRepository: { await environment.repositoryExists($0) }, updates: environment.updates,
+                info: environment.info, loginItem: environment.loginItem, dataFolder: environment.paths.root,
+                showWhatsNew: { updateWindows.showWhatsNew() }, showPrompt: { updateWindows.showPrompt() })).tabs
         }
     }
 

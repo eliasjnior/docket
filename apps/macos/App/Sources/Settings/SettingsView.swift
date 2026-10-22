@@ -5,8 +5,16 @@ import DocketUpdate
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The settings window of `docs/05-design.md` §9: toolbar tabs, each a grouped form, saved on change.
-struct SettingsView: View {
+/// One tab of the settings window: its toolbar item and its grouped form.
+struct SettingsTab {
+    let title: String
+    let symbol: String
+    let content: AnyView
+}
+
+/// The tabs of the settings window of `docs/05-design.md` §9, each a grouped form, saved on change. The window
+/// shows them as a native settings toolbar (`SettingsWindowController`).
+struct SettingsView {
     let watch: WatchStore
     let configStore: ConfigStore
     let account: AccountSettingsModel
@@ -20,38 +28,40 @@ struct SettingsView: View {
     let showWhatsNew: () -> Void
     let showPrompt: () -> Void
 
-    var body: some View {
-        TabView {
-            AccountSettingsView(watch: watch, configStore: configStore, model: account)
-                .tabItem {
-                    Label(String(localized: "Account", comment: "Settings tab"), systemImage: "person.crop.circle")
-                }
-            RepositoriesSettingsView(
-                selection: SelectionStore(configStore: configStore),
-                known: watch.snapshot.cache?.knownRepositories.map(\.name) ?? [], check: checkRepository
-            )
-            .tabItem { Label(String(localized: "Repositories", comment: "Settings tab"), systemImage: "folder") }
-            NotificationsSettingsView(
-                configStore: configStore, permission: permission, requestPermission: requestPermission,
-                holdSince: watch.snapshot.state.focusHold?.since
-            )
-            .tabItem { Label(String(localized: "Notifications", comment: "Settings tab"), systemImage: "bell") }
-            GeneralSettingsView(configStore: configStore, loginItem: loginItem)
-                .tabItem { Label(String(localized: "General", comment: "Settings tab"), systemImage: "gearshape") }
-            AISettingsView(configStore: configStore)
-                .tabItem {
-                    Label(String(localized: "AI", comment: "Settings tab"), systemImage: "sparkles")
-                }
-            UpdatesSettingsView(
-                configStore: configStore, updates: updates, info: info, showWhatsNew: showWhatsNew,
-                showPrompt: showPrompt
-            )
-            .tabItem { Label(String(localized: "Updates", comment: "Settings tab"), systemImage: "arrow.down.circle") }
-            AboutSettingsView(info: info, dataFolder: dataFolder, showWhatsNew: showWhatsNew)
-                .tabItem { Label(String(localized: "About", comment: "Settings tab"), systemImage: "info.circle") }
-        }
-        .frame(width: 520)
-        .fixedSize(horizontal: false, vertical: true)
+    @MainActor var tabs: [SettingsTab] {
+        [
+            tab(
+                String(localized: "Account", comment: "Settings tab"), "person.crop.circle",
+                AccountSettingsView(watch: watch, configStore: configStore, model: account)),
+            tab(
+                String(localized: "Repositories", comment: "Settings tab"), "folder",
+                RepositoriesSettingsView(
+                    selection: SelectionStore(configStore: configStore),
+                    known: watch.snapshot.cache?.knownRepositories.map(\.name) ?? [], check: checkRepository)),
+            tab(
+                String(localized: "Notifications", comment: "Settings tab"), "bell",
+                NotificationsSettingsView(
+                    configStore: configStore, permission: permission, requestPermission: requestPermission,
+                    holdSince: watch.snapshot.state.focusHold?.since)),
+            tab(
+                String(localized: "General", comment: "Settings tab"), "gearshape",
+                GeneralSettingsView(configStore: configStore, loginItem: loginItem)),
+            tab(String(localized: "AI", comment: "Settings tab"), "sparkles", AISettingsView(configStore: configStore)),
+            tab(
+                String(localized: "Updates", comment: "Settings tab"), "arrow.down.circle",
+                UpdatesSettingsView(
+                    configStore: configStore, updates: updates, info: info, showWhatsNew: showWhatsNew,
+                    showPrompt: showPrompt)),
+            tab(
+                String(localized: "About", comment: "Settings tab"), "info.circle",
+                AboutSettingsView(info: info, dataFolder: dataFolder, showWhatsNew: showWhatsNew)),
+        ]
+    }
+
+    private func tab(_ title: String, _ symbol: String, _ view: some View) -> SettingsTab {
+        SettingsTab(
+            title: title, symbol: symbol,
+            content: AnyView(view.frame(width: 560).fixedSize(horizontal: false, vertical: true)))
     }
 }
 
