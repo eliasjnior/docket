@@ -44,7 +44,8 @@ struct ConfigTests {
             """)
         #expect(config.botAllowlist == ["copilot-pull-request-reviewer"])
         #expect(config.mutes["PR_kwDOAbc456"]?.scope == .reminders)
-        #expect(config.tags["PR_kwDOAbc123"]?.tags == ["wip"])
+        // A file from before labels replaced tags still decodes; its tags are ignored.
+        #expect(config.mutes.count == 1)
         #expect(config.selection.excludedRepositories == ["acme/legacy-monolith"])
         #expect(config.launchAtLogin == true)
         #expect(config.ghPath == nil)
@@ -70,8 +71,8 @@ struct ConfigTests {
 
     @Test func roundTrips() throws {
         var config = Config()
-        config.tags["PR_1"] = Config.TagEntry(
-            ref: "acme/api#1", tags: ["wip"], updatedAt: Date(timeIntervalSince1970: 0))
+        config.mutes["PR_1"] = Config.MuteEntry(
+            ref: "acme/api#1", scope: .all, mutedAt: Date(timeIntervalSince1970: 0))
         config.selection.mode = .only
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
@@ -90,11 +91,13 @@ struct ConfigTests {
 }
 
 struct ExportImportTests {
-    @Test("M5 Done when: an exported config restores selection and tags on a fresh install")
+    @Test("M5 Done when: an exported config restores selection and mutes on a fresh install")
     func roundTrip() throws {
         var config = Config(selection: Selection(mode: .only, includedRepositories: ["acme/api"]))
-        config.tags["PR_1"] = Config.TagEntry(
-            ref: "acme/api#482", tags: ["wip"], updatedAt: Date(timeIntervalSince1970: 1_792_584_000))
+        config.mutes["PR_1"] = Config.MuteEntry(
+            ref: "acme/api#482", scope: .reminders, mutedAt: Date(timeIntervalSince1970: 1_792_584_000))
+        config.triage.extraBotLogins = ["renovate"]
+        config.mineLayout = .board
         config.shortcut = .optionCommandD
         #expect(try Config.imported(from: config.exported()) == config)
     }

@@ -2,7 +2,7 @@ import DocketActivity
 import Foundation
 import Observation
 
-/// The popover's own state: filters and which sections are open, kept for the life of the process.
+/// The popover's own state: filters, the tab and the sub-tab, kept for the life of the process.
 @MainActor
 @Observable
 final class PopoverModel {
@@ -13,18 +13,23 @@ final class PopoverModel {
         case ignored
     }
 
-    var tagFilter: String?
-    var repositoryFilter: String?
+    var filter = PopoverFilter()
     var tab: Section = .reviewRequested
+    var triage: Triage = .humans
     /// The row the keyboard focus ring is on (FR-47).
     var focusedID: String?
-    var editingTags: WatchedPullRequest?
+    /// *Mine*'s Draft group in the list layout starts collapsed (spec §7).
+    var draftsExpanded = false
 
-    /// `Escape`: the filter first, then the popover (`docs/05-design.md` §11).
+    /// `Escape`: the most recently added filter first, then the popover (`docs/05-design.md` §11).
     func clearFilter() -> Bool {
-        guard repositoryFilter != nil || tagFilter != nil else { return false }
-        if repositoryFilter != nil { repositoryFilter = nil } else { tagFilter = nil }
-        return true
+        filter.clearLatest()
+    }
+
+    /// A grouped notification's click: that repository alone (FR-59).
+    func show(repository: String) {
+        filter = PopoverFilter(repositories: [repository])
+        tab = .reviewRequested
     }
 }
 

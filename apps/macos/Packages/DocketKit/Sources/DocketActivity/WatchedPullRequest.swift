@@ -8,7 +8,6 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
     public var status: Status
     public var request: RequestInfo?
     public var reviewers: [ReviewerEntry]
-    public var tags: [String]
     public var mute: Config.MuteEntry.Scope?
     public var ignoredAt: Date?
     public var isMarked: Bool
@@ -19,7 +18,7 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
 
     public init(
         pullRequest: PullRequest, role: Role, status: Status, request: RequestInfo? = nil,
-        reviewers: [ReviewerEntry] = [], tags: [String] = [], mute: Config.MuteEntry.Scope? = nil,
+        reviewers: [ReviewerEntry] = [], mute: Config.MuteEntry.Scope? = nil,
         ignoredAt: Date? = nil, isMarked: Bool = false, triage: Triage? = nil, isUnseen: Bool = false
     ) {
         self.pullRequest = pullRequest
@@ -27,7 +26,6 @@ public struct WatchedPullRequest: Hashable, Sendable, Identifiable {
         self.status = status
         self.request = request
         self.reviewers = reviewers
-        self.tags = tags
         self.mute = mute
         self.ignoredAt = ignoredAt
         self.isMarked = isMarked
@@ -65,7 +63,6 @@ public enum Watch {
                 request: cached.role == .reviewRequested ? cached.request : nil,
                 reviewers: cached.role == .authored
                     ? Reviewers.entries(for: pullRequest, commenters: cached.commenters) : [],
-                tags: config.tags[pullRequest.id]?.tags ?? [],
                 mute: ignored == nil ? config.mutes[pullRequest.id]?.scope : nil,
                 ignoredAt: ignored?.ignoredAt,
                 isMarked: ignored == nil && marked.contains(pullRequest.id),

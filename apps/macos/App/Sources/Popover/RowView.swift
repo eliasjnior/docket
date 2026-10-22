@@ -3,7 +3,8 @@ import DocketCore
 import DocketStores
 import SwiftUI
 
-/// One pull request, three lines (`docs/05-design.md` §6.1). The whole row opens it (FR-42).
+/// One pull request (`docs/05-design.md` §6.1): a status rail, the title, then one line of details.
+/// The whole row opens it (FR-42); an unseen row is tinted and its title bold (FR-46).
 struct RowView: View {
     enum Placement {
         case reviewRequested
@@ -16,136 +17,117 @@ struct RowView: View {
     let placement: Placement
     let now: Date
     let actions: RowActions
-    var editor: TagEditorBinding?
     var isFocused = false
     @State private var isHovered = false
 
     private var pullRequest: PullRequest { item.pullRequest }
     private var age: TimeInterval { now.timeIntervalSince(pullRequest.createdAt) }
     private var waited: TimeInterval { now.timeIntervalSince(item.waitingSince) }
+    private var unseen: Bool { item.isUnseen && placement != .ignored }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            Group {
-                if item.isMarked {
-                    Image(systemName: "circle.fill").font(.system(size: 8)).foregroundStyle(Color.accentMarked)
-                } else {
-                    Color.clear
-                }
-            }
-            .frame(width: 12, height: 16)
-            VStack(alignment: .leading, spacing: 2) {
-                firstLine
+        HStack(alignment: .top, spacing: 10) {
+            RoundedRectangle(cornerRadius: 1.5)
+                .fill(placement == .ignored ? Color.textTertiary : item.status.color)
+                .opacity(unseen ? 1 : 0.55)
+                .frame(width: 3)
+            VStack(alignment: .leading, spacing: 4) {
                 Text(verbatim: pullRequest.title)
-                    .font(.body)
-                    .foregroundStyle(placement == .ignored ? Color.textSecondary : Color.textPrimary)
+                    .font(.body.weight(unseen ? .semibold : .regular))
+                    .foregroundStyle(unseen ? Color.textPrimary : Color.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .help(pullRequest.title)
-                thirdLine
+                details
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(
-            RoundedRectangle(cornerRadius: 6).fill(
-                isHovered || isFocused ? Color(nsColor: .selectedContentBackgroundColor).opacity(0.15) : .clear)
-        )
+        .background(unseen ? Color.accent.opacity(0.10) : .clear)
         .overlay {
-            if isFocused { RoundedRectangle(cornerRadius: 6).strokeBorder(Color.accentMarked, lineWidth: 2) }
+            if isHovered || isFocused {
+                Rectangle().fill(Color(nsColor: .selectedContentBackgroundColor).opacity(0.12))
+            }
+        }
+        .overlay {
+            if isFocused { Rectangle().strokeBorder(Color.accent, lineWidth: 2) }
         }
         .contentShape(Rectangle())
         .onHover { isHovered = $0 }
-        .onTapGesture { actions.open(pullRequest.url) }
+        .onTapGesture { actions.open(item) }
         .contextMenu { RowMenu(item: item, actions: actions) }
-        .popover(isPresented: editor?.isPresented(item) ?? .constant(false), arrowEdge: .trailing) {
-            if let editor { TagEditorView(item: item, tags: editor.tags, close: editor.close) }
-        }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(RowAccessibility.label(for: item, placement: placement, now: now))
         .accessibilityAddTraits(.isButton)
-        .accessibilityAction { actions.open(pullRequest.url) }
+        .accessibilityAction { actions.open(item) }
     }
 
-    private var firstLine: some View {
+    /// One line that never wraps: reviewers collapse to `+N` first, then labels (`docs/05-design.md` §6.1).
+    private var details: some View {
         HStack(spacing: 6) {
-            Text(verbatim: "\(pullRequest.repository) #\(pullRequest.number)")
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(Color.textSecondary)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .layoutPriority(-1)
-            Spacer(minLength: 4)
-            if placement == .reviewRequested {
-                AgeLabel(
-                    elapsed: waited,
-                    prefix: String(localized: "waited", comment: "Before the waited time of a review request"))
-            } else {
-                AgeLabel(elapsed: age)
+            ViewThatFits(in: .horizontal) {
+                detailLine(reviewers: 3, labels: pullRequest.labels.count)
+                detailLine(reviewers: 1, labels: pullRequest.labels.count)
+                detailLine(reviewers: 0, labels: 2)
+                detailLine(reviewers: 0, labels: 0)
+                StatusChip(status: item.status, short: true)
             }
+            Spacer(minLength: 4)
+            trailing
+        }
+    }
+
+    private var trailing: some View {
+        HStack(spacing: 4) {
             if item.mute == .all {
                 Image(systemName: "bell.slash")
-                    .font(.subheadline)
                     .foregroundStyle(Color.textSecondary)
                     .accessibilityLabel(Text("Muted", comment: "VoiceOver label of the muted marker"))
             }
-        }
-    }
-
-    /// Line 3 never wraps and never widens the row: reviewers collapse to `+N` first, then tags
-    /// (`docs/05-design.md` §6.1).
-    private var thirdLine: some View {
-        ViewThatFits(in: .horizontal) {
-            thirdLine(reviewers: 3, tags: item.tags.count)
-            thirdLine(reviewers: 1, tags: item.tags.count)
-            thirdLine(reviewers: 0, tags: item.tags.count)
-            thirdLine(reviewers: 0, tags: 1)
-            thirdLine(reviewers: 0, tags: 0)
-            StatusChip(status: item.status, secondary: placement == .reviewRequested)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func thirdLine(reviewers shownReviewers: Int, tags shownTags: Int) -> some View {
-        HStack(spacing: 6) {
             if placement == .reviewRequested {
-                StatusChip(status: item.status, secondary: true)
-                Text(verbatim: "· \(Age.short(age))").font(.subheadline.monospacedDigit())
-                    .foregroundStyle(Color.textSecondary).fixedSize()
-                if let author = pullRequest.author?.login {
-                    Text("by @\(author)", comment: "The author of a pull request in Review requested")
-                        .font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
-                }
-                if let team = teamText, shownReviewers > 0 {
-                    Text(verbatim: team).font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
-                }
-            } else if placement == .ignored {
-                Text(verbatim: item.status.label).font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
+                AgeLabel(elapsed: waited)
             } else {
-                StatusChip(status: item.status)
-                if pullRequest.isDraft { DraftChip() }
-                if placement == .involved, let author = pullRequest.author?.login {
-                    Text("by @\(author)", comment: "The author of a pull request in Involved")
-                        .font(.subheadline).foregroundStyle(Color.textSecondary).fixedSize()
-                }
+                AgeLabel(elapsed: age)
+            }
+        }
+        .font(.subheadline)
+        .fixedSize()
+    }
+
+    private func detailLine(reviewers shownReviewers: Int, labels shownLabels: Int) -> some View {
+        HStack(spacing: 6) {
+            Text(verbatim: "#\(pullRequest.number)").font(.subheadline.monospacedDigit())
+                .foregroundStyle(Color.textSecondary)
+            if placement == .ignored {
+                Text(verbatim: item.status.label).font(.subheadline).foregroundStyle(Color.textSecondary)
+            } else {
+                StatusChip(status: item.status, short: placement == .reviewRequested)
+            }
+            if pullRequest.isDraft, placement != .ignored { DraftChip() }
+            if placement != .mine, let author = pullRequest.author?.login {
+                Text(verbatim: "@\(author)").font(.subheadline).foregroundStyle(Color.textSecondary)
+            }
+            if placement == .reviewRequested, let team = teamText, shownReviewers > 0 {
+                Text(verbatim: team).font(.subheadline).foregroundStyle(Color.textSecondary)
+            }
+            if placement == .mine {
                 ForEach(Array(item.reviewers.prefix(shownReviewers).enumerated()), id: \.offset) { _, entry in
                     ReviewerLabel(entry: entry)
                 }
                 if item.reviewers.count > shownReviewers {
                     Text(verbatim: "+\(item.reviewers.count - shownReviewers)").font(.subheadline)
-                        .foregroundStyle(Color.textSecondary).fixedSize()
+                        .foregroundStyle(Color.textSecondary)
                 }
             }
-            ForEach(item.tags.prefix(shownTags), id: \.self) { tag in
-                TagChip(tag: tag) { actions.filterTag(tag) }
-            }
-            if item.tags.count > shownTags {
-                Text(verbatim: "+\(item.tags.count - shownTags)").font(.subheadline)
-                    .foregroundStyle(Color.textSecondary).fixedSize()
+            ForEach(pullRequest.labels.prefix(shownLabels), id: \.name) { LabelChip(label: $0) }
+            if pullRequest.labels.count > shownLabels {
+                Text(verbatim: "+\(pullRequest.labels.count - shownLabels)").font(.subheadline)
+                    .foregroundStyle(Color.textSecondary)
             }
         }
+        .lineLimit(1)
         .fixedSize()
     }
 
@@ -165,15 +147,17 @@ struct RowMenu: View {
 
     var body: some View {
         let pullRequest = item.pullRequest
-        Button(String(localized: "Open in Browser", comment: "Row context menu")) { actions.open(pullRequest.url) }
+        Button(String(localized: "Open in Browser", comment: "Row context menu")) { actions.open(item) }
         Button(String(localized: "Copy URL", comment: "Row context menu")) {
             actions.copy(pullRequest.url.absoluteString)
         }
         Button(String(localized: "Copy Reference", comment: "Row context menu")) { actions.copy(pullRequest.ref) }
         Divider()
-        Button(String(localized: "Edit Tags…", comment: "Row context menu")) { actions.editTags(item) }
         Button(String(localized: "Filter to \(pullRequest.repository)", comment: "Row context menu")) {
             actions.filterRepository(pullRequest.repository)
+        }
+        if item.isUnseen {
+            Button(String(localized: "Mark as Seen", comment: "Row context menu")) { actions.markSeen([item.id]) }
         }
         Divider()
         if !item.isIgnored {
@@ -190,20 +174,5 @@ struct RowMenu: View {
         } else {
             Button(String(localized: "Stop Ignoring", comment: "Row context menu")) { actions.setIgnored(item, false) }
         }
-    }
-}
-
-/// Which row's tag editor is open, shared by the rows of one popover.
-@MainActor
-struct TagEditorBinding {
-    let model: PopoverModel
-    let tags: TagStore
-
-    func isPresented(_ item: WatchedPullRequest) -> Binding<Bool> {
-        Binding(get: { model.editingTags?.id == item.id }, set: { if !$0 { model.editingTags = nil } })
-    }
-
-    func close() {
-        model.editingTags = nil
     }
 }

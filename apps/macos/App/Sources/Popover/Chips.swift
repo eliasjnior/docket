@@ -3,24 +3,23 @@ import DocketActivity
 import DocketCore
 import SwiftUI
 
-/// The status chip of `docs/05-design.md` §6.3: symbol in its colour, word in the primary text colour.
+/// The status pill of `docs/05-design.md` §6.3: a filled capsule, the symbol and word in the status colour.
 struct StatusChip: View {
     let status: Status
-    /// No fill and a secondary word, in *Review requested*.
-    var secondary = false
+    /// `Ready to merge` shortens to `Ready` in *Review requested*.
+    var short = false
 
     var body: some View {
-        HStack(spacing: 3) {
-            Image(systemName: status.symbol).foregroundStyle(status.color)
-            Text(secondary ? status.shortLabel : status.label)
-                .foregroundStyle(secondary ? Color.textSecondary : Color.textPrimary)
+        HStack(spacing: 4) {
+            Image(systemName: status.symbol)
+                .foregroundStyle(status.color)
+                .symbolEffect(.rotate, options: .repeat(.continuous), isActive: status == .checksRunning)
+            Text(short ? status.shortLabel : status.label).foregroundStyle(status.textColor)
         }
-        .font(.subheadline.weight(.medium))
-        .padding(.horizontal, secondary ? 0 : 4)
+        .font(.subheadline.weight(.semibold))
+        .padding(.horizontal, 7)
         .padding(.vertical, 2)
-        .background {
-            if !secondary { Capsule().fill(status.color.opacity(0.12)) }
-        }
+        .background(Capsule().fill(status.color.opacity(0.16)))
         .fixedSize()
         .accessibilityElement(children: .combine)
     }
@@ -38,33 +37,23 @@ struct DraftChip: View {
     }
 }
 
-struct TagChip: View {
-    let tag: String
-    var action: (() -> Void)?
+/// A GitHub label in its own colour, outlined so a pale or dark colour still reads on the popover.
+struct LabelChip: View {
+    let label: DocketCore.Label
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        let color = Self.color(for: tag)
-        Text(verbatim: tag)
+        let base = Color(hex: label.color) ?? .textSecondary
+        let text = colorScheme == .dark ? base.mix(with: .white, by: 0.35) : base.mix(with: .black, by: 0.35)
+        Text(verbatim: label.name)
             .font(.subheadline.weight(.medium))
-            .foregroundStyle(color)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(Capsule().fill(color.opacity(0.18)))
+            .foregroundStyle(text)
+            .lineLimit(1)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 1)
+            .background(Capsule().fill(base.opacity(0.14)))
+            .overlay(Capsule().strokeBorder(base.opacity(0.55), lineWidth: 1))
             .fixedSize()
-            .onTapGesture { action?() }
-    }
-
-    /// One colour per tag name, stable across launches. Red, orange and green are left to status.
-    static func color(for tag: String) -> Color {
-        let palette: [NSColor] = [
-            .systemBlue, .systemPurple, .systemPink, .systemTeal, .systemIndigo, .systemCyan, .systemBrown, .systemMint,
-        ]
-        // FNV-1a: `hashValue` changes between launches.
-        var hash: UInt64 = 14_695_981_039_346_656_037
-        for byte in tag.utf8 {
-            hash = (hash ^ UInt64(byte)) &* 1_099_511_628_211
-        }
-        return Color(nsColor: palette[Int(hash % UInt64(palette.count))])
     }
 }
 

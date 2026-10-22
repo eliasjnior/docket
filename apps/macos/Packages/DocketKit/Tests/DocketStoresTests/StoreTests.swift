@@ -58,8 +58,5 @@ struct StoreTests {
         #expect(store.isStale(now: now.addingTimeInterval(121)))
         configStore.update { $0.count.includeReviewRequests = false }
         #expect(store.count == 1)
-        configStore.update { $0.tags["PR_2"] = Config.TagEntry(ref: "", tags: ["wip", "infra"], updatedAt: now) }
-        configStore.update { $0.tags["PR_1"] = Config.TagEntry(ref: "", tags: ["infra"], updatedAt: now) }
-        #expect(store.tagsInUse == ["infra", "wip"])
     }
 }

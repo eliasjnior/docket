@@ -15,7 +15,6 @@ public struct Config: Codable, Hashable, Sendable {
     public var ghPath: String?
     public var launchAtLogin: Bool?
     public var updates: Updates
-    public var tags: [String: TagEntry]
     public var mutes: [String: MuteEntry]
     /// The global shortcut that opens the popover (FR-48); `off` disables it.
     public var shortcut: Shortcut
@@ -27,7 +26,7 @@ public struct Config: Codable, Hashable, Sendable {
         selection: Selection = Selection(), polling: Polling = Polling(), count: Count = Count(),
         notifications: Notifications = Notifications(), reminders: Reminders = Reminders(),
         ignored: [String: IgnoreEntry] = [:], botAllowlist: [String] = [], ghPath: String? = nil,
-        launchAtLogin: Bool? = nil, updates: Updates = Updates(), tags: [String: TagEntry] = [:],
+        launchAtLogin: Bool? = nil, updates: Updates = Updates(),
         mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD, triage: Triage = Triage(),
         mineLayout: MineLayout = .list
     ) {
@@ -42,7 +41,6 @@ public struct Config: Codable, Hashable, Sendable {
         self.ghPath = ghPath
         self.launchAtLogin = launchAtLogin
         self.updates = updates
-        self.tags = tags
         self.mutes = mutes
         self.shortcut = shortcut
         self.triage = triage
@@ -62,7 +60,6 @@ public struct Config: Codable, Hashable, Sendable {
         ghPath = c.value(.ghPath, default: nil)
         launchAtLogin = c.value(.launchAtLogin, default: nil)
         updates = c.value(.updates, default: Updates())
-        tags = c.value(.tags, default: [:])
         mutes = c.value(.mutes, default: [:])
         shortcut = c.value(.shortcut, default: .controlOptionCommandD)
         triage = c.value(.triage, default: Triage())
@@ -262,18 +259,6 @@ public struct Config: Codable, Hashable, Sendable {
             let c = try decoder.container(keyedBy: CodingKeys.self)
             automaticChecks = c.value(.automaticChecks, default: true)
             automaticInstall = c.value(.automaticInstall, default: false)
-        }
-    }
-
-    public struct TagEntry: Codable, Hashable, Sendable {
-        public var ref: String
-        public var tags: [String]
-        public var updatedAt: Date
-
-        public init(ref: String, tags: [String], updatedAt: Date) {
-            self.ref = ref
-            self.tags = tags
-            self.updatedAt = updatedAt
         }
     }
 

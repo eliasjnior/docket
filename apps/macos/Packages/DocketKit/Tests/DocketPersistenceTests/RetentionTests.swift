@@ -24,7 +24,6 @@ struct RetentionTests {
             ], seen: ["PR_WATCHED": now, "PR_LEFT_LONG_AGO": now, "PR_UNKNOWN": now])
         var config = Config()
         for id in ["PR_WATCHED", "PR_LEFT_RECENTLY", "PR_LEFT_LONG_AGO", "PR_UNKNOWN"] {
-            config.tags[id] = Config.TagEntry(ref: id, tags: ["wip"], updatedAt: now)
             config.mutes[id] = Config.MuteEntry(ref: id, scope: .all, mutedAt: now)
             config.ignored[id] = Config.IgnoreEntry(ref: id, ignoredAt: now)
         }
@@ -34,7 +33,6 @@ struct RetentionTests {
         #expect(result.state.marked == ["PR_WATCHED"])
         #expect(result.state.teams.keys.sorted() == ["acme"])
         #expect(result.state.seen.keys.sorted() == ["PR_WATCHED"])
-        #expect(result.config.tags.keys.sorted() == ["PR_LEFT_RECENTLY", "PR_WATCHED"])
         #expect(result.config.mutes.keys.sorted() == ["PR_LEFT_RECENTLY", "PR_WATCHED"])
         #expect(result.config.ignored.keys.sorted() == ["PR_LEFT_RECENTLY", "PR_WATCHED"])
     }

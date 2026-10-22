@@ -186,6 +186,16 @@ struct GeneralSettingsView: View {
                 )
                 .font(.caption).foregroundStyle(Color.textSecondary)
             }
+            Section(String(localized: "Mine", comment: "General settings section")) {
+                Picker(
+                    String(localized: "Show your pull requests as", comment: "Mine layout picker"),
+                    selection: binding(\.mineLayout)
+                ) {
+                    Text("List", comment: "Mine layout").tag(Config.MineLayout.list)
+                    Text("Board", comment: "Mine layout").tag(Config.MineLayout.board)
+                }
+                .pickerStyle(.segmented)
+            }
             Section(String(localized: "Poll interval", comment: "General settings section")) {
                 Picker(
                     String(localized: "Check GitHub every", comment: "Poll interval picker"),

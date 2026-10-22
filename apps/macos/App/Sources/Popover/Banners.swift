@@ -43,7 +43,14 @@ struct Banners: View {
                     action: String(localized: "Try Again", comment: "Failed poll banner button"),
                     perform: actions.refresh)
             case nil:
-                EmptyView()
+                // Moved from the header: the list is older than two poll intervals (FR-44).
+                if !watch.isPolling, watch.isStale(now: now), let fetchedAt = watch.fetchedAt {
+                    BannerRow(
+                        symbol: "clock.arrow.circlepath", color: .textSecondary,
+                        text: String(
+                            localized: "Updated \(max(1, Int(now.timeIntervalSince(fetchedAt) / 60))) min ago",
+                            comment: "Banner when the list is older than two poll intervals"))
+                }
             }
             if watch.snapshot.state.baselineAt != nil, watch.config.launchAtLogin == nil {
                 HStack(spacing: 8) {
@@ -60,7 +67,7 @@ struct Banners: View {
                     .controlSize(.small)
                 }
                 .font(.subheadline)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 16)
                 .padding(.vertical, 8)
             }
             if watch.snapshot.state.focusHold != nil {
@@ -118,7 +125,7 @@ struct BannerRow: View {
             }
         }
         .font(.subheadline)
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 16)
         .padding(.vertical, 8)
     }
 }

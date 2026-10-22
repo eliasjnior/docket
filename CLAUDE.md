@@ -103,7 +103,7 @@ flowchart TD
     end
     subgraph Stores["DocketStores"]
         poller["Poller (actor)"]
-        stores["WatchStore · TagStore · SelectionStore · AccountStore"]
+        stores["WatchStore · SelectionStore · AccountStore"]
         poller --> stores
     end
     views --> menubar

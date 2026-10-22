@@ -15,7 +15,13 @@ enum Snapshots {
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let scenarios = [
             Scenario(name: "popover", account: .ready, cache: SampleData.cache),
+            Scenario(name: "popover-bots", account: .ready, cache: SampleData.cache, triage: .bots),
+            Scenario(name: "popover-stale", account: .ready, cache: SampleData.cache, triage: .stale),
+            Scenario(
+                name: "popover-filters", account: .ready, cache: SampleData.cache,
+                filter: PopoverFilter(organizations: ["acme", "globex"], labels: ["backend"])),
             Scenario(name: "popover-mine", account: .ready, cache: SampleData.cache, tab: .mine),
+            Scenario(name: "popover-mine-board", account: .ready, cache: SampleData.cache, tab: .mine, board: true),
             Scenario(name: "popover-involved", account: .ready, cache: SampleData.cache, tab: .involved),
             Scenario(name: "popover-offline", account: .ready, problem: .offline, cache: SampleData.cache),
             Scenario(
@@ -30,9 +36,12 @@ enum Snapshots {
             let suffix = appearance == .aqua ? "light" : "dark"
             for scenario in scenarios {
                 let watch = SampleData.watch(
-                    account: scenario.account, problem: scenario.problem, cache: scenario.cache)
+                    account: scenario.account, problem: scenario.problem, cache: scenario.cache,
+                    board: scenario.board)
                 let model = PopoverModel()
                 model.tab = scenario.tab
+                model.triage = scenario.triage
+                model.filter = scenario.filter
                 render(
                     PopoverView(
                         watch: watch, model: model, permission: NotificationPermission(), actions: SampleData.actions),
@@ -46,12 +55,6 @@ enum Snapshots {
     private static func renderSettings(appearance: NSAppearance.Name, to directory: URL, suffix: String) {
         let watch = SampleData.watch(account: .ready, problem: nil, cache: SampleData.cache)
         let configStore = watch.configStore
-        let item = watch.items.first { $0.id == "acme/api#470" }
-        if let item {
-            render(
-                TagEditorView(item: item, tags: TagStore(configStore: configStore), close: {}),
-                appearance: appearance, to: directory, name: "tag-editor-\(suffix)")
-        }
         render(
             NotificationsSettingsView(
                 configStore: configStore, permission: NotificationPermission(), requestPermission: {}
@@ -75,11 +78,18 @@ enum Snapshots {
         var problem: PollProblem?
         var cache: SnapshotCache?
         var tab: PopoverModel.Section = .reviewRequested
+        var triage: Triage = .humans
+        var filter = PopoverFilter()
+        var board = false
     }
 
     static func render(_ view: some View, appearance: NSAppearance.Name, to directory: URL, name: String) {
         let hosting = NSHostingView(rootView: view.background(Color(nsColor: .windowBackgroundColor)))
         hosting.appearance = NSAppearance(named: appearance)
+        hosting.frame.size = hosting.fittingSize
+        hosting.layoutSubtreeIfNeeded()
+        // A second pass: the popover sizes its list from a measured height, set after the first layout.
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
         hosting.frame.size = hosting.fittingSize
         hosting.layoutSubtreeIfNeeded()
         guard let rep = hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds) else { return }
@@ -113,20 +123,45 @@ enum SampleData {
     static var cache: SnapshotCache {
         let team = Reviewer.team(organization: "acme", slug: "frontend")
         let you = Reviewer.user(login: "you")
+        let backend = Label(name: "backend", color: "0e8a16")
+        let urgent = Label(name: "urgent", color: "d93f0b")
         let entries = [
             CachedPullRequest(
                 pullRequest: pullRequest(
                     "acme/api#482", "Fix login redirect loop after the SSO session expires", author: "ana", days: 4
                 ) {
                     $0.reviewRequests = [you]
+                    $0.checks = .failure
+                    $0.labels = [urgent, backend]
                 },
-                role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 4), requestedBy: "ana")),
+                role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 4), requestedBy: "ana"),
+                activity: [ActivityStamp(login: "ana", at: ago(days: 0.1))]),
             CachedPullRequest(
                 pullRequest: pullRequest("acme/api#490", "Rate-limit the export endpoint", author: "bruno", days: 1) {
                     $0.checks = .pending
                     $0.reviewRequests = [you]
+                    $0.labels = [backend]
                 },
                 role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 0.08), requestedBy: "bruno")),
+            CachedPullRequest(
+                pullRequest: pullRequest("globex/web#31", "Paginate the audit log", author: "dave", days: 0.5) {
+                    $0.reviewRequests = [you]
+                },
+                role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 0.4), requestedBy: "dave")),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/api#493", "Bump swift-format to 602.0.0", author: "dependabot", days: 1)
+                {
+                    $0.author = Actor(login: "dependabot", isBot: true)
+                    $0.checks = .success
+                    $0.reviewRequests = [you]
+                    $0.labels = [Label(name: "dependencies", color: "0366d6")]
+                },
+                role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 1), requestedBy: "dependabot")),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/web#64", "Try a new date picker", author: "carla", days: 21) {
+                    $0.reviewRequests = [you]
+                },
+                role: .reviewRequested, request: RequestInfo(requestedAt: ago(days: 20), requestedBy: "carla")),
             CachedPullRequest(
                 pullRequest: pullRequest(
                     "acme/web#88", "Move checkout to the new payments client", author: "carla", days: 12
@@ -136,7 +171,8 @@ enum SampleData {
                     $0.reviewRequests = [team]
                 },
                 role: .reviewRequested,
-                request: RequestInfo(requestedAt: ago(days: 9), requestedBy: "carla", team: team)),
+                request: RequestInfo(requestedAt: ago(days: 9), requestedBy: "carla", team: team),
+                activity: [ActivityStamp(login: "carla", at: ago(days: 1))]),
             CachedPullRequest(
                 pullRequest: pullRequest("acme/api#470", "Cache the account lookup", author: "you", days: 4) {
                     $0.mergeable = .conflicting
@@ -168,26 +204,31 @@ enum SampleData {
 
     static func ago(days: Double) -> Date { now.addingTimeInterval(-days * 86400) }
 
-    static func watch(account: AccountState, problem: PollProblem?, cache: SnapshotCache?) -> WatchStore {
+    static func watch(account: AccountState, problem: PollProblem?, cache: SnapshotCache?, board: Bool = false)
+        -> WatchStore
+    {
         var config = Config()
-        config.tags["acme/api#470"] = Config.TagEntry(ref: "acme/api#470", tags: ["wip"], updatedAt: now)
-        config.tags["acme/web#88"] = Config.TagEntry(ref: "acme/web#88", tags: ["after"], updatedAt: now)
+        config.mineLayout = board ? .board : .list
         config.mutes["acme/api#490"] = Config.MuteEntry(ref: "acme/api#490", scope: .all, mutedAt: now)
         let store = WatchStore(configStore: ConfigStore(storage: NoStorage(), initial: config))
         store.apply(
             WatchSnapshot(
                 cache: cache,
                 state: PersistedState(
-                    viewerLogin: "you", baselineAt: now, marked: ["acme/api#482", "acme/infra#12"],
-                    baselineNoticeDismissed: true),
+                    viewerLogin: "you", baselineAt: now, baselineNoticeDismissed: true,
+                    seen: [
+                        "acme/web#88": ago(days: 2), "globex/web#31": now, "acme/api#470": now, "acme/web#91": now,
+                        "acme/web#64": now,
+                    ],
+                    seenBaselineAt: ago(days: 30)),
                 account: account, problem: problem))
         return store
     }
 
     static var actions: PopoverActions {
         let row = RowActions(
-            open: { _ in }, copy: { _ in }, filterRepository: { _ in }, filterTag: { _ in }, editTags: { _ in },
-            setMute: { _, _ in }, setIgnored: { _, _ in })
+            open: { _ in }, copy: { _ in }, filterRepository: { _ in }, setMute: { _, _ in }, setIgnored: { _, _ in },
+            markSeen: { _ in })
         return PopoverActions(
             refresh: {}, openSettings: {}, checkForUpdates: {}, quit: {}, retry: {}, chooseGhLocation: {},
             launchAtLogin: { _ in }, deliverHeld: {},

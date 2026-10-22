@@ -63,6 +63,7 @@ struct NotificationsSettingsView: View {
                     isOn: binding(\.notifications.mention))
             }
             RemindersSection(configStore: configStore)
+            TriageSection(configStore: configStore)
             Section(String(localized: "Focus", comment: "Notifications settings section")) {
                 HStack {
                     Text("To hold notifications during a Focus, add Docket's filter to it.", comment: "Focus setting")

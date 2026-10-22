@@ -21,11 +21,10 @@ public enum Retention {
         state.teams = state.teams.filter { now.timeIntervalSince($0.value.fetchedAt) <= teamDays }
         state.delivered = state.delivered.filter { now.timeIntervalSince($0.value) <= 14 * 86400 }
         state.marked.removeAll { !watched.contains($0) }
-        // A tag, mute or ignore lives while its pull request has a role or a cursor (FR-84).
+        // A mute or ignore lives while its pull request has a role or a cursor.
         let alive = Set(state.cursors.keys).union(watched)
         state.seen = state.seen.filter { alive.contains($0.key) }
         var config = config
-        config.tags = config.tags.filter { alive.contains($0.key) }
         config.mutes = config.mutes.filter { alive.contains($0.key) }
         config.ignored = config.ignored.filter { alive.contains($0.key) }
         return Result(config: config, state: state)

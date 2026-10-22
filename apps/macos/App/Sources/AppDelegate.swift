@@ -18,9 +18,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.environment = environment
         environment.handleNotifications { [weak self] route in
             switch route {
-            case .open(let url): NSWorkspace.shared.open(url)
+            case .open(let url):
+                NSWorkspace.shared.open(url)
+                // A notification about one pull request opens it, so the row is seen (spec §4).
+                let seen = environment.watch.items.filter { item in
+                    let base = item.pullRequest.url.absoluteString
+                    guard url.absoluteString.hasPrefix(base) else { return false }
+                    return url.absoluteString.dropFirst(base.count).first.map { "#/?".contains($0) } ?? true
+                }
+                Task { await environment.poller.markSeen(seen.map(\.id)) }
             case .popover(let repository):
-                self?.popover.repositoryFilter = repository
+                if let repository { self?.popover.show(repository: repository) }
                 self?.statusBar?.show()
             }
         }
@@ -158,9 +166,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(text, forType: .string)
             },
-            filterRepository: { popover.repositoryFilter = $0 },
-            filterTag: { popover.tagFilter = $0 },
-            editTags: { popover.editingTags = $0 },
+            filterRepository: { repository in
+                if !popover.filter.contains(repository, in: .repository) {
+                    popover.filter.toggle(repository, in: .repository)
+                }
+            },
             setMute: { item, choice in
                 configStore.update { config in
                     if let choice {
@@ -180,7 +190,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         config.ignored[item.id] = nil
                     }
                 }
-            })
+            },
+            markSeen: { ids in Task { await environment.poller.markSeen(ids) } })
     }
 
     private func chooseGhLocation() {

@@ -23,6 +23,9 @@
     "%@ commented" : {
       "comment" : "One comment on your pull request\nReview decision\nVoiceOver: reviewer"
     },
+    "%@ is waiting for your review" : {
+      "comment" : "One review request"
+    },
     "%@ mentioned you" : {
       "comment" : "One mention"
     },
@@ -55,6 +58,9 @@
     "%lld comments on your pull requests" : {
       "comment" : "Digest line\nSeveral comments"
     },
+    "%lld days without human activity" : {
+      "comment" : "Stale threshold"
+    },
     "%lld mentions" : {
       "comment" : "Digest line\nSeveral mentions"
     },
@@ -65,17 +71,6 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld more updates in %2$lld repositories"
-          }
-        }
-      }
-    },
-    "%lld of %lld" : {
-      "comment" : "Tag editor counter",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld of %2$lld"
           }
         }
       }
@@ -97,6 +92,9 @@
     },
     "%lld reviews still waiting for you" : {
       "comment" : "Several reminders"
+    },
+    "+ Filter" : {
+      "comment" : "Add filter button"
     },
     "+%lld not shown" : {
       "comment" : "More results than the search returned"
@@ -151,23 +149,17 @@
     "Account" : {
       "comment" : "Settings tab"
     },
+    "Actions" : {
+      "comment" : "Actions menu button"
+    },
     "Add" : {
       "comment" : "Repositories list button"
     },
     "Add bot" : {
       "comment" : "Bot allowlist button"
     },
-    "Add tag" : {
-      "comment" : "Tag editor field"
-    },
-    "All repositories" : {
-      "comment" : "Repository filter"
-    },
     "All repositories, except…" : {
       "comment" : "Selection mode"
-    },
-    "All tags" : {
-      "comment" : "Tag filter"
     },
     "Allow in System Settings…" : {
       "comment" : "Login item button"
@@ -178,8 +170,8 @@
     "Allow…" : {
       "comment" : "Notification permission button"
     },
-    "Already added" : {
-      "comment" : "Tag rejected"
+    "Also bots" : {
+      "comment" : "Extra bot logins field"
     },
     "Authorize" : {
       "comment" : "SAML banner button\nSAML button"
@@ -187,10 +179,19 @@
     "Automatic updates" : {
       "comment" : "Updates settings section"
     },
+    "Blocked" : {
+      "comment" : "Mine group"
+    },
+    "Board" : {
+      "comment" : "Mine layout"
+    },
     "Bot login" : {
       "comment" : "Bot allowlist field"
     },
     "Bots" : {
+      "comment" : "Notifications settings section\nReview requested sub-tab"
+    },
+    "Bots and stale pull requests" : {
       "comment" : "Notifications settings section"
     },
     "Bots never notify unless they are listed here." : {
@@ -203,7 +204,10 @@
       "comment" : "Repository picker"
     },
     "Changes requested" : {
-      "comment" : "Status chip"
+      "comment" : "Blocked reason\nStatus chip"
+    },
+    "Changes requested by %@" : {
+      "comment" : "Blocked reason"
     },
     "Check GitHub every" : {
       "comment" : "Poll interval picker"
@@ -227,7 +231,7 @@
       "comment" : "Digest line\nSeveral failing checks"
     },
     "Checks failing" : {
-      "comment" : "Status chip"
+      "comment" : "Blocked reason\nStatus chip"
     },
     "Checks failing on your pull request" : {
       "comment" : "Notification kind"
@@ -244,17 +248,20 @@
     "Choose the gh executable" : {
       "comment" : "Open panel message"
     },
-    "Clear Filter" : {
+    "Clear Filters" : {
       "comment" : "Filter button"
     },
     "Clear filter" : {
-      "comment" : "Repository filter token"
+      "comment" : "Filter chip"
     },
     "Comment on your pull request" : {
       "comment" : "Notification kind"
     },
     "Conflict" : {
       "comment" : "Status chip: the pull request has a merge conflict"
+    },
+    "Conflict with the base branch" : {
+      "comment" : "Blocked reason"
     },
     "Continue" : {
       "comment" : "What's New button"
@@ -273,6 +280,12 @@
     },
     "Couldn't update. Showing data from %@." : {
       "comment" : "Failed poll banner"
+    },
+    "Count and notify bot pull requests" : {
+      "comment" : "Triage setting"
+    },
+    "Count and notify stale pull requests" : {
+      "comment" : "Triage setting"
     },
     "Count review requests" : {
       "comment" : "Menu bar count setting"
@@ -308,10 +321,7 @@
       "comment" : "Update prompt title"
     },
     "Draft" : {
-      "comment" : "The draft modifier beside the status chip"
-    },
-    "Edit Tags…" : {
-      "comment" : "Row context menu"
+      "comment" : "Mine group\nThe draft modifier beside the status chip"
     },
     "Every" : {
       "comment" : "Reminder interval"
@@ -367,6 +377,9 @@
     "Holding since %@" : {
       "comment" : "Focus hold state"
     },
+    "Humans" : {
+      "comment" : "Review requested sub-tab"
+    },
     "Ignore" : {
       "comment" : "Row context menu"
     },
@@ -391,6 +404,12 @@
     "Keyboard" : {
       "comment" : "General settings section"
     },
+    "Label" : {
+      "comment" : "Filter dimension"
+    },
+    "Labels: %@." : {
+      "comment" : "VoiceOver: GitHub labels"
+    },
     "Last checked" : {
       "comment" : "Updates setting"
     },
@@ -400,11 +419,20 @@
     "Later" : {
       "comment" : "Update prompt button"
     },
+    "List" : {
+      "comment" : "Mine layout"
+    },
     "Loading pull requests" : {
       "comment" : "Status item tooltip"
     },
     "Loading pull requests…" : {
       "comment" : "First poll of a launch with no cache"
+    },
+    "Mark All as Seen" : {
+      "comment" : "Actions menu"
+    },
+    "Mark as Seen" : {
+      "comment" : "Row context menu"
     },
     "Mention of you" : {
       "comment" : "Notification kind"
@@ -413,7 +441,7 @@
       "comment" : "General settings section"
     },
     "Mine" : {
-      "comment" : "Tab"
+      "comment" : "General settings section\nTab"
     },
     "Missing" : {
       "comment" : "Scope state"
@@ -430,20 +458,17 @@
     "Muted." : {
       "comment" : "VoiceOver: muted"
     },
-    "New activity." : {
-      "comment" : "VoiceOver: marked row"
-    },
     "No open pull requests of yours in the watched repositories." : {
       "comment" : "Empty state"
-    },
-    "No pull requests tagged %@." : {
-      "comment" : "Empty tag filter"
     },
     "No release notes" : {
       "comment" : "What's New empty"
     },
     "No repositories selected." : {
       "comment" : "Empty state in only mode"
+    },
+    "No review requests from bots." : {
+      "comment" : "Empty state"
     },
     "No reviewers" : {
       "comment" : "Status chip"
@@ -472,14 +497,20 @@
     "Not holding notifications" : {
       "comment" : "Focus filter summary"
     },
-    "Nothing here in %@." : {
-      "comment" : "Empty repository filter"
+    "Nothing here" : {
+      "comment" : "Empty board column"
     },
     "Nothing is ignored." : {
       "comment" : "Empty state"
     },
+    "Nothing matches these filters." : {
+      "comment" : "Empty state with filters"
+    },
     "Nothing needs you" : {
       "comment" : "Status item tooltip"
+    },
+    "Nothing stale." : {
+      "comment" : "Empty state"
     },
     "Nothing you commented on or reviewed in the last 30 days." : {
       "comment" : "Empty state"
@@ -541,6 +572,9 @@
     "Open in Browser" : {
       "comment" : "Row context menu"
     },
+    "Org" : {
+      "comment" : "Filter dimension"
+    },
     "Organizations needing SAML authorization" : {
       "comment" : "Account settings section"
     },
@@ -563,13 +597,16 @@
       "comment" : "Gear menu\nStatus item menu"
     },
     "Ready" : {
-      "comment" : "Secondary status chip in Review requested"
+      "comment" : "Mine group\nSecondary status chip in Review requested"
     },
     "Ready to merge" : {
       "comment" : "Status chip"
     },
     "Refresh" : {
       "comment" : "Refresh button\nStatus item menu"
+    },
+    "Refreshing" : {
+      "comment" : "Refresh button while a poll runs"
     },
     "Remind me about pending reviews" : {
       "comment" : "Reminders setting"
@@ -583,14 +620,14 @@
     "Remove" : {
       "comment" : "Repositories list button"
     },
-    "Remove %@" : {
-      "comment" : "Tag editor: remove a tag"
-    },
     "Remove bot" : {
       "comment" : "Bot allowlist button"
     },
     "Reply to your comment" : {
       "comment" : "Notification kind"
+    },
+    "Repo" : {
+      "comment" : "Filter dimension"
     },
     "Repositories" : {
       "comment" : "Settings tab"
@@ -604,17 +641,11 @@
     "Review requested" : {
       "comment" : "Notification kind\nTab"
     },
-    "Review requested by %@" : {
-      "comment" : "One review request"
-    },
     "Reviewers: %@." : {
       "comment" : "VoiceOver: reviewers"
     },
     "Run this in Terminal and follow the prompts." : {
       "comment" : "Full screen body"
-    },
-    "Saved as %@" : {
-      "comment" : "Tag editor: normalization feedback"
     },
     "Scopes" : {
       "comment" : "Account settings section"
@@ -631,6 +662,9 @@
     "Show Data Folder" : {
       "comment" : "About button"
     },
+    "Show your pull requests as" : {
+      "comment" : "Mine layout picker"
+    },
     "Sign in to the GitHub CLI" : {
       "comment" : "Full screen title"
     },
@@ -643,23 +677,17 @@
     "Software Update" : {
       "comment" : "Window title"
     },
+    "Stale" : {
+      "comment" : "Review requested sub-tab"
+    },
+    "Stale after" : {
+      "comment" : "Triage setting"
+    },
     "Status" : {
-      "comment" : "Updates setting"
+      "comment" : "Filter dimension\nUpdates setting"
     },
     "Stop Ignoring" : {
       "comment" : "Row context menu"
-    },
-    "Suggestions" : {
-      "comment" : "Tag editor section"
-    },
-    "Tags are up to 24 characters" : {
-      "comment" : "Tag rejected"
-    },
-    "Tags use letters, digits and hyphens" : {
-      "comment" : "Tag rejected"
-    },
-    "Tags: %@." : {
-      "comment" : "VoiceOver: tags"
     },
     "That file is not a Docket settings file this version can read." : {
       "comment" : "Import error"
@@ -688,23 +716,17 @@
     "Turn On" : {
       "comment" : "Launch at login banner button"
     },
-    "Type a tag" : {
-      "comment" : "Tag rejected: empty"
-    },
-    "Up to 5 tags per pull request" : {
-      "comment" : "Tag rejected"
+    "Unseen." : {
+      "comment" : "VoiceOver: unseen row"
     },
     "Up to date" : {
       "comment" : "Update status"
     },
     "Updated %lld min ago" : {
-      "comment" : "Header when the list is older than two poll intervals"
+      "comment" : "Banner when the list is older than two poll intervals"
     },
     "Updates" : {
       "comment" : "Settings tab"
-    },
-    "Updating…" : {
-      "comment" : "Header while a poll runs"
     },
     "Use Default" : {
       "comment" : "Account setting button"
@@ -730,6 +752,9 @@
     "What's New in Docket" : {
       "comment" : "What's New window title"
     },
+    "When off, they leave the menu bar count, review-request notifications and reminders." : {
+      "comment" : "Triage settings caption"
+    },
     "While you were in Focus" : {
       "comment" : "The Focus digest"
     },
@@ -752,7 +777,7 @@
       "comment" : "Last body line of a long group"
     },
     "by @%@" : {
-      "comment" : "Reminder requester\nThe author of a pull request in Involved\nThe author of a pull request in Review requested"
+      "comment" : "Reminder requester"
     },
     "copilot-pull-request-reviewer" : {
       "comment" : "Bot allowlist placeholder"
@@ -771,6 +796,9 @@
     },
     "re-requested" : {
       "comment" : "After a reviewer asked to review again"
+    },
+    "renovate, ci-user" : {
+      "comment" : "Extra bot logins placeholder"
     },
     "requested %@ ago" : {
       "comment" : "Reminder"
@@ -795,9 +823,6 @@
     },
     "via a team" : {
       "comment" : "A review request through a team Docket cannot name"
-    },
-    "waited" : {
-      "comment" : "Before the waited time of a review request"
     }
   },
   "version" : "1.0"
