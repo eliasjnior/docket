@@ -86,7 +86,7 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 | **FR-43** | A row's context menu copies the URL and `owner/name#number`, filters to the row's repository, and edits tags | P0 |
 | **FR-44** | The popover shows the last cached snapshot immediately, with "updated N min ago" when it is older than two poll intervals | P0 |
 | **FR-45** | A refresh button and `⌘R` run a poll immediately | P0 |
-| **FR-46** | Rows with an event since the popover was last opened are marked until it is opened again | P0 |
+| **FR-46** | Each row is **seen** or **unseen**: unseen until you open it from Docket, and unseen again after a human other than you comments, reviews, requests or pushes. Bot activity never makes a row unseen. *Mark All as Seen* clears the visible list | P0 |
 | **FR-47** | Keyboard navigation of the popover: arrows move, `Return` opens, `T` edits tags | P1 |
 | **FR-48** | A global shortcut opens the popover | P1 |
 | **FR-49** | A pull request can be ignored: it leaves the count, moves to a collapsed **Ignored** section at the end of the popover, and never notifies or reminds, until `Stop Ignoring` (D-27, `02-activity-detection.md` §5.8) | P0 |

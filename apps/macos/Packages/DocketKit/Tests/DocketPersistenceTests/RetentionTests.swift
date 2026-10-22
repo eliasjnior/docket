@@ -21,7 +21,7 @@ struct RetentionTests {
             teams: [
                 "acme": TeamCache(slugs: ["backend"], fetchedAt: now.addingTimeInterval(-day)),
                 "gone": TeamCache(slugs: ["x"], fetchedAt: now.addingTimeInterval(-31 * day)),
-            ])
+            ], seen: ["PR_WATCHED": now, "PR_LEFT_LONG_AGO": now, "PR_UNKNOWN": now])
         var config = Config()
         for id in ["PR_WATCHED", "PR_LEFT_RECENTLY", "PR_LEFT_LONG_AGO", "PR_UNKNOWN"] {
             config.tags[id] = Config.TagEntry(ref: id, tags: ["wip"], updatedAt: now)
@@ -33,6 +33,7 @@ struct RetentionTests {
         #expect(result.state.delivered.keys.sorted() == ["recent"])
         #expect(result.state.marked == ["PR_WATCHED"])
         #expect(result.state.teams.keys.sorted() == ["acme"])
+        #expect(result.state.seen.keys.sorted() == ["PR_WATCHED"])
         #expect(result.config.tags.keys.sorted() == ["PR_LEFT_RECENTLY", "PR_WATCHED"])
         #expect(result.config.mutes.keys.sorted() == ["PR_LEFT_RECENTLY", "PR_WATCHED"])
         #expect(result.config.ignored.keys.sorted() == ["PR_LEFT_RECENTLY", "PR_WATCHED"])

@@ -156,6 +156,14 @@ struct PollerTests {
         #expect(await harness.poller.current().state.popoverOpenedAt == now)
     }
 
+    @Test func markSeenIsWrittenAndPublished() async throws {
+        let harness = Harness(world: world([]))
+        await harness.poller.markSeen(["PR_1", "PR_2"])
+        await harness.poller.markSeen([])
+        #expect(try #require(await harness.state()).seen.keys.sorted() == ["PR_1", "PR_2"])
+        #expect(await harness.poller.current().state.seen["PR_1"] != nil)
+    }
+
     @Test func pollIfOlderSkipsAFreshList() async throws {
         let harness = Harness(world: world([Fixtures.pullRequest("PR_1", author: "you")]))
         _ = await harness.poll()

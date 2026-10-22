@@ -141,6 +141,8 @@ Written by every poll that reaches step 8 of `02-activity-detection.md` §1, and
 | `skippedVersion` | String \| null | Update the user chose to skip |
 | `lastUpdateCheckAt` | timestamp \| null | Update cadence |
 | `baselineNoticeDismissed` | Bool | The first-run banner of `05-design.md` §7.2 was dismissed with `OK` |
+| `seen` | `{nodeID: timestamp}` | When you last opened each pull request from Docket, or marked it seen. A row is unseen when it has no entry, or a human other than you acted on it after (`02` §3.5) |
+| `seenBaselineAt` | timestamp \| null | The first poll with seen state, which marked everything then listed as seen, so an upgrade does not light up every row |
 
 `Cursor`:
 
@@ -203,6 +205,7 @@ files and `now`.
 | A reminder record | When its pull request stops being pending (`02` §5.7) |
 | A `delivered` entry | 14 days after its timestamp |
 | `marked` entries | When the popover opens, and when the pull request leaves the watch set |
+| `seen` entries | With the pull request's cursor, like a mute |
 | `teams` for an organization | When no watched pull request belongs to it for 30 days |
 | `knownRepositories` entries | 90 days after `lastSeenAt` |
 | `state.corrupt-*.json` | 7 days after it was set aside |
