@@ -140,7 +140,7 @@
         }
       }
     },
-    "AI & Jira" : {
+    "AI" : {
       "comment" : "Settings tab"
     },
     "About" : {
@@ -161,8 +161,17 @@
     "Add bot" : {
       "comment" : "Bot allowlist button"
     },
+    "All repositories except these" : {
+      "comment" : "Selection mode"
+    },
     "All repositories, except…" : {
       "comment" : "Selection mode"
+    },
+    "Allow" : {
+      "comment" : "Notification permission button"
+    },
+    "Allow in System Settings" : {
+      "comment" : "Login item button"
     },
     "Allow in System Settings…" : {
       "comment" : "Login item button"
@@ -218,6 +227,9 @@
     "Check Now" : {
       "comment" : "Updates button"
     },
+    "Check for Updates" : {
+      "comment" : "Gear menu"
+    },
     "Check for Updates…" : {
       "comment" : "Gear menu"
     },
@@ -242,14 +254,26 @@
     "Checks running" : {
       "comment" : "Status chip"
     },
+    "Choose Folder" : {
+      "comment" : "Clones button"
+    },
     "Choose Folder…" : {
       "comment" : "Clones button"
+    },
+    "Choose Location" : {
+      "comment" : "Account setting button\nFull screen button"
     },
     "Choose Location…" : {
       "comment" : "Account setting button\nFull screen button"
     },
+    "Choose Repositories" : {
+      "comment" : "Empty state button"
+    },
     "Choose Repositories…" : {
       "comment" : "Empty state button"
+    },
+    "Choose Terminal" : {
+      "comment" : "Terminal picker button"
     },
     "Choose Terminal…" : {
       "comment" : "Terminal picker button"
@@ -289,9 +313,6 @@
     },
     "Couldn't update. Showing data from %@." : {
       "comment" : "Failed poll banner"
-    },
-    "Count and notify bot pull requests" : {
-      "comment" : "Triage setting"
     },
     "Count and notify drafts" : {
       "comment" : "Triage setting"
@@ -346,6 +367,9 @@
     },
     "Every" : {
       "comment" : "Reminder interval"
+    },
+    "Export" : {
+      "comment" : "Export settings button"
     },
     "Export…" : {
       "comment" : "Export settings button"
@@ -407,6 +431,9 @@
     "Ignored" : {
       "comment" : "Tab"
     },
+    "Import" : {
+      "comment" : "Import settings button"
+    },
     "Import…" : {
       "comment" : "Import settings button"
     },
@@ -424,12 +451,6 @@
     },
     "Involved" : {
       "comment" : "Tab"
-    },
-    "Jira" : {
-      "comment" : "AI settings section"
-    },
-    "Jira site" : {
-      "comment" : "Jira setting"
     },
     "Keyboard" : {
       "comment" : "General settings section"
@@ -617,9 +638,6 @@
     "Open in Jira" : {
       "comment" : "Row context menu"
     },
-    "Open in Jira uses a link in the description, else an issue key in the title or branch." : {
-      "comment" : "Jira caption"
-    },
     "Org" : {
       "comment" : "Filter dimension"
     },
@@ -714,7 +732,7 @@
       "comment" : "Account settings section"
     },
     "Settings" : {
-      "comment" : "Gear menu button"
+      "comment" : "Gear menu\nGear menu button\nStatus item menu"
     },
     "Settings file" : {
       "comment" : "General settings section"

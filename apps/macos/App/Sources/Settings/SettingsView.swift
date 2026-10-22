@@ -105,7 +105,7 @@ struct AccountSettingsView: View {
                         .font(.body.monospaced()).textSelection(.enabled)
                         HStack {
                             Button(
-                                String(localized: "Choose Location…", comment: "Account setting button"),
+                                String(localized: "Choose Location", comment: "Account setting button"),
                                 action: model.chooseLocation)
                             if configStore.config.ghPath != nil {
                                 Button(String(localized: "Use Default", comment: "Account setting button")) {
@@ -236,8 +236,8 @@ struct GeneralSettingsView: View {
             }
             Section(String(localized: "Settings file", comment: "General settings section")) {
                 HStack {
-                    Button(String(localized: "Export…", comment: "Export settings button"), action: export)
-                    Button(String(localized: "Import…", comment: "Import settings button"), action: importConfig)
+                    Button(String(localized: "Export", comment: "Export settings button"), action: export)
+                    Button(String(localized: "Import", comment: "Import settings button"), action: importConfig)
                 }
                 if let importError {
                     Text(verbatim: importError).font(.caption).foregroundStyle(Color.statusAttention)
@@ -255,7 +255,7 @@ struct GeneralSettingsView: View {
                             }))
                     if loginItem.requiresApproval {
                         Button(
-                            String(localized: "Allow in System Settings…", comment: "Login item button"),
+                            String(localized: "Allow in System Settings", comment: "Login item button"),
                             action: loginItem.openSystemSettings)
                     }
                 }

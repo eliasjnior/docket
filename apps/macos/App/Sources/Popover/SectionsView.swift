@@ -18,7 +18,7 @@ struct SectionsView: View {
             {
                 EmptyLine(text: String(localized: "No repositories selected.", comment: "Empty state in only mode"))
                 Button(
-                    String(localized: "Choose Repositories…", comment: "Empty state button"),
+                    String(localized: "Choose Repositories", comment: "Empty state button"),
                     action: actions.openSettings
                 )
                 .padding(.horizontal, 16)

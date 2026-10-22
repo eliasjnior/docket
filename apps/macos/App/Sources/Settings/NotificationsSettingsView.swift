@@ -24,7 +24,7 @@ struct NotificationsSettingsView: View {
                         HStack {
                             Text("Not asked", comment: "Notification permission state")
                             Button(
-                                String(localized: "Allow…", comment: "Notification permission button"),
+                                String(localized: "Allow", comment: "Notification permission button"),
                                 action: requestPermission)
                         }
                     case .denied:

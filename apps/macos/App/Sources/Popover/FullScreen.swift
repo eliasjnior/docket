@@ -40,7 +40,7 @@ struct FullScreenView: View {
                     command: "brew install gh")
                 HStack {
                     Button(
-                        String(localized: "Choose Location…", comment: "Full screen button"),
+                        String(localized: "Choose Location", comment: "Full screen button"),
                         action: actions.chooseGhLocation)
                     Button(String(localized: "Try Again", comment: "Full screen button"), action: actions.retry)
                 }

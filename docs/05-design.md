@@ -91,7 +91,7 @@ SAML on one organization (FR-13) does not change the item: the other organizatio
 their count is correct. The banner in the popover is where it is said.
 
 **Clicks.** Left click toggles the popover. Right click, or Control-click, opens an `NSMenu` with
-`Refresh` (`⌘R`), `Settings…` (`⌘,`) and `Quit Docket` (`⌘Q`), so the app can be quit without
+`Refresh` (`⌘R`), `Settings` (`⌘,`) and `Quit Docket` (`⌘Q`), so the app can be quit without
 opening the popover.
 
 ## 5. The popover
@@ -124,8 +124,8 @@ opening the popover.
 ```
 
 **Header.** The app icon at 22 pt, `Docket` in `.headline`, a refresh button with `arrow.clockwise`
-(FR-45, `⌘R`) and a settings button with `gearshape` that opens a menu of `Settings…`,
-`Check for Updates…` and `Quit Docket`. The refresh symbol spins while a poll runs; there is no
+(FR-45, `⌘R`) and a settings button with `gearshape` that opens a menu of `Settings`,
+`Check for Updates` and `Quit Docket`. The refresh symbol spins while a poll runs; there is no
 `Updating…` text. When the list is older than two poll intervals, a banner reads
 `Updated N min ago` (FR-44, §7.2).
 
@@ -270,7 +270,7 @@ stays, so refresh and settings remain.
 
 | Condition (FR-12) | Symbol | Title | Body and command | Actions |
 |---|---|---|---|---|
-| `gh` not found | `terminal` | `GitHub CLI not found` | Docket reads your account through the GitHub CLI. Install it, then sign in. `brew install gh` | `Copy`, `Choose Location…` (FR-11), `Try Again` |
+| `gh` not found | `terminal` | `GitHub CLI not found` | Docket reads your account through the GitHub CLI. Install it, then sign in. `brew install gh` | `Copy`, `Choose Location` (FR-11), `Try Again` |
 | `gh` not signed in, or `401` after re-reading (FR-14) | `person.crop.circle.badge.xmark` | `Sign in to the GitHub CLI` | Run this in Terminal and follow the prompts. `gh auth login` | `Copy`, `Try Again` |
 | Missing scopes | `key` | `The GitHub CLI token is missing read:org` | Lists every missing scope by name, then the command with exactly those scopes: `gh auth refresh -h github.com -s read:org` or `-s repo,read:org` | `Copy`, `Try Again` |
 | First poll of a launch with no cache | `ProgressView`, small | `Loading pull requests…` | — | — |
@@ -309,7 +309,7 @@ One line in `text.secondary` under the section header, never an illustration.
 | Bots, empty | `No review requests from bots.` |
 | Drafts, empty | `No drafts waiting on you.` |
 | Stale, empty | `Nothing stale.` |
-| Selection in `only` mode with nothing selected | `No repositories selected.` with `Choose Repositories…` |
+| Selection in `only` mode with nothing selected | `No repositories selected.` with `Choose Repositories` |
 
 ## 8. Notification composition
 
@@ -349,11 +349,11 @@ control writes `config.json` on change (`04-data.md` §2.1); there is no Apply b
 
 | Tab | Symbol | Contents |
 |---|---|---|
-| **Account** | `person.crop.circle` | Signed-in login; `gh` path with `Choose Location…` and `Use Default` (FR-11); scopes present, each with `checkmark` or `xmark` and the word; organizations needing SAML, each with `Authorize` |
-| **Repositories** | `folder` | Mode as a radio group: `All repositories, except…` / `Only these repositories` (`02` §2.3). Below, the list for the current mode — repositories and organizations, each row with its kind's symbol — with `+` and `−`. `+` opens the picker (FR-73): a search field over `knownRepositories` with the typed `owner/name` offered as the first row; a typed one shows `Checking…`, then is added or reads `Not found, or you don't have access` |
-| **Notifications** | `bell` | Permission state: `Allowed`, `Not asked` with `Allow…`, or `Off in System Settings` with `Open System Settings` (`02` §9). One toggle per kind (FR-60): `Review requested`, `Review on your pull request`, `Comment on your pull request`, `Reply to your comment`. Bot allowlist (D-16): a list of logins with `+` and `−`, captioned `Bots never notify unless they are listed here.` A **Reminders** group (FR-66, FR-67): `Remind me about pending reviews` (on); `Every` with a pop-up of `15 minutes`, `30 minutes`, `1 hour`, `2 hours`, `4 hours`, `8 hours`; `Quiet hours` toggle with `From` and `To` time pickers (hour and minute), captioned `Reminders pause in this window. Other notifications follow Focus.`; The interval and quiet-hours controls are disabled, not hidden, while reminders are off. A **Focus** group (FR-69): one line, `To hold notifications during a Focus, add Docket's filter to it.`, with `Open Focus Settings`, and the state `Holding since 14:00` or `Not holding`. A **Bots, drafts and stale pull requests** group (FR-37): `Stale after` with `3`, `5`, `7`, `14` or `30 days without human activity`; `Count bot pull requests` (on); `Notify about bot pull requests` (off); `Count and notify stale pull requests` (off); `Count and notify drafts` (off); `Also bots`, a comma-separated list of logins treated as bots |
+| **Account** | `person.crop.circle` | Signed-in login; `gh` path with `Choose Location` and `Use Default` (FR-11); scopes present, each with `checkmark` or `xmark` and the word; organizations needing SAML, each with `Authorize` |
+| **Repositories** | `folder` | Mode as a radio group: `All repositories except these` / `Only these repositories` (`02` §2.3). Below, the list for the current mode — repositories and organizations, each row with its kind's symbol — with `+` and `−`. `+` opens the picker (FR-73): a search field over `knownRepositories` with the typed `owner/name` offered as the first row; a typed one shows `Checking…`, then is added or reads `Not found, or you don't have access` |
+| **Notifications** | `bell` | Permission state: `Allowed`, `Not asked` with `Allow`, or `Off in System Settings` with `Open System Settings` (`02` §9). One toggle per kind (FR-60): `Review requested`, `Review on your pull request`, `Comment on your pull request`, `Reply to your comment`. Bot allowlist (D-16): a list of logins with `+` and `−`, captioned `Bots never notify unless they are listed here.` A **Reminders** group (FR-66, FR-67): `Remind me about pending reviews` (on); `Every` with a pop-up of `15 minutes`, `30 minutes`, `1 hour`, `2 hours`, `4 hours`, `8 hours`; `Quiet hours` toggle with `From` and `To` time pickers (hour and minute), captioned `Reminders pause in this window. Other notifications follow Focus.`; The interval and quiet-hours controls are disabled, not hidden, while reminders are off. A **Focus** group (FR-69): one line, `To hold notifications during a Focus, add Docket's filter to it.`, with `Open Focus Settings`, and the state `Holding since 14:00` or `Not holding`. A **Bots, drafts and stale pull requests** group (FR-37): `Stale after` with `3`, `5`, `7`, `14` or `30 days without human activity`; `Count bot pull requests` (on); `Notify about bot pull requests` (off); `Count and notify stale pull requests` (off); `Count and notify drafts` (off); `Also bots`, a comma-separated list of logins treated as bots |
 | **General** | `gearshape` | Menu bar count: `Count review requests` and `Count your pull requests that need you`, captioned with the four statuses of `02` §4. Poll interval: a pop-up of `30 seconds`, `1 minute`, `2 minutes`, `5 minutes` (FR-92), captioned with the estimated hourly cost from `02` §6.2. **Mine**: `List` or `Board`. `Open at login` (FR-90) |
-| **AI** | `sparkles` | **Terminal**: `Open in` with `Default for .command files` and each installed terminal Docket knows (Terminal, iTerm, Ghostty, Warp, WezTerm), plus `Choose Terminal…`. **Review with AI** and **Summarize with AI**: a monospaced editor each, captioned with the placeholders, `Reset to Default` when changed, and a warning when a placeholder sits inside single quotes, where it does not expand. **Local clones**: `owner/name` and a folder |
+| **AI** | `sparkles` | **Terminal**: `Open in` with `Default for .command files` and each installed terminal Docket knows (Terminal, iTerm, Ghostty, Warp, WezTerm), plus `Choose Terminal`. **Review with AI** and **Summarize with AI**: a monospaced editor each, captioned with the placeholders, `Reset to Default` when changed, and a warning when a placeholder sits inside single quotes, where it does not expand. **Local clones**: `owner/name` and a folder |
 | **Updates** | `arrow.down.circle` | As in Lookout: automatic checks, automatic install, `Check Now`, last checked |
 | **About** | `info.circle` | Name, version and build; link to the repository; `Show Data Folder` (`~/Library/Application Support/Docket/`); `What's New` |
 
@@ -462,6 +462,7 @@ sections, `Return` opens the focused row and marks it seen, `←` and `→` move
 - **The vocabulary of `PROJECT.md` §7**: pull request (never "PR" in copy), repository, status,
   label (GitHub's), notification, "needs you".
 - **No exclamation marks**, no "Oops", no "please", no "successfully".
+- **No trailing `…` on buttons and menu items** (`Settings`, `Check for Updates`, `Choose Folder`), the maintainer's choice, although macOS uses it for an item that asks for more. Only progress text keeps it: `Checking…`, `Loading pull requests…`.
 - **Numbers as digits**: `3 reviews requested`, `+2` labels. Ages use the forms of `02` §3.4 in the
   interface and full words for VoiceOver.
 - **Logins with `@`**, teams as `@org/team`, references as `owner/name #number` on screen and

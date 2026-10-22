@@ -134,8 +134,8 @@ struct PopoverHeader: View {
                     ? Text("Refreshing", comment: "Refresh button while a poll runs")
                     : Text("Refresh", comment: "Refresh button"))
             Menu {
-                Button(String(localized: "Settings…", comment: "Gear menu"), action: actions.openSettings)
-                Button(String(localized: "Check for Updates…", comment: "Gear menu"), action: actions.checkForUpdates)
+                Button(String(localized: "Settings", comment: "Gear menu"), action: actions.openSettings)
+                Button(String(localized: "Check for Updates", comment: "Gear menu"), action: actions.checkForUpdates)
                 Divider()
                 Button(String(localized: "Quit Docket", comment: "Gear menu"), action: actions.quit)
             } label: {

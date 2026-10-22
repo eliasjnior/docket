@@ -114,7 +114,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             title: String(localized: "Refresh", comment: "Status item menu"), action: #selector(refresh),
             keyEquivalent: "r")
         let settings = NSMenuItem(
-            title: String(localized: "Settings…", comment: "Status item menu"), action: #selector(openSettings),
+            title: String(localized: "Settings", comment: "Status item menu"), action: #selector(openSettings),
             keyEquivalent: ",")
         let quit = NSMenuItem(
             title: String(localized: "Quit Docket", comment: "Status item menu"),

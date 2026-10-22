@@ -27,7 +27,7 @@ struct AISettingsView: View {
                             .tag(String?.some(path))
                     }
                 }
-                Button(String(localized: "Choose Terminal…", comment: "Terminal picker button"), action: chooseTerminal)
+                Button(String(localized: "Choose Terminal", comment: "Terminal picker button"), action: chooseTerminal)
             } header: {
                 Text("Terminal", comment: "AI settings section")
             }
@@ -58,7 +58,7 @@ struct AISettingsView: View {
                         prompt: Text(verbatim: "acme/api")
                     )
                     .labelsHidden()
-                    Button(String(localized: "Choose Folder…", comment: "Clones button"), action: chooseClone)
+                    Button(String(localized: "Choose Folder", comment: "Clones button"), action: chooseClone)
                         .disabled(!newRepository.contains("/"))
                 }
             } header: {
