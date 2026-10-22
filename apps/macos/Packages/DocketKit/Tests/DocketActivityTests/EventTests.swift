@@ -190,7 +190,13 @@ struct EventTests {
         let output = timeline.poll(pullRequests, details)
         #expect(output.notifications.count == 5)
         #expect(output.notifications.prefix(4).allSatisfy { $0.kind == .reviewRequested })
-        #expect(output.notifications.last?.content == .overflow(updates: 2, repositories: 2))
+        // One notification per review request: four individual ones, then the rest — eight requests and two
+        // reviews — summarized.
+        if case .overflow(let updates, _) = output.notifications.last?.content {
+            #expect(updates == 10)
+        } else {
+            Issue.record("expected an overflow")
+        }
         #expect(Set(output.state.delivered.keys).isSuperset(of: ["reviewSubmitted:RV0", "reviewSubmitted:RV1"]))
     }
 
@@ -259,7 +265,7 @@ struct EventTests {
         }
     }
 
-    @Test func coalescingGroupsByRepositoryAndKindOldestFirst() {
+    @Test func oneNotificationPerReviewRequest() {
         var timeline = Timeline()
         let api = (0..<3).map { Fixtures.pullRequest("PR_\($0)", number: 480 + $0, requests: [.user(login: "you")]) }
         let web = Fixtures.pullRequest("PR_W", number: 88, repository: "acme/web", requests: [.user(login: "you")])
@@ -273,10 +279,9 @@ struct EventTests {
                 ])
         }
         let output = timeline.poll(api + [web], details)
-        #expect(output.notifications.count == 2)
-        let apiGroup = output.notifications.first { $0.repository == "acme/api" }
-        #expect(apiGroup?.events.map(\.number) == [480, 481, 482])
-        #expect(output.notifications.allSatisfy { $0.kind == .reviewRequested })
+        #expect(output.notifications.count == 4)
+        #expect(output.notifications.allSatisfy { $0.events.count == 1 && $0.kind == .reviewRequested })
+        #expect(output.notifications.map { $0.events[0].number } == [480, 481, 482, 88])
     }
 
     @Test func oneReviewerSeveralReviewsFoldIntoTheLatest() {

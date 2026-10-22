@@ -34,7 +34,8 @@ struct PollerTests {
         #expect(state.baselineAt != nil)
         #expect(state.lastPoll?.limit == 5000)
         #expect(harness.sink.all.isEmpty)
-        let items = Watch.items(cache: snapshot.cache?.pullRequests ?? [], config: Config(), state: state)
+        let items = Watch.items(
+            cache: snapshot.cache?.pullRequests ?? [], config: Config(), state: state, now: Fixtures.now)
         #expect(Count.count(items) == 2)
     }
 

@@ -212,7 +212,10 @@ struct PollRun {
     /// Filter, fold, the ledger, marks, the per-kind switches, then groups and the cap (§5.4–§7.3).
     mutating func compose() -> [PlannedNotification] {
         let now = input.now
-        let filtered = Compose.filter(raw, viewer: input.viewer, config: input.config)
+        let excluded = Triage.excluded(cached, config: input.config, now: now)
+        let filtered = Compose.filter(raw, viewer: input.viewer, config: input.config).filter { item in
+            item.event.kind != .reviewRequested || !excluded.contains(item.event.pullRequestID)
+        }
         let folded = Compose.fold(filtered).filter { state.delivered[$0.id] == nil }
         events = Compose.fold(raw)
         let marked = Set(state.marked).union(folded.map(\.pullRequestID))
@@ -223,7 +226,7 @@ struct PollRun {
             cached, records: &state.reminders,
             context: Reminders.Context(
                 now: now, timeZone: input.timeZone, config: input.config, isBaseline: isBaseline,
-                newlyRequested: newlyRequested, holding: state.focusHold != nil))
+                newlyRequested: newlyRequested, holding: state.focusHold != nil, excluded: excluded))
         for event in enabled {
             state.delivered[event.id] = now
         }

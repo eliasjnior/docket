@@ -73,6 +73,8 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 | **FR-33** | Each review request shows how long the request has waited, measured from the latest request to you | P0 |
 | **FR-34** | Ages past 3 days are marked as ageing and past 7 days as stale, by a style that does not rely on colour alone | P0 |
 | **FR-35** | Authored pull requests show the requested reviewers and the latest decision of each reviewer | P0 |
+| **FR-36** | *Review requested* splits into **Humans**, **Bots** and **Stale** (`02-activity-detection.md` §3.6); every request is in exactly one | P0 |
+| **FR-37** | Whether Bots and Stale count in the menu bar and notify is a setting each; by default bots count and stale pull requests do not | P0 |
 
 ### 3.4 Menu bar and popover
 
@@ -93,7 +95,7 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| **FR-50** | A new review request to you notifies, including a re-request after you reviewed | P0 |
+| **FR-50** | A new review request to you notifies, one notification per request, including a re-request after you reviewed | P0 |
 | **FR-51** | A review submitted on your pull request notifies with its decision: approved, changes requested, commented | P0 |
 | **FR-52** | A new comment on your pull request, outside a review already notified, notifies | P0 |
 | **FR-53** | A reply in a review thread where you have a comment notifies, on any watched pull request | P0 |

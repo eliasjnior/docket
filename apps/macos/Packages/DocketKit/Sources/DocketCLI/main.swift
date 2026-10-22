@@ -88,7 +88,7 @@ struct DocketCLI {
     }
 
     static func report(_ output: PollOutput, costs: [(String, ResponseMeta)], viewerCost: Int) {
-        let items = Watch.items(cache: output.cache.pullRequests, config: Config(), state: output.state)
+        let items = Watch.items(cache: output.cache.pullRequests, config: Config(), state: output.state, now: Date())
         for role in Role.allCases {
             let rows = items.filter { $0.role == role }
             print("\n\(role.rawValue) (\(rows.count))")
