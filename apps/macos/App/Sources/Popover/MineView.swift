@@ -145,6 +145,8 @@ struct BoardCard: View {
         }
         .padding(8)
         .frame(maxWidth: .infinity, alignment: .leading)
+        // The status rail is a shape and takes every point offered, so a short column would stretch its card.
+        .fixedSize(horizontal: false, vertical: true)
         .background(
             RoundedRectangle(cornerRadius: 7).fill(
                 item.isUnseen ? Color.accent.opacity(0.12) : Color(nsColor: .controlBackgroundColor).opacity(0.6))
