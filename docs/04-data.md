@@ -41,6 +41,7 @@ written by a poll.
 | `triage.countBots` | Bool | `true` | `02` §3.6 |
 | `triage.countStale` | Bool | `false` | `02` §3.6 |
 | `triage.countDrafts` | Bool | `false` | `02` §3.6 |
+| `triage.notifyBots` | Bool | `false` | Review-request notifications and reminders for bot pull requests, `02` §3.6 |
 | `mineLayout` | `"list"` \| `"board"` | `"list"` | How *Mine* is shown, `05-design.md` §5.3 |
 | `integrations.jiraBaseURL` | String \| null | `null` | The Jira site of *Open in Jira* (FR-86) |
 | `integrations.terminalApp` | String \| null | `null` | Path of the terminal app; `null` uses the `.command` handler (FR-87) |

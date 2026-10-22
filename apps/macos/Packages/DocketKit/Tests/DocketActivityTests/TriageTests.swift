@@ -30,7 +30,7 @@ struct TriageTests {
         #expect(Triage.of(draft, config: Config(), now: now) == .drafts)
         #expect(Triage.isExcluded(.drafts, settings: Config.Triage()))
         #expect(!Triage.isExcluded(.drafts, settings: Config.Triage(countDrafts: true)))
-        #expect(Triage.excluded([draft], config: Config(), now: now) == [draft.id])
+        #expect(Triage.silenced([draft], config: Config(), now: now) == [draft.id])
     }
 
     @Test func staleWinsOverBots() {
@@ -63,7 +63,10 @@ struct TriageTests {
             Count.count(Watch.items(cache: entries, config: quiet, state: state, now: now), triage: quiet.triage) == 1)
         let all = Config(triage: Config.Triage(countStale: true))
         #expect(Count.count(Watch.items(cache: entries, config: all, state: state, now: now), triage: all.triage) == 3)
-        #expect(Triage.excluded(entries, config: Config(), now: now) == ["PR_2"])
+        // Bots count but are silent by default; stale neither counts nor notifies.
+        #expect(Triage.silenced(entries, config: Config(), now: now) == ["PR_1", "PR_2"])
+        let loud = Config(triage: Config.Triage(notifyBots: true))
+        #expect(Triage.silenced(entries, config: loud, now: now) == ["PR_2"])
     }
 
     @Test func staleRequestDoesNotNotifyOrRemind() {

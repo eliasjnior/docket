@@ -18,8 +18,11 @@ struct TriageSection: View {
                 }
             }
             Toggle(
-                String(localized: "Count and notify bot pull requests", comment: "Triage setting"),
+                String(localized: "Count bot pull requests", comment: "Triage setting"),
                 isOn: binding(\.triage.countBots))
+            Toggle(
+                String(localized: "Notify about bot pull requests", comment: "Triage setting"),
+                isOn: binding(\.triage.notifyBots))
             Toggle(
                 String(localized: "Count and notify stale pull requests", comment: "Triage setting"),
                 isOn: binding(\.triage.countStale))

@@ -74,7 +74,7 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 | **FR-34** | Ages past 3 days are marked as ageing and past 7 days as stale, by a style that does not rely on colour alone | P0 |
 | **FR-35** | Authored pull requests show the requested reviewers and the latest decision of each reviewer | P0 |
 | **FR-36** | *Review requested* splits into **Humans**, **Bots**, **Drafts** and **Stale** (`02-activity-detection.md` §3.6); every request is in exactly one | P0 |
-| **FR-37** | Whether Bots, Drafts and Stale count in the menu bar and notify is a setting each; by default bots count, and drafts and stale pull requests do not | P0 |
+| **FR-37** | Whether Bots, Drafts and Stale count in the menu bar and notify are settings; by default bots count but do not notify, and drafts and stale pull requests do neither | P0 |
 
 ### 3.4 Menu bar and popover
 

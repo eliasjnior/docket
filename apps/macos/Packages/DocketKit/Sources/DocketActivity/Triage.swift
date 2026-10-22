@@ -21,7 +21,7 @@ public enum Triage: String, CaseIterable, Hashable, Sendable {
         return Bots.isBot(pullRequest.author, extra: settings.extraBotLogins) ? .bots : .humans
     }
 
-    /// Left out of the menu bar count, review-request notifications and reminders.
+    /// Left out of the menu bar count.
     public static func isExcluded(_ triage: Triage, settings: Config.Triage) -> Bool {
         switch triage {
         case .humans: false
@@ -31,12 +31,18 @@ public enum Triage: String, CaseIterable, Hashable, Sendable {
         }
     }
 
-    /// The review requests whose triage is excluded, for one poll.
-    public static func excluded(_ cached: [CachedPullRequest], config: Config, now: Date) -> Set<String> {
+    /// No review-request notification and no reminder. Bots have their own switch, silent by default; drafts
+    /// and stale pull requests follow their count switch.
+    public static func isSilenced(_ triage: Triage, settings: Config.Triage) -> Bool {
+        triage == .bots ? !settings.notifyBots : isExcluded(triage, settings: settings)
+    }
+
+    /// The review requests whose triage is silenced, for one poll.
+    public static func silenced(_ cached: [CachedPullRequest], config: Config, now: Date) -> Set<String> {
         Set(
             cached.filter { entry in
                 entry.role == .reviewRequested
-                    && isExcluded(of(entry, config: config, now: now), settings: config.triage)
+                    && isSilenced(of(entry, config: config, now: now), settings: config.triage)
             }.map(\.id))
     }
 }

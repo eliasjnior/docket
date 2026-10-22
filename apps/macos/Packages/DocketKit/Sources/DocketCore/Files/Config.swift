@@ -152,16 +152,19 @@ public struct Config: Codable, Hashable, Sendable {
         public var countBots: Bool
         public var countStale: Bool
         public var countDrafts: Bool
+        /// Review-request notifications and reminders for bot pull requests; off by default.
+        public var notifyBots: Bool
 
         public init(
             staleAfterDays: Int = 7, extraBotLogins: [String] = [], countBots: Bool = true, countStale: Bool = false,
-            countDrafts: Bool = false
+            countDrafts: Bool = false, notifyBots: Bool = false
         ) {
             self.staleAfterDays = staleAfterDays
             self.extraBotLogins = extraBotLogins
             self.countBots = countBots
             self.countStale = countStale
             self.countDrafts = countDrafts
+            self.notifyBots = notifyBots
         }
 
         public init(from decoder: Decoder) throws {
@@ -172,6 +175,7 @@ public struct Config: Codable, Hashable, Sendable {
             countBots = c.value(.countBots, default: true)
             countStale = c.value(.countStale, default: false)
             countDrafts = c.value(.countDrafts, default: false)
+            notifyBots = c.value(.notifyBots, default: false)
         }
     }
 

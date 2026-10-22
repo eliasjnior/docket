@@ -194,9 +194,6 @@
     "Bots" : {
       "comment" : "Notifications settings section\nReview requested sub-tab"
     },
-    "Bots and stale pull requests" : {
-      "comment" : "Notifications settings section"
-    },
     "Bots never notify unless they are listed here." : {
       "comment" : "Bot allowlist caption"
     },
@@ -300,6 +297,9 @@
       "comment" : "Triage setting"
     },
     "Count and notify stale pull requests" : {
+      "comment" : "Triage setting"
+    },
+    "Count bot pull requests" : {
       "comment" : "Triage setting"
     },
     "Count review requests" : {
@@ -556,6 +556,9 @@
     },
     "Notifications are off for Docket." : {
       "comment" : "Permission banner"
+    },
+    "Notify about bot pull requests" : {
+      "comment" : "Triage setting"
     },
     "Notify me about" : {
       "comment" : "Notifications settings section"

@@ -211,7 +211,7 @@ sub-tabs:
 |---|---|---|
 | `drafts` | A draft, whoever wrote it | Left out (`countDrafts` off) |
 | `stale` | No human activity (§3.5) for `triage.staleAfterDays` (default 7), counting the pull request's creation | Left out (`countStale` off) |
-| `bots` | Not a draft, not stale, and the author is a bot (§3.5) | Counted (`countBots` on) |
+| `bots` | Not a draft, not stale, and the author is a bot (§3.5) | Counted (`countBots` on), but silent: no `reviewRequested` notification and no reminder (`notifyBots` off) |
 | `humans` | Everything else | Counted |
 
 A draft is tested first: its author has said it is not ready, so it waits on nobody yet. Stale
@@ -219,7 +219,9 @@ comes next, so an abandoned Dependabot pull request is stale, not a bot's. A rev
 request made by a human is human activity, so a fresh request on an old pull request leaves *Stale*.
 
 A triage that is **left out** does three things. Its pull requests leave the menu bar count (§4), and
-they produce no `reviewRequested` notification and no reminder (§5.7). The other event kinds on them,
+they produce no `reviewRequested` notification and no reminder (§5.7). Drafts and stale pull requests
+have one switch each for both; bots have two, because a Dependabot request worth counting is rarely
+worth an interruption: `countBots` for the count and `notifyBots` for notifications and reminders. The other event kinds on them,
 such as a review on your own pull request, follow their own rules. When a left-out pull request
 comes back, by human activity or because the setting changed, it is tracked for reminders from that
 poll, without a burst for the time it was out.

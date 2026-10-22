@@ -216,7 +216,7 @@ struct PollRun {
     /// Filter, fold, the ledger, marks, the per-kind switches, then groups and the cap (§5.4–§7.3).
     mutating func compose() -> [PlannedNotification] {
         let now = input.now
-        let excluded = Triage.excluded(cached, config: input.config, now: now)
+        let excluded = Triage.silenced(cached, config: input.config, now: now)
         let filtered = Compose.filter(raw, viewer: input.viewer, config: input.config).filter { item in
             item.event.kind != .reviewRequested || !excluded.contains(item.event.pullRequestID)
         }
