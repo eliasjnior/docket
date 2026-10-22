@@ -42,11 +42,14 @@ struct SettingsView {
                 String(localized: "Notifications", comment: "Settings tab"), "bell",
                 NotificationsSettingsView(
                     configStore: configStore, permission: permission, requestPermission: requestPermission,
-                    holdSince: watch.snapshot.state.focusHold?.since)),
+                    holdSince: watch.snapshot.state.focusHold?.since),
+                scrolls: true),
             tab(
                 String(localized: "General", comment: "Settings tab"), "gearshape",
                 GeneralSettingsView(configStore: configStore, loginItem: loginItem)),
-            tab(String(localized: "AI", comment: "Settings tab"), "sparkles", AISettingsView(configStore: configStore)),
+            tab(
+                String(localized: "AI", comment: "Settings tab"), "sparkles", AISettingsView(configStore: configStore),
+                scrolls: true),
             tab(
                 String(localized: "Updates", comment: "Settings tab"), "arrow.down.circle",
                 UpdatesSettingsView(
@@ -58,11 +61,17 @@ struct SettingsView {
         ]
     }
 
-    private func tab(_ title: String, _ symbol: String, _ view: some View) -> SettingsTab {
-        SettingsTab(
-            title: title, symbol: symbol,
-            content: AnyView(view.frame(width: 560).fixedSize(horizontal: false, vertical: true)))
+    /// A long tab gets a fixed height and scrolls inside its form, so the window never outgrows the screen; a
+    /// short one is as tall as its content.
+    private func tab(_ title: String, _ symbol: String, _ view: some View, scrolls: Bool = false) -> SettingsTab {
+        let content: AnyView =
+            scrolls
+            ? AnyView(view.frame(width: 560, height: Self.scrollingHeight))
+            : AnyView(view.frame(width: 560).fixedSize(horizontal: false, vertical: true))
+        return SettingsTab(title: title, symbol: symbol, content: content)
     }
+
+    static var scrollingHeight: CGFloat { min(560, (NSScreen.main?.visibleFrame.height ?? 800) - 160) }
 }
 
 /// What the Account tab shows about `gh`, read when the tab appears.
