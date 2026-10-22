@@ -59,14 +59,13 @@ struct WatchTests {
             Reviewers.commenters(in: detail, pullRequest: pullRequest, viewer: ViewerContext(login: "you")) == ["dave"])
     }
 
-    @Test func itemsApplyTheSelectionTagsMutesAndMarks() {
+    @Test func itemsApplyTheSelectionMutesAndMarks() {
         let api = CachedPullRequest(pullRequest: Fixtures.pullRequest("PR_1"), role: .reviewRequested)
         let legacy = CachedPullRequest(
             pullRequest: Fixtures.pullRequest("PR_2", repository: "acme/legacy"), role: .reviewRequested)
         let mine = CachedPullRequest(
             pullRequest: Fixtures.pullRequest("PR_3", author: "you", mergeable: .unknown), role: .authored)
         var config = Config(selection: Selection(excludedRepositories: ["acme/legacy"]))
-        config.tags["PR_1"] = Config.TagEntry(ref: "acme/api#482", tags: ["wip"], updatedAt: now)
         config.mutes["PR_1"] = Config.MuteEntry(ref: "acme/api#482", scope: .all, mutedAt: now)
         config.mutes["PR_3"] = Config.MuteEntry(ref: "acme/api#482", scope: .all, mutedAt: now)
         config.ignored["PR_3"] = Config.IgnoreEntry(ref: "acme/api#482", ignoredAt: now)
@@ -77,7 +76,6 @@ struct WatchTests {
             marked: ["PR_1", "PR_3"])
         let items = Watch.items(cache: [api, legacy, mine], config: config, state: state, now: Fixtures.now)
         #expect(items.map(\.id) == ["PR_1", "PR_3"])
-        #expect(items[0].tags == ["wip"])
         #expect(items[0].mute == .all)
         #expect(items[0].isMarked)
         #expect(items[1].status == .conflict)
@@ -123,9 +121,7 @@ struct WatchTests {
         #expect(sections.involved.map(\.id) == ["V2", "V1"])
         #expect(sections.ignored.map(\.id) == ["I1"])
 
-        var tagged = items[4]
-        tagged.tags = ["wip"]
-        #expect(Sections([tagged, items[5]], tag: "wip").mine.map(\.id) == ["M1"])
-        #expect(Sections(items, repository: "ACME/web").reviewRequested.map(\.repository) == ["acme/web"])
+        let web = Sections(items, filter: PopoverFilter(repositories: ["ACME/web"]))
+        #expect(web.reviewRequested.map(\.repository) == ["acme/web"])
     }
 }

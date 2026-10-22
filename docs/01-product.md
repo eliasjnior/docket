@@ -32,8 +32,8 @@ the document that specifies it.
   the Focus ends, so that I come back to a summary and not to a pile of banners.
 - When a pull request lands in my review queue that is not mine to review, I want to ignore it, so
   that the count means what needs me.
-- When I am in the middle of a pull request, I want to tag it `wip` without telling anyone, so that
-  the list reflects what I am doing.
+- When dozens of pull requests wait on my team, I want the ones from people, not bots or abandoned
+  ones, in front of me, and the ones I have not opened marked, so that I find what is new at a glance.
 - When I join a repository or leave a project, I want to choose which repositories Docket watches,
   so that the list contains only what I care about.
 
@@ -83,11 +83,11 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 | **FR-40** | One status item shows the "needs you" count (`02-activity-detection.md` §4), and no number when it is zero | P0 |
 | **FR-41** | The popover has three sections — *Review requested* grouped by repository, *Mine*, *Involved* collapsed by default — each sorted as in `05-design.md` | P0 |
 | **FR-42** | Clicking a row opens the pull request in the default browser | P0 |
-| **FR-43** | A row's context menu copies the URL and `owner/name#number`, filters to the row's repository, and edits tags | P0 |
-| **FR-44** | The popover shows the last cached snapshot immediately, with "updated N min ago" when it is older than two poll intervals | P0 |
+| **FR-43** | A row's context menu copies the URL and `owner/name#number`, filters to the row's repository, and marks it seen | P0 |
+| **FR-44** | The popover shows the last cached snapshot immediately, with an "updated N min ago" banner when it is older than two poll intervals | P0 |
 | **FR-45** | A refresh button and `⌘R` run a poll immediately | P0 |
 | **FR-46** | Each row is **seen** or **unseen**: unseen until you open it from Docket, and unseen again after a human other than you comments, reviews, requests or pushes. Bot activity never makes a row unseen. *Mark All as Seen* clears the visible list | P0 |
-| **FR-47** | Keyboard navigation of the popover: arrows move, `Return` opens, `T` edits tags | P1 |
+| **FR-47** | Keyboard navigation of the popover: arrows move, `Return` opens | P1 |
 | **FR-48** | A global shortcut opens the popover | P1 |
 | **FR-49** | A pull request can be ignored: it leaves the count, moves to a collapsed **Ignored** section at the end of the popover, and never notifies or reminds, until `Stop Ignoring` (D-27, `02-activity-detection.md` §5.8) | P0 |
 
@@ -127,16 +127,20 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §5 and 
 | **FR-73** | The picker lists the repositories seen in the last 90 days of your pull request activity and accepts a typed `owner/name`, which is checked against the API | P0 |
 | **FR-74** | Selection applies to the list, the count and notifications alike | P0 |
 
-### 3.7 Tags
+### 3.7 Labels and filters
+
+Local tags (the first FR-80, FR-81, FR-83–FR-85) were replaced by GitHub labels after use: the team
+already labels its pull requests, and a second, private vocabulary needed an editor for little gain.
+The IDs are kept so references stay valid.
 
 | ID | Requirement | Priority |
 |---|---|---|
-| **FR-80** | Any watched pull request can carry up to five tags, added and removed from the row | P0 |
-| **FR-81** | Tags are normalized: lower case, `[a-z0-9-]`, 1–24 characters; anything else is rejected with the reason | P0 |
+| **FR-80** | Each row shows the pull request's GitHub labels in their GitHub colour, read only | P0 |
+| **FR-81** | *Retired*: tag normalization | — |
 | **FR-82** | The popover filters by organization, repository, label and status, several values each: OR within one, AND across them | P0 |
-| **FR-83** | The tag editor suggests tags already in use, most used first, and `wip` when none are | P0 |
-| **FR-84** | A tag survives its pull request closing for 30 days, so a reopened pull request keeps it | P0 |
-| **FR-85** | Tags never leave the Mac and are never written to GitHub | P0 |
+| **FR-83** | *Mine* is grouped into Ready, Blocked and Draft, shown as stacked sections or as a board, chosen in settings | P0 |
+| **FR-84** | *Retired*: tag retention | — |
+| **FR-85** | Docket never writes labels or anything else to GitHub (non-negotiable 5) | P0 |
 
 ### 3.8 The app
 
@@ -193,4 +197,4 @@ after the fact by `docket-cli stats`, which reads your own review history and st
 - **Team dashboards.** Docket shows what needs *you*. It never lists a colleague's queue.
 - **Reading the diff.** No file lists, no code, no line counts beyond what the row needs — the
   browser is where review happens.
-- **Shared tags.** Tags are private by design (D-17); a team that wants shared markers has labels.
+- **Local tags.** Removed in favour of GitHub labels (§3.7): one vocabulary, the team's.

@@ -154,7 +154,6 @@ final class AppEnvironment {
             return (result.config, result.state)
         }
         configStore.update { config in
-            config.tags = pruned.tags
             config.mutes = pruned.mutes
             config.ignored = pruned.ignored
         }

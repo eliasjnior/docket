@@ -23,11 +23,12 @@ enum RowAccessibility {
             parts.append(String(localized: "By \(author).", comment: "VoiceOver: author"))
         }
         if let reviewers = reviewersClause(item) { parts.append(reviewers) }
-        if !item.tags.isEmpty {
-            parts.append(String(localized: "Tags: \(item.tags.joined(separator: ", ")).", comment: "VoiceOver: tags"))
+        if !pullRequest.labels.isEmpty {
+            let names = pullRequest.labels.map(\.name).joined(separator: ", ")
+            parts.append(String(localized: "Labels: \(names).", comment: "VoiceOver: GitHub labels"))
         }
         if item.mute == .all { parts.append(String(localized: "Muted.", comment: "VoiceOver: muted")) }
-        if item.isMarked { parts.append(String(localized: "New activity.", comment: "VoiceOver: marked row")) }
+        if item.isUnseen { parts.append(String(localized: "Unseen.", comment: "VoiceOver: unseen row")) }
         return parts.joined(separator: " ")
     }
 

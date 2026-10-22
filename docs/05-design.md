@@ -1,7 +1,7 @@
 # 05 — Design
 
-How Docket looks and reads: the status item, the popover and its rows, the status chips, the tag
-editor, every account and error screen, notification composition, settings, and the checklist a
+How Docket looks and reads: the status item, the popover and its rows, the status pills and labels,
+every account and error screen, notification composition, settings, and the checklist a
 screen is reviewed against. The rules that decide *what* is shown are in
 [`02-activity-detection.md`](02-activity-detection.md); this document decides how.
 
@@ -42,13 +42,13 @@ it could be mistaken for a panel of a first-party app.
 |---|---|---|
 | Status item | `NSStatusItem` with an `NSStatusBarButton`, template image and attributed title | SwiftUI's `MenuBarExtra` cannot show a right-click menu, set `appearsDisabled`, or anchor a popover programmatically for a notification click (FR-59) |
 | Popover | `NSPopover`, `behavior = .transient`, hosting a SwiftUI view through `NSHostingController`, as Lookout's `HostedPopover` does | The system popover material and arrow for free; `.transient` closes it on the first click elsewhere |
-| Lists, chips, banners, tag editor | SwiftUI | Declarative state from `WatchStore` (`03-architecture.md` §4) |
+| Lists, chips, banners, the board | SwiftUI | Declarative state from `WatchStore` (`03-architecture.md` §4) |
 | Settings | SwiftUI `Settings` scene with a toolbar-style `TabView` and grouped `Form`s | The System Settings look with no custom layout |
 | Icons | SF Symbols only | Matches the menu bar's own glyphs at every weight and scale |
 | Notifications | `UNUserNotificationCenter` through `DocketNotify` | `03-architecture.md` §3 |
 
 **`NSMenu` with custom item views was the alternative** for the list, and many menu bar apps use
-it. It lost on the tag editor: a menu cannot host a text field that keeps focus, a context menu
+it. It lost on the filters and the board: a menu cannot host chips, sub-tabs or columns, a context menu
 inside a menu is not possible, and long lists in a menu scroll by hovering over an arrow. The
 popover keeps the right-click menu of the status item (§4) for the three menu-like actions.
 
@@ -100,121 +100,107 @@ opening the popover.
 
 | Property | Value | Why |
 |---|---|---|
-| Width | 380 pt, fixed | Fits `owner/name #number`, a status chip and an age on one line with a 40-character repository name; Lookout's popovers are 340 and 400 pt |
-| Height | Content height, at most 600 pt or the screen's visible height minus 40 pt, whichever is smaller | A short list does not leave an empty panel; a long one never runs off a 13-inch screen |
-| Scrolling | The section area scrolls; the header and banners stay fixed | Refresh and the filter are always reachable |
-| Background | The popover's own material; no fill of ours | §2 |
+| Width | 400 pt; 640 pt while *Mine* is shown as a board | The tab labels stay centred with their count circles; three board columns need the room |
+| Height | Content height, at most 640 pt or the screen's visible height minus 40 pt, whichever is smaller | A short list does not leave an empty panel; a long one never runs off a 13-inch screen |
+| Scrolling | The list scrolls; the header, tabs and filters stay fixed. The list's height is measured, not estimated: a lazy stack's estimate left empty space around a short list | Refresh and the filters are always reachable |
+| Background | The popover's own material; group headers add a raised band | §2 |
 
 ### 5.2 Layout
 
 ```
-┌──────────────────────────────────────────────────── 380 pt ┐
-│  Docket                                         ⟳     ⚙    │  header
-│  [ All repositories ⌄ ]  [ All tags ⌄ ]                     │  filters
-│  Updated 12 min ago                                         │  only when stale (FR-44)
-│  [ acme/api  ✕ ]                                            │  only when filtered (FR-59)
-├─────────────────────────────────────────────────────────────┤
+┌──────────────────────────────────────────────────── 400 pt ┐
+│  [icon] Docket                                    ⟳     ⚙  │  header
 │  ⚠  acme requires SAML authorization.        [Authorize]   │  banners, §7.2
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │ ( Review requested  (62) )   Mine  (5)   Involved  (4)  │ │  tabs: segmented, count circle at the trailing edge
+│ └─────────────────────────────────────────────────────────┘ │
+│  (Humans 14) (Bots 31) (Stale 17)                   [•••]   │  sub-tabs, Review requested only; actions menu
+│  [Org: acme, globex ✕] [Label: backend ✕] [+ Filter]        │  filter chips
 ├─────────────────────────────────────────────────────────────┤
-│  (Review requested 4 ●)  Mine 5   Involved 8 ●   Ignored 1  │  tabs; ● = marked rows inside
-├─────────────────────────────────────────────────────────────┤
-│     acme/api                                           3    │  repository group header
-│     ● row                                                   │
-│     ─────────────────────────────────────────────           │  separator between rows
-│     row                                                     │
-│     acme/web                                           1    │
-│     row                                                     │
+│ [A] acme / api                                         (3)  │  repository header, pinned while scrolling
+│ ┃ Rate-limit the export endpoint                            │  row, §6.1
+│ ┃ #490 (◌ Checks running) @bruno [backend]            1h    │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Header.** The word `Docket` in `.headline`; a tag filter as a borderless pop-up button reading
-`All tags` or the selected tag, listing tags in use most used first (FR-82, one tag at a time); a
-refresh button with `arrow.clockwise` (FR-45, `⌘R`); a settings button with `gearshape` that opens a
-menu of `Settings…`, `Check for Updates…` and `Quit Docket`. The line `Updated N min ago` appears
-only when the snapshot is older than two poll intervals (FR-44), in `.subheadline` and
-`text.secondary`; while a poll runs it reads `Updating…` instead.
+**Header.** The app icon at 22 pt, `Docket` in `.headline`, a refresh button with `arrow.clockwise`
+(FR-45, `⌘R`) and a settings button with `gearshape` that opens a menu of `Settings…`,
+`Check for Updates…` and `Quit Docket`. The refresh symbol spins while a poll runs; there is no
+`Updating…` text. When the list is older than two poll intervals, a banner reads
+`Updated N min ago` (FR-44, §7.2).
 
-**Filters.** A second header line holds two borderless pop-ups: the repository, listing the
-repositories in the list with their row counts, most rows first, and the tag. A click on a grouped
-notification opens the popover with the repository filter set (FR-59); `Escape` clears the
-repository filter, then the tag filter. The two combine (FR-82).
+**Tabs.** A segmented control the width of the popover, 32 pt tall: *Review requested*, *Mine*,
+*Involved*, and *Ignored* while something is ignored. Each label is centred in its segment, and its
+count sits in a circle pinned to the trailing edge, the number centred in the circle. The selected
+segment is filled with the accent colour, its label white and its circle white with accent digits.
+Segments take their natural width plus an equal share of the rest, and shrink in proportion when
+four do not fit.
+
+**Sub-tabs.** In *Review requested* only: `Humans`, `Bots` and `Stale` (`02` §3.6) as pills with
+the same count circle, `Humans` selected by default. The selected sub-tab is kept for the life of the
+process. At the end of the row, `•••` opens the actions menu: `Mark All as Seen` marks every row of
+the visible list seen (FR-46). In the other tabs the actions menu ends the filter row.
+
+**Filters.** One chip per active dimension, `Org: acme, globex ✕`, then `+ Filter`: a menu per
+dimension (organization, repository, label, status) listing the values in the current tab with their
+counts, each a toggle. Several values combine with OR within a dimension and AND across them
+(FR-82). `✕` clears a dimension; `Escape` clears the most recently added one, then closes the
+popover. A click on a grouped notification opens the popover with that repository as the only filter
+(FR-59). When the chips do not fit, a dimension with several values shows its count.
 
 ### 5.3 Sections and order
 
-The sections are **tabs** under the filters, so a long list of one role never pushes the others off
-screen: *Review requested*, *Mine* and *Involved* always, and **Ignored** only while something is
-ignored. Each tab shows its row count and the marked dot when a row inside is marked, so a reply in
-another tab is not missed. The selected tab is kept for the life of the process, not stored, and
-opens on *Review requested*. Rows are separated by a hairline inset to the text. The user chose
-tabs over collapsible sections and newest-first over oldest-first after using 0.2.0.
+| Section | Contains (role, `02` §2.2) | Order |
+|---|---|---|
+| **Review requested** | `reviewRequested`, in the selected sub-tab | Grouped by repository. Groups ordered by their newest request, newest first; rows inside a group by request time, newest first. Ties by `owner/name`, then `#number` |
+| **Mine** | `authored` | Three groups in this order: **Ready** (not a draft, not blocked), **Blocked** (not a draft; `conflict`, `checksFailing` or `changesRequested`), **Draft** (every draft). Inside a group, by status in the precedence order of `02-activity-detection.md` §3.2, then newest first. Shown as stacked sections or as a board (`config.mineLayout`) |
+| **Involved** | `involved` | By `updatedAt`, most recent first |
+| **Ignored** | Any role, ignored (FR-49) | By `ignoredAt`, most recent first. Rows in `text.secondary`, no status colour: nothing here asks for attention |
 
-| Section | Contains (role, `02` §2.2) | Default | Order |
-|---|---|---|---|
-| **Review requested** | `reviewRequested` | The default tab | Grouped by repository. Groups ordered by their newest request, newest first; rows inside a group by request time, newest first. Ties by `owner/name`, then `#number` |
-| **Mine** | `authored` | Tab | Three groups in this order: **Ready** (not a draft, not blocked), **Blocked** (not a draft; `conflict`, `checksFailing` or `changesRequested`), **Draft** (every draft). Inside a group, by status in the precedence order of `02-activity-detection.md` §3.2, then newest first. Shown as stacked sections or as a board (`config.mineLayout`) |
-| **Involved** | `involved` | Tab (FR-41) | By `updatedAt`, most recent first |
-| **Ignored** | Any role, ignored (FR-49) | Tab, only while something is ignored | By `ignoredAt`, most recent first. Rows in `text.secondary`, no marked dot, no status colour: nothing here asks for attention |
+A **repository header** is a raised band: an 18 pt rounded square in a colour derived from the
+repository name (FNV-1a into blue, purple, pink, teal, indigo, cyan, brown and mint) with the name's
+initial, then the owner in `text.secondary`, `/`, the name in semibold, and the count circle on the
+right. Headers stay pinned at the top while their rows scroll and are replaced by the next group's.
 
-A repository group header reads `acme/api` in `.subheadline` with its row count on the right. Only
-*Review requested* is grouped: it is the section the reviewer batches per codebase (`01-product.md`
-§2); *Mine* is short enough that grouping would add a header per row.
+*Mine* as a **list** uses the same pinned headers, one per group, with a coloured dot: green Ready,
+red Blocked, grey Draft. Draft starts collapsed and opens with its chevron. As a **board**, the
+three groups are columns side by side; each card shows the status rail, the title on up to two
+lines, `owner/name #number` and the age, then the blocking reason (`Conflict with the base branch`,
+`Checks failing`, `Changes requested by @carla`) or the status pill. A card's column follows from its
+state; nothing is dragged.
 
 When a section holds more than its search returned, its last line reads `+N not shown`
 (`02-activity-detection.md` §2.1) in `text.tertiary`.
-
-A tab whose rows include a marked one (FR-46) shows the marked dot after its count, so a reply in
-*Involved* is visible from *Review requested*.
 
 ## 6. The row
 
 ### 6.1 Anatomy
 
-A row is three lines, 12 pt horizontal padding, 6 pt vertical, with the marked dot in a 12 pt
-leading gutter. The whole row is the click target (FR-42).
-
-*Mine* and *Involved* — status first (`02` §3.2):
+A row is a 3 pt status rail, then two lines, 16 pt horizontal padding on both sides and 8 pt
+vertical. The whole row is the click target (FR-42), and opening it marks it seen (FR-46).
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ ● acme/api #482                                     ● 4d    │  ref · age
-│   Fix login redirect loop after the SSO session expi…       │  title, one line
-│   ⚠ Conflict  ✎ Draft   ○ @ana  ✓ @bruno   [wip] [infra]    │  chips · reviewers · tags
-└─────────────────────────────────────────────────────────────┘
-  │                                                  │
-  marked (FR-46)                         ageing dot (02 §3.4)
-```
-
-*Review requested* — waited time first, status secondary:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│   acme/web #88                            waited ● 9d       │  ref · waited time, stale
-│   Move checkout to the new payments client                  │
-│   by @carla · via @acme/frontend   ✓ Ready · 12d   [after]  │  author · team · status · age · tags
+│ ┃ Fix login redirect loop after the SSO session expi…       │  title, one line
+│ ┃ #482 (✕ Checks failing) @ana [urgent] [backend]  ● 4d     │  number · status · author · labels · age
 └─────────────────────────────────────────────────────────────┘
 ```
 
 | Element | Content | Style |
 |---|---|---|
-| Marked dot | Present when the pull request has an event since the popover was last opened (FR-46) | 8 pt `circle.fill` in `accent.marked`, in the leading gutter |
-| Reference | `owner/name #number` | `.subheadline`, `text.secondary`, monospaced digits |
-| Title | The pull request title, verbatim | `.body`, `text.primary`, one line, truncated at the tail with `…`; the full title is the tooltip |
-| Age | `createdAt` age, formatted by `02` §3.4 | `.subheadline`, monospaced digits, `text.secondary`; ageing and stale per §6.2 |
-| Waited time | Review requested only: `waited 4d` (FR-33) | Same as age; replaces the age on line 1, and the age moves to line 3 as `· 12d` |
-| Status chip | §6.3 | Line 3, first; secondary style in *Review requested* |
-| Draft modifier | `✎ Draft` with `pencil`, after the status chip (FR-31) | `status.neutral` |
-| Author | Review requested and involved only: `by @carla` | `.subheadline`, `text.secondary` |
-| Team | `via @acme/frontend` when the request reached you through a team (FR-21); `via a team` without `read:org` (`02` §2.2) | `.subheadline`, `text.secondary` |
-| Reviewers | Authored only, order of `02` §3.3: `○ @ana` pending (`circle.dashed`), `✓ @bruno` approved (`checkmark`), `↺ @carla` changes requested (`arrow.uturn.backward`), `@dave` commented with `text.bubble`, `@dave re-requested` when both | `.subheadline`; logins as text, no avatars (`04-data.md` §5); after three reviewers, `+N` |
-| Tags | Up to five chips, insertion order (FR-80) | §6.4 |
+| Status rail | The status colour (§6.3) | 3 pt, full height; at 55% opacity on a seen row |
+| Title | The pull request title, verbatim | `.body`, one line, truncated at the tail; the full title is the tooltip. **Unseen**: semibold in `text.primary`, and the row tinted with the accent at 10%. **Seen**: regular in `text.secondary`, no tint |
+| Number | `#482` | `.subheadline`, monospaced digits, `text.secondary`. The repository is the group header |
+| Status pill | §6.3 | `Ready to merge` shortens to `Ready` in *Review requested* |
+| Draft modifier | `✎ Draft` (FR-31) | `status.neutral` |
+| Author | `@carla`, except in *Mine* | `.subheadline`, `text.secondary` |
+| Team | `via @acme/frontend` (FR-21) in *Review requested* | `.subheadline`, `text.secondary` |
+| Reviewers | *Mine* only, order of `02` §3.3, with `circle.dashed`, `checkmark`, `arrow.uturn.backward` or `text.bubble`; after three, `+N` | `.subheadline`, `text.secondary` |
+| Labels | GitHub labels, §6.4 | After the rest |
+| Age | Waited time in *Review requested* (FR-33), age elsewhere (FR-32), §6.2 | Trailing, monospaced digits; `bell.slash` before it when muted |
 
-Line 3 never wraps. When it overflows, reviewers collapse to `+N` first, then tags to `+N`; the
-status chip and draft modifier are never truncated.
-
-**Two dots, honestly.** The marked dot and the ageing dot are both dots. They differ by position
-(leading gutter versus beside the age), size (8 pt versus 5 pt) and colour (`accent.marked` versus
-`status.attention`), and by VoiceOver wording (§11). If testing shows people confuse them, the
-ageing marker is the one to change, because `02` §3.4 only needs it not to rely on colour.
+The second line never wraps: reviewers collapse to `+N` first, then labels; the status pill is
+never truncated.
 
 ### 6.2 Age styles
 
@@ -226,89 +212,47 @@ The thresholds are in `02-activity-detection.md` §3.4; here is the rendering.
 | Ageing | 5 pt `circle.fill` in `status.attention`, then `4d` | `ageing` |
 | Stale | The dot, then `9d` in `.semibold` | `stale` |
 
-The same styles apply to the waited time of a review request.
+### 6.3 Status pills
 
-### 6.3 Status chips
+One pill per row, for the status of `02-activity-detection.md` §3.2: a capsule filled with the colour
+at 16%, the symbol and the word in the colour, `.subheadline` semibold.
 
-One chip per row, for the status of `02-activity-detection.md` §3.2. A chip is the symbol in its
-colour token followed by the short text in `text.primary`, on a capsule filled with the token at
-12% opacity, `.subheadline` medium, 4 pt × 2 pt padding.
-
-| Status | SF Symbol | Text | Colour token |
+| Status | SF Symbol | Text | Colour |
 |---|---|---|---|
 | `conflict` | `exclamationmark.triangle.fill` | `Conflict` | `status.blocking` |
 | `checksFailing` | `xmark.circle.fill` | `Checks failing` | `status.blocking` |
 | `changesRequested` | `arrow.uturn.backward.circle.fill` | `Changes requested` | `status.attention` |
-| `checksRunning` | `hourglass` | `Checks running` | `status.neutral` |
+| `checksRunning` | `circle.dotted`, rotating | `Checks running` | `status.running` symbol; the word in `text.primary`, since yellow text is unreadable on a light popover |
 | `readyToMerge` | `checkmark.circle.fill` | `Ready to merge` | `status.ready` |
-| `waitingForReview` | `eye` | `Waiting for review` | `status.neutral` |
+| `waitingForReview` | `eye` | `Waiting for review` | `status.waiting` |
 | `noReviewers` | `person.crop.circle.badge.questionmark` | `No reviewers` | `status.neutral` |
-| Draft modifier | `pencil` | `Draft` | `status.neutral` |
 
-In *Review requested* the chip is secondary: no fill, `text.secondary` text, the symbol still in its
-colour, and `Ready to merge` shortens to `Ready`. The two red statuses differ in symbol and word,
-because they need different actions.
+A first version gave `checksRunning` and `waitingForReview` the same grey; with dozens of rows a
+running check could not be told from a pull request waiting for review.
 
-### 6.4 Tag chips
+### 6.4 Labels
 
-`wip` in `.subheadline` medium, in the tag's colour, on a capsule of the same colour at 18% opacity,
-6 pt × 2 pt padding. The colour comes from the tag's name (an FNV-1a hash into blue, purple, pink,
-teal, indigo, cyan, brown and mint), so a tag keeps its colour across launches and pull requests;
-red, orange and green are left to status. A first version had no colour per tag, and tags were hard
-to spot among many pull requests. A tag chip is clickable and sets the popover's tag filter to it.
+GitHub labels, read only. Each is a capsule outlined in the label's colour at 55%, filled with it at
+14%, the name in the colour mixed 35% towards white in dark mode or black in light mode, so pale and
+dark labels both read. Labels replaced local tags: they are what the team already uses, and they
+need no editor.
 
 ### 6.5 Context menu
 
-Right click on a row (FR-43):
+Right click on a row or a board card (FR-43):
 
 | Item | Action |
 |---|---|
-| `Open in Browser` | The pull request's `url` (same as a click) |
+| `Open in Browser` | The pull request's `url` (same as a click); marks it seen |
 | `Copy URL` | The `url` |
-| `Copy Reference` | `owner/name#number`, without the space the row shows, so it pastes as a GitHub reference |
+| `Copy Reference` | `owner/name#number`, without the space, so it pastes as a GitHub reference |
 | — | |
-| `Edit Tags…` | The tag editor, §6.6 (`T` with FR-47) |
-| `Filter to acme/api` | The repository filter of §5.2 |
+| `Filter to acme/api` | Adds the repository to the filter of §5.2 |
+| `Mark as Seen` | Only on an unseen row |
 | — | |
 | `Mute Reminders` / `Unmute Reminders` | Scope `reminders` (FR-63, `02` §5.7). Shown only on a `reviewRequested` row, with a checkmark when set |
 | `Mute Notifications` / `Unmute Notifications` | Scope `all`. With a checkmark when set; setting it replaces a `reminders` mute |
 | `Ignore` / `Stop Ignoring` | FR-49, `02` §5.8. Hides both mute entries while ignored |
-
-A row muted with scope `all` shows `bell.slash` in the secondary colour after the age, labelled
-`Muted` for VoiceOver. A `reminders` mute has no marker on the row: it changes nothing you would
-act on in the list, and the context menu's checkmark shows it.
-
-### 6.6 The tag editor
-
-`Edit Tags…` opens a SwiftUI `.popover` anchored to the row, 260 pt wide, over the main popover.
-
-```
-┌──────────────────────────────── 260 pt ┐
-│  [wip ✕] [infra ✕]  after Release│       │  token field
-│  Saved as after-release                 │  normalization feedback
-│  ───────────────────────────────────    │
-│  Suggestions                            │
-│  blocked   after-release   wip          │  in use, most used first (FR-83)
-│                               2 of 5    │
-└─────────────────────────────────────────┘
-```
-
-- `Return` or `,` adds the typed tag; `Backspace` in an empty field removes the last; `Escape`
-  closes. Every change is saved immediately; there is no Save button.
-- Below the field, live feedback on the normalization of `04-data.md` §2.1. When the input changes
-  under normalization: `Saved as after-release`. When it is still invalid, the reason, in
-  `text.secondary` with `exclamationmark.circle`:
-
-  | Reason | Message |
-  |---|---|
-  | Characters outside `[a-z0-9-]` after normalization | `Tags use letters, digits and hyphens` |
-  | Longer than 24 characters | `Tags are up to 24 characters` |
-  | Already on this pull request | `Already added` |
-  | Five tags already | `Up to 5 tags per pull request` |
-
-- Suggestions are the tags in use, most used first, filtered by prefix as the user types, at most
-  six; `wip` when no tag is in use (FR-83). A click adds one.
-- The counter `2 of 5` sits bottom right in `text.tertiary`.
 
 ## 7. Account, error and empty screens
 
@@ -356,7 +300,9 @@ One line in `text.secondary` under the section header, never an illustration.
 | Review requested, empty | `No reviews waiting on you.` |
 | Mine, empty | `No open pull requests of yours in the watched repositories.` |
 | Involved, empty | `Nothing you commented on or reviewed in the last 30 days.` |
-| A tag filter with no rows | `No pull requests tagged wip.` with `Clear Filter` |
+| Filters with no rows | `Nothing matches these filters.` with `Clear Filters` |
+| Bots, empty | `No review requests from bots.` |
+| Stale, empty | `Nothing stale.` |
 | Selection in `only` mode with nothing selected | `No repositories selected.` with `Choose Repositories…` |
 
 ## 8. Notification composition
@@ -399,8 +345,8 @@ control writes `config.json` on change (`04-data.md` §2.1); there is no Apply b
 |---|---|---|
 | **Account** | `person.crop.circle` | Signed-in login; `gh` path with `Choose Location…` and `Use Default` (FR-11); scopes present, each with `checkmark` or `xmark` and the word; organizations needing SAML, each with `Authorize` |
 | **Repositories** | `folder` | Mode as a radio group: `All repositories, except…` / `Only these repositories` (`02` §2.3). Below, the list for the current mode — repositories and organizations, each row with its kind's symbol — with `+` and `−`. `+` opens the picker (FR-73): a search field over `knownRepositories` with the typed `owner/name` offered as the first row; a typed one shows `Checking…`, then is added or reads `Not found, or you don't have access` |
-| **Notifications** | `bell` | Permission state: `Allowed`, `Not asked` with `Allow…`, or `Off in System Settings` with `Open System Settings` (`02` §9). One toggle per kind (FR-60): `Review requested`, `Review on your pull request`, `Comment on your pull request`, `Reply to your comment`. Bot allowlist (D-16): a list of logins with `+` and `−`, captioned `Bots never notify unless they are listed here.` A **Reminders** group (FR-66, FR-67): `Remind me about pending reviews` (on); `Every` with a pop-up of `15 minutes`, `30 minutes`, `1 hour`, `2 hours`, `4 hours`, `8 hours`; `Quiet hours` toggle with `From` and `To` time pickers (hour and minute), captioned `Reminders pause in this window. Other notifications follow Focus.`; The interval and quiet-hours controls are disabled, not hidden, while reminders are off. A **Focus** group (FR-69): one line, `To hold notifications during a Focus, add Docket's filter to it.`, with `Open Focus Settings`, and the state `Holding since 14:00` or `Not holding` |
-| **General** | `gearshape` | Menu bar count: `Count review requests` and `Count your pull requests that need you`, captioned with the four statuses of `02` §4. Poll interval: a pop-up of `30 seconds`, `1 minute`, `2 minutes`, `5 minutes` (FR-92), captioned with the estimated hourly cost from `02` §6.2. `Open at login` (FR-90) |
+| **Notifications** | `bell` | Permission state: `Allowed`, `Not asked` with `Allow…`, or `Off in System Settings` with `Open System Settings` (`02` §9). One toggle per kind (FR-60): `Review requested`, `Review on your pull request`, `Comment on your pull request`, `Reply to your comment`. Bot allowlist (D-16): a list of logins with `+` and `−`, captioned `Bots never notify unless they are listed here.` A **Reminders** group (FR-66, FR-67): `Remind me about pending reviews` (on); `Every` with a pop-up of `15 minutes`, `30 minutes`, `1 hour`, `2 hours`, `4 hours`, `8 hours`; `Quiet hours` toggle with `From` and `To` time pickers (hour and minute), captioned `Reminders pause in this window. Other notifications follow Focus.`; The interval and quiet-hours controls are disabled, not hidden, while reminders are off. A **Focus** group (FR-69): one line, `To hold notifications during a Focus, add Docket's filter to it.`, with `Open Focus Settings`, and the state `Holding since 14:00` or `Not holding`. A **Bots and stale pull requests** group (FR-37): `Stale after` with `3`, `5`, `7`, `14` or `30 days without human activity`; `Count and notify bot pull requests` (on); `Count and notify stale pull requests` (off); `Also bots`, a comma-separated list of logins treated as bots |
+| **General** | `gearshape` | Menu bar count: `Count review requests` and `Count your pull requests that need you`, captioned with the four statuses of `02` §4. Poll interval: a pop-up of `30 seconds`, `1 minute`, `2 minutes`, `5 minutes` (FR-92), captioned with the estimated hourly cost from `02` §6.2. **Mine**: `List` or `Board`. `Open at login` (FR-90) |
 | **Updates** | `arrow.down.circle` | As in Lookout: automatic checks, automatic install, `Check Now`, last checked |
 | **About** | `info.circle` | Name, version and build; link to the repository; `Show Data Folder` (`~/Library/Application Support/Docket/`); `What's New` |
 
@@ -419,7 +365,7 @@ macOS defaults of each style.
 |---|---|---|
 | `.headline` | 13 pt semibold | Popover title, full-screen titles |
 | `.body` | 13 pt | Row titles, full-screen body |
-| `.subheadline` | 11 pt | Reference, age, chips, tags, reviewers, section and group headers, banners |
+| `.subheadline` | 11 pt | Reference, age, chips, labels, reviewers, section and group headers, banners |
 | `.caption` | 10 pt | Settings captions only |
 | Monospaced | `.body.monospaced()` | Commands in full screens |
 
@@ -437,15 +383,18 @@ setting are handled by macOS. No hex value appears in the code.
 | `text.primary` | `labelColor` | Titles, chip text |
 | `text.secondary` | `secondaryLabelColor` | Reference, ages, headers, empty states |
 | `text.tertiary` | `tertiaryLabelColor` | Counters, `+N not shown` |
-| `accent.marked` | `controlAccentColor` | Marked dot |
+| `accent` | `controlAccentColor` | Selected tab and sub-tab, unseen row tint, focus ring |
 | `status.blocking` | `systemRed` | `conflict`, `checksFailing` |
 | `status.attention` | `systemOrange` | `changesRequested`, ageing dot, warning banners |
 | `status.ready` | `systemGreen` | `readyToMerge` |
-| `status.neutral` | `secondaryLabelColor` | `checksRunning`, `waitingForReview`, `noReviewers`, draft |
-| `fill.tag` | `quaternarySystemFillColor` | Tag chips |
+| `status.running` | `systemYellow` | The `checksRunning` symbol only |
+| `status.waiting` | `systemBlue` | `waitingForReview` |
+| `status.neutral` | `secondaryLabelColor` | `noReviewers`, draft |
+| `fill.tag` | `quaternarySystemFillColor` | Tab and sub-tab background, filter chips, board columns |
+| `fill.badge` | `tertiaryLabelColor` at 60% | Count circles |
 | `separator` | `separatorColor` | Between sections |
 
-`systemYellow` is not used: it is unreadable on the light popover material.
+`systemYellow` colours only the `checksRunning` symbol: as text it is unreadable on the light popover material.
 
 **Contrast, stated plainly.** Text is always `text.*` on the popover material, which meets 4.5:1.
 The status colours do not all meet the 3:1 of WCAG 1.4.11 as graphics on a light background:
@@ -457,7 +406,7 @@ relied on its colour would fail this section.
 ### 10.3 Space and shape
 
 A 4 pt grid: `2, 4, 6, 8, 12, 16, 20`. Rows 12 × 6 pt padding; section headers 12 pt horizontal,
-8 pt above; banners 12 × 8 pt; full screens 20 pt. Chips and tags are capsules. Row separators are
+8 pt above; banners 12 × 8 pt; full screens 20 pt. Chips and labels are capsules. Row separators are
 none — rows are separated by spacing and the hover highlight; sections by a `separator` line. Hover
 and selection use the system's `.selection` background as a list row would.
 
@@ -480,7 +429,7 @@ is a template in `Localizable.xcstrings`, with clauses omitted when empty:
 {Waiting for review for {waited} | Open for {age}}{, ageing | , stale}.
 {Requested from team {@org/team}.} {By {author}.}
 {Reviewers: {login} approved, {login} requested changes, {login} pending.}
-{Tags: {tag}, {tag}.} {New activity.}
+{Labels: {label}, {label}.} {Unseen.}
 ```
 
 Example: `Conflict, draft. Fix login redirect loop. acme/api number 482. Open for 4 days, ageing.
@@ -494,7 +443,7 @@ spoken logins.
 
 **Keyboard.** P0: `⌘R` refreshes, `⌘,` opens settings, `Escape` clears the filter then closes the
 popover, `Tab` moves through controls. P1, FR-47: `↑` and `↓` move a focus ring through rows across
-sections, `Return` opens the focused row, `T` opens its tag editor, `←` and `→` move between tabs. FR-48 adds a global shortcut to open the popover.
+sections, `Return` opens the focused row and marks it seen, `←` and `→` move between tabs. FR-48 adds a global shortcut to open the popover.
 
 ## 12. Copy rules
 
@@ -502,11 +451,11 @@ sections, `Return` opens the focused row, `T` opens its tag editor, `←` and `�
   where it appears.
 - **Sentence case** for titles, labels, banners, empty states and notifications: `Review requested`,
   `Sign in to the GitHub CLI`. **Menu items and push buttons use title case** (D-21), as macOS does
-  (`Edit Tags…`, `Try Again`), because §2 makes "shipped with macOS" the test.
+  (`Mark All as Seen`, `Try Again`), because §2 makes "shipped with macOS" the test.
 - **The vocabulary of `PROJECT.md` §7**: pull request (never "PR" in copy), repository, status,
-  tag, notification, "needs you". A GitHub label is never called a tag, and a tag never a label.
+  label (GitHub's), notification, "needs you".
 - **No exclamation marks**, no "Oops", no "please", no "successfully".
-- **Numbers as digits**: `3 reviews requested`, `5 tags`. Ages use the forms of `02` §3.4 in the
+- **Numbers as digits**: `3 reviews requested`, `+2` labels. Ages use the forms of `02` §3.4 in the
   interface and full words for VoiceOver.
 - **Logins with `@`**, teams as `@org/team`, references as `owner/name #number` on screen and
   `owner/name#number` when copied.
@@ -531,9 +480,9 @@ light and dark appearance with synthetic data. Every item is a yes.
       `99+` at 100.
 - [ ] Section order and row order match §5.3 for the fixture.
 - [ ] Every row shows reference, title, the right time (age or waited), status chip, and the draft
-      modifier, team, reviewers and tags when they apply.
+      modifier, team, reviewers and labels when they apply; unseen rows are tinted and bold.
 - [ ] Ageing and stale ages are distinguishable without colour.
-- [ ] Long titles truncate on one line; line 3 never wraps and never truncates the status chip.
+- [ ] Long titles truncate on one line; the second line never wraps and never truncates the status pill.
 - [ ] Each account and error condition of §7.1 shows its exact command, and the command copies.
 - [ ] Each banner of §7.2 names the organization, the time or the fix.
 - [ ] Empty sections show one line, not a blank area.

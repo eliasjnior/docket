@@ -57,7 +57,7 @@ and `.gitleaks.toml` — tooling only, no workspace packages (D-11).
 | `DocketPersistence` | `config.json`, `state.json`, `cache/`: atomic writes, versioned decoding, corrupt-file handling | `DocketCore` |
 | `DocketNotify` | `UNUserNotificationCenter` adapter: permission, categories, thread identifiers, click routing | `DocketCore` |
 | `DocketUpdate` | Release discovery, Ed25519 and code-signature checks, installation — copied from `LookoutUpdate` (D-14) | `DocketCore` |
-| `DocketStores` | `@Observable` state for the app: the `Poller` actor, `WatchStore`, `TagStore`, `SelectionStore`, `AccountStore`, `UpdateStore` | `DocketCore`, `DocketActivity`, `DocketPersistence`, `DocketUpdate` |
+| `DocketStores` | `@Observable` state for the app: the `Poller` actor, `WatchStore`, `SelectionStore`, `AccountStore`, `UpdateStore` | `DocketCore`, `DocketActivity`, `DocketPersistence`, `DocketUpdate` |
 | `DocketTestSupport` | Test-only: seeded generators and snapshot builders shared by the test targets (`06-engineering-practices.md` §10.2). Never linked into the app | `DocketCore` |
 | `DocketCLI` | `docket-cli`: `whoami`, `poll` (one poll against your account, printing roles, statuses, events and `rateLimit.cost`), `stats` (`01-product.md` §5) | `DocketCore`, `DocketActivity`, `DocketGitHub` |
 

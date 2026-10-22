@@ -36,14 +36,8 @@ public struct Sections: Hashable, Sendable {
         Dictionary(grouping: reviewRequested.flatMap(\.items), by: { $0.triage ?? .humans }).mapValues(\.count)
     }
 
-    public init(
-        _ items: [WatchedPullRequest], filter: PopoverFilter = PopoverFilter(), tag: String? = nil,
-        repository: String? = nil
-    ) {
-        let filtered = items.filter { item in
-            filter.matches(item) && (tag.map { item.tags.contains($0) } ?? true)
-                && (repository.map { item.pullRequest.repository.caseInsensitiveCompare($0) == .orderedSame } ?? true)
-        }
+    public init(_ items: [WatchedPullRequest], filter: PopoverFilter = PopoverFilter()) {
+        let filtered = items.filter(filter.matches)
         let active = filtered.filter { !$0.isIgnored }
         ignored = filtered.filter(\.isIgnored).sorted {
             ($0.ignoredAt ?? .distantPast) > ($1.ignoredAt ?? .distantPast)

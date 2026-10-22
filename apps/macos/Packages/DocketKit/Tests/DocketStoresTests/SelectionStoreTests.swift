@@ -6,37 +6,12 @@ import Foundation
 import Testing
 
 @MainActor
-struct TagAndSelectionStoreTests {
+struct SelectionStoreTests {
     private func configStore() -> (ConfigStore, FileStores) {
         let files = FileStores(
             paths: AppPaths(root: FileManager.default.temporaryDirectory.appending(path: "docket-\(UUID().uuidString)"))
         )
         return (ConfigStore(storage: files), files)
-    }
-
-    @Test("M3 Done when: ` WIP ` is stored as `wip` under the node ID, and survives a relaunch")
-    func tagsAreNormalizedAndKeyedByNodeID() async throws {
-        let (store, files) = configStore()
-        let tags = TagStore(configStore: store, now: { Fixtures.now })
-        #expect(tags.add(" WIP ", to: "PR_kw1", ref: "acme/api#482") == .success("wip"))
-        #expect(tags.add("wip", to: "PR_kw1", ref: "acme/api#482") == .failure(.alreadyAdded))
-        #expect(tags.add("a/b", to: "PR_kw1", ref: "acme/api#482") == .failure(.invalidCharacters))
-        try await Task.sleep(for: .milliseconds(50))
-        let saved = try await files.loadConfig()
-        #expect(saved.tags["PR_kw1"] == Config.TagEntry(ref: "acme/api#482", tags: ["wip"], updatedAt: Fixtures.now))
-        let relaunched = ConfigStore(storage: files)
-        await relaunched.load()
-        #expect(TagStore(configStore: relaunched).tags(of: "PR_kw1") == ["wip"])
-        tags.remove("wip", from: "PR_kw1", ref: "acme/api#482")
-        #expect(store.config.tags["PR_kw1"] == nil)
-    }
-
-    @Test func fiveTagsAtMost() {
-        let (store, _) = configStore()
-        let tags = TagStore(configStore: store)
-        for tag in ["a", "b", "c", "d", "e"] { tags.add(tag, to: "PR_1", ref: "acme/api#1") }
-        #expect(tags.add("f", to: "PR_1", ref: "acme/api#1") == .failure(.tooMany))
-        #expect(tags.inUse == ["a", "b", "c", "d", "e"])
     }
 
     @Test func selectionEntriesFollowTheMode() {

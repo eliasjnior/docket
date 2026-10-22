@@ -1,49 +1,6 @@
 import DocketCore
 import Foundation
 
-/// Local tags over `config.json` (FR-80–FR-85). Tags never leave the Mac.
-@MainActor
-public struct TagStore {
-    private let configStore: ConfigStore
-    private let now: () -> Date
-
-    public init(configStore: ConfigStore, now: @escaping () -> Date = { Date() }) {
-        self.configStore = configStore
-        self.now = now
-    }
-
-    public func tags(of pullRequestID: String) -> [String] {
-        configStore.config.tags[pullRequestID]?.tags ?? []
-    }
-
-    /// Adds `input` after normalization, or returns why it was rejected.
-    @discardableResult
-    public func add(_ input: String, to pullRequestID: String, ref: String) -> Result<String, Tags.Rejection> {
-        let existing = tags(of: pullRequestID)
-        let result = Tags.validate(input, existing: existing)
-        if case .success(let tag) = result {
-            set(existing + [tag], on: pullRequestID, ref: ref)
-        }
-        return result
-    }
-
-    public func remove(_ tag: String, from pullRequestID: String, ref: String) {
-        set(tags(of: pullRequestID).filter { $0 != tag }, on: pullRequestID, ref: ref)
-    }
-
-    /// An entry with no tags is deleted, not stored empty (`docs/04-data.md` §2.1).
-    private func set(_ tags: [String], on pullRequestID: String, ref: String) {
-        let at = now()
-        configStore.update { config in
-            config.tags[pullRequestID] = tags.isEmpty ? nil : Config.TagEntry(ref: ref, tags: tags, updatedAt: at)
-        }
-    }
-
-    public var inUse: [String] {
-        Tags.inUse(configStore.config.tags.values.map(\.tags))
-    }
-}
-
 /// Repositories and organizations to watch (FR-70–FR-74).
 @MainActor
 public struct SelectionStore {

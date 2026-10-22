@@ -26,7 +26,7 @@ struct FileStoresTests {
 
     @Test func writeThenReadIsTheIdentity() async throws {
         var config = Config()
-        config.tags["PR_1"] = Config.TagEntry(ref: "acme/api#482", tags: ["wip"], updatedAt: now)
+        config.mutes["PR_1"] = Config.MuteEntry(ref: "acme/api#482", scope: .all, mutedAt: now)
         let state = PersistedState(viewerLogin: "you", baselineAt: now, delivered: ["reviewRequested:E1": now])
         let cache = SnapshotCache(fetchedAt: now, viewerLogin: "you")
         try await stores.saveConfig(config)
