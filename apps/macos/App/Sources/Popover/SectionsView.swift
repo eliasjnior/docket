@@ -38,7 +38,7 @@ struct SectionsView: View {
             case .mine:
                 if sections.mine.isEmpty { EmptyLine(text: emptyText(.mine)) }
                 if watch.config.mineLayout == .board {
-                    MineBoard(groups: sections.mineGroups, now: now, actions: actions.row)
+                    MineBoard(groups: sections.mineGroups, now: now, actions: actions.row, focusedID: model.focusedID)
                 } else {
                     ForEach(sections.mineGroups) { group in
                         let collapsed = group.kind == .draft && !model.draftsExpanded

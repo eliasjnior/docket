@@ -32,6 +32,18 @@ struct IntegrationsTests {
         #expect(Jira.link(for: pullRequest(title: "Fix login", branch: "main"), base: "acme.atlassian.net") == nil)
     }
 
+    @Test func namesThatLookLikeKeysAreNotIssues() {
+        for title in ["Decode UTF-8 names", "Pin SHA-256 digests", "Parse ISO-8601 dates"] {
+            #expect(Jira.link(for: pullRequest(title: title), base: "acme.atlassian.net") == nil)
+        }
+    }
+
+    @Test func aBareTitleIsFlagged() {
+        #expect(CommandScript.titleStandsAlone("tool {title}"))
+        #expect(!CommandScript.titleStandsAlone(#"tool "{title}" {url}"#))
+        #expect(!CommandScript.titleStandsAlone(Config.Integrations.defaultReviewCommand))
+    }
+
     @Test func jiraNilWithoutBase() {
         #expect(Jira.link(for: pullRequest(title: "API-7"), base: nil) == nil)
         #expect(Jira.link(for: pullRequest(title: "API-7"), base: "  ") == nil)

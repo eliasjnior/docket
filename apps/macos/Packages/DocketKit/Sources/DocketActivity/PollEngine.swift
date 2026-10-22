@@ -18,9 +18,11 @@ public enum PollEngine {
 
     /// The pull requests whose details are read: entering the watch set, or changed since (§1 step 4).
     public static func detailIDs(
-        summaries: [PullRequest], discovery: Discovery, state: PersistedState, viewer: ViewerContext, now: Date
+        summaries: [PullRequest], discovery: Discovery, state: PersistedState, viewer: ViewerContext, now: Date,
+        previousCache: SnapshotCache? = nil
     ) -> [String] {
-        summaries.filter { pullRequest in
+        let unread = Set((previousCache?.pullRequests ?? []).filter { !$0.activityRead }.map(\.id))
+        return summaries.filter { pullRequest in
             let cursor = state.cursors[pullRequest.id]
             // One last read of your own pull request as it closes, to learn who closed it (FR-62).
             if cursor?.role == .authored, pullRequest.state != .open { return true }
@@ -32,7 +34,7 @@ public enum PollEngine {
                 || pullRequest.reviewRequests.contains { if case .team = $0 { true } else { false } }
             guard mayHaveRole, pullRequest.state == .open, !pullRequest.isArchived else { return false }
             guard let cursor, cursor.role != nil else { return true }
-            return cursor.updatedAt != pullRequest.updatedAt
+            return cursor.updatedAt != pullRequest.updatedAt || unread.contains(pullRequest.id)
         }.map(\.id)
     }
 
@@ -171,7 +173,8 @@ struct PollRun {
             ?? old?.commenters ?? []
         let activity = detail.map(HumanActivity.stamps(in:)) ?? old?.activity ?? []
         return CachedPullRequest(
-            pullRequest: pullRequest, role: role, request: request, commenters: commenters, activity: activity)
+            pullRequest: pullRequest, role: role, request: request, commenters: commenters, activity: activity,
+            activityRead: detail != nil || old?.activityRead == true)
     }
 
     /// A node that failed this poll keeps its previous snapshot (`docs/02-activity-detection.md` §9).

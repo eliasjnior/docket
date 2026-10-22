@@ -623,6 +623,9 @@
     "Poll interval" : {
       "comment" : "General settings section"
     },
+    "Put {title} inside quotes: a title starting with - would be read as an option." : {
+      "comment" : "Command warning"
+    },
     "Quiet hours" : {
       "comment" : "Reminders setting"
     },

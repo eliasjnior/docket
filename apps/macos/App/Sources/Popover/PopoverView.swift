@@ -72,13 +72,18 @@ struct PopoverView: View {
 extension PopoverView {
     /// The rows of the current tab and sub-tab, in display order.
     var visibleItems: [WatchedPullRequest] {
-        Self.visibleItems(watch.sections(filter: model.filter), model: model)
+        Self.visibleItems(watch.sections(filter: model.filter), model: model, layout: watch.config.mineLayout)
     }
 
-    static func visibleItems(_ sections: Sections, model: PopoverModel) -> [WatchedPullRequest] {
+    /// What is on screen: a collapsed Draft group is not.
+    static func visibleItems(_ sections: Sections, model: PopoverModel, layout: Config.MineLayout)
+        -> [WatchedPullRequest]
+    {
         switch model.tab {
         case .reviewRequested: sections.reviewRequested(model.triage).flatMap(\.items)
-        case .mine: sections.mine
+        case .mine:
+            sections.mineGroups.filter { $0.kind != .draft || layout == .board || model.draftsExpanded }
+                .flatMap(\.items)
         case .involved: sections.involved
         case .ignored: sections.ignored
         }
@@ -98,7 +103,7 @@ extension PopoverView {
 
     func switchTab(_ step: Int) -> KeyPress.Result {
         var tabs: [PopoverModel.Section] = [.reviewRequested, .mine, .involved]
-        if !watch.sections().ignored.isEmpty { tabs.append(.ignored) }
+        if !watch.sections(filter: model.filter).ignored.isEmpty { tabs.append(.ignored) }
         guard let index = tabs.firstIndex(of: model.tab) else { return .ignored }
         model.tab = tabs[(index + step + tabs.count) % tabs.count]
         model.focusedID = nil

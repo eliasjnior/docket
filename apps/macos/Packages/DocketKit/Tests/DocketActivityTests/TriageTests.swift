@@ -82,6 +82,24 @@ struct TriageTests {
         #expect(counted.state.reminders[old.id] != nil)
     }
 
+    @Test func youAndYourTeamRequestedIsOneNotification() {
+        var timeline = Timeline()
+        timeline.poll([])
+        timeline.advance(Fixtures.hours(1))
+        let pullRequest = Fixtures.pullRequest(requests: [
+            .user(login: "you"), .team(organization: "acme", slug: "backend"),
+        ])
+        let detail = PullRequestDetail(
+            id: pullRequest.id,
+            requestEvents: [
+                Fixtures.request("E1", at: timeline.now.addingTimeInterval(-60)),
+                Fixtures.request("E2", to: .team(organization: "acme", slug: "backend"), at: timeline.now),
+            ])
+        let output = timeline.poll([pullRequest], [detail])
+        #expect(output.notifications.count == 1)
+        #expect(output.notifications.first?.events.map(\.at) == [timeline.now])
+    }
+
     @Test func manyRequestsStillCapped() {
         var timeline = Timeline()
         timeline.poll([])

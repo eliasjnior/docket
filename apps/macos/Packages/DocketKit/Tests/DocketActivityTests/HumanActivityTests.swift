@@ -51,6 +51,14 @@ struct HumanActivityTests {
         #expect(HumanActivity.last(cached, excluding: "you", extra: []) == at(8))
     }
 
+    @Test func aCommitWithoutALoginIsNotNewsForSeenState() {
+        var pullRequest = Fixtures.pullRequest(author: "you")
+        pullRequest.headCommit = CommitStamp(login: nil, at: at(1))
+        let cached = CachedPullRequest(pullRequest: pullRequest, role: .authored)
+        #expect(HumanActivity.last(cached, excluding: "you", extra: []) == nil)
+        #expect(HumanActivity.last(cached, extra: []) == at(1))
+    }
+
     @Test func extraBotLoginsApplyAtReadTime() {
         let cached = CachedPullRequest(
             pullRequest: Fixtures.pullRequest(), role: .reviewRequested,
@@ -87,6 +95,26 @@ struct HumanActivityTests {
                 viewer: viewer, now: now, state: first.state, previousCache: first.cache,
                 summaries: SummaryBatch(pullRequests: [pullRequest])))
         #expect(second.cache.pullRequests.first?.activity == first.cache.pullRequests.first?.activity)
+        #expect(second.cache.pullRequests.first?.activityRead == true)
+    }
+
+    @Test func aCacheFromBeforeStampsReadsEachDetailOnce() {
+        let viewer = ViewerContext(login: "you", teams: nil)
+        let pullRequest = Fixtures.pullRequest(requests: [.user(login: "you")])
+        let discovery = Discovery(requested: [pullRequest.id])
+        let first = PollEngine.run(
+            PollInput(
+                viewer: viewer, now: now, discovery: discovery, summaries: SummaryBatch(pullRequests: [pullRequest]),
+                details: ["PR_1": PullRequestDetail(id: "PR_1")]))
+        var upgraded = first.cache
+        upgraded.pullRequests[0].activityRead = false
+        let ids = { (cache: SnapshotCache) in
+            PollEngine.detailIDs(
+                summaries: [pullRequest], discovery: discovery, state: first.state, viewer: viewer, now: now,
+                previousCache: cache)
+        }
+        #expect(ids(upgraded) == ["PR_1"])
+        #expect(ids(first.cache).isEmpty)
     }
 
     @Test func oldCacheEntriesStillDecode() throws {

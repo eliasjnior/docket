@@ -31,7 +31,7 @@ enum TerminalLauncher {
             let file = folder.appending(path: "\(UUID().uuidString).command")
             try Data(script.utf8).write(to: file, options: .atomic)
             try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: file.path)
-            if let path = integrations.terminalApp {
+            if let path = integrations.terminalApp, FileManager.default.fileExists(atPath: path) {
                 NSWorkspace.shared.open(
                     [file], withApplicationAt: URL(fileURLWithPath: path),
                     configuration: NSWorkspace.OpenConfiguration()

@@ -42,8 +42,11 @@ public enum HumanActivity {
 
     /// The latest human activity, skipping `viewer` when given (for seen state: your own activity is not news).
     public static func last(_ cached: CachedPullRequest, excluding viewer: String? = nil, extra: [String]) -> Date? {
+        // With `viewer`, an actor without a login may be you (a commit email not linked to your account), so it
+        // is not news; without it, any human activity counts.
         func counts(_ login: String?) -> Bool {
-            guard let viewer, let login else { return true }
+            guard let viewer else { return true }
+            guard let login else { return false }
             return login.caseInsensitiveCompare(viewer) != .orderedSame
         }
         var dates: [Date] = cached.activity.filter { stamp in

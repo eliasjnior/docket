@@ -21,8 +21,14 @@ public enum Jira {
         let range = NSRange(text.startIndex..., in: text)
         guard let match = regex.firstMatch(in: text, range: range), let span = Range(match.range(at: 1), in: text)
         else { return nil }
-        return text[span].uppercased()
+        let key = text[span].uppercased()
+        return notIssues.contains(String(key.prefix { $0 != "-" })) ? nil : key
     }
+
+    /// Prefixes of names that look like issue keys and are not: `UTF-8`, `SHA-256`, `ISO-8601`.
+    static let notIssues: Set<String> = [
+        "UTF", "SHA", "ISO", "HTTP", "HTTPS", "TLS", "SSL", "RFC", "MD", "IPV", "ES", "PEP", "CVE", "GPT", "H", "X",
+    ]
 
     /// `acme.atlassian.net` or `https://acme.atlassian.net/` as `https://acme.atlassian.net`.
     static func normalized(_ base: String?) -> String? {

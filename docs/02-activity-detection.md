@@ -199,7 +199,8 @@ The cache keeps the latest review, comment or request per actor as it was read, 
 (`04-data.md` §2.3), and the test runs when the list is derived. A login added to
 `extraBotLogins` therefore takes effect at once, without waiting for the pull request to change. A
 detail is read only when a pull request changed (§1), so the stamps from the last read are kept until
-the next one.
+the next one. A cache written before stamps existed marks its entries `activityRead: false`, and the
+next poll reads those details once, so an upgrade does not judge every unchanged pull request stale.
 
 ### 3.6 Triage: Humans, Bots, Stale
 

@@ -109,6 +109,15 @@ struct AISettingsView: View {
                 )
                 .font(.caption).foregroundStyle(Color.statusAttention)
             }
+            if CommandScript.titleStandsAlone(text) {
+                Label(
+                    String(
+                        localized: "Put {title} inside quotes: a title starting with - would be read as an option.",
+                        comment: "Command warning"),
+                    systemImage: "exclamationmark.triangle"
+                )
+                .font(.caption).foregroundStyle(Color.statusAttention)
+            }
             if text != value {
                 Button(String(localized: "Reset to Default", comment: "Command button")) {
                     configStore.update { $0[keyPath: path] = value }

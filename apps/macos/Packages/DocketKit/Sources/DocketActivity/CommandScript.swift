@@ -29,6 +29,11 @@ public enum CommandScript {
         rewrite(template).literal
     }
 
+    /// `{title}` outside quotes is a word of its own, and a title starting with `-` would read as an option.
+    public static func titleStandsAlone(_ template: String) -> Bool {
+        rewrite(template).bareTitle
+    }
+
     /// `'…'` with each `'` closed, escaped and reopened.
     static func quoted(_ value: String) -> String {
         "'" + value.replacingOccurrences(of: "'", with: #"'\''"#) + "'"
@@ -42,27 +47,33 @@ public enum CommandScript {
         case double
     }
 
-    private static func rewrite(_ template: String) -> (text: String, literal: [String]) {
-        var output = ""
+    private struct Rewrite {
+        var text = ""
         var literal: [String] = []
+        var bareTitle = false
+    }
+
+    private static func rewrite(_ template: String) -> Rewrite {
+        var result = Rewrite()
         var quote = Quote.none
         var characters = Array(template)[...]
         while let character = characters.popFirst() {
             if character == "\\", quote != .single, let next = characters.popFirst() {
-                output.append(character)
-                output.append(next)
+                result.text.append(character)
+                result.text.append(next)
                 continue
             }
             if character == "{", let name = placeholder(at: characters) {
                 characters = characters.dropFirst(name.count + 1)
-                output += reference(name, in: quote)
-                if quote == .single { literal.append(name) }
+                result.text += reference(name, in: quote)
+                if quote == .single { result.literal.append(name) }
+                if quote == .none, name == "title" { result.bareTitle = true }
                 continue
             }
             quote = next(quote, after: character)
-            output.append(character)
+            result.text.append(character)
         }
-        return (output, literal)
+        return result
     }
 
     /// A placeholder as it is written where it sits: one quoted word outside quotes, a bare expansion inside

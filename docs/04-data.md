@@ -178,7 +178,7 @@ summaries by `DocketActivity`, so a rule change in an update applies to cached d
 | `version` | integer | §1 |
 | `fetchedAt` | timestamp | Drives "updated N min ago" |
 | `viewerLogin` | String | A mismatch with `state.json` discards the cache |
-| `pullRequests` | `[PullRequestSummary]` | The fields of the summary query in `02` §6.1, plus each pull request's latest review-request time and requester for display, and `activity`: the latest review, comment or request per actor from the last detail read (`02` §3.5) |
+| `pullRequests` | `[PullRequestSummary]` | The fields of the summary query in `02` §6.1, plus each pull request's latest review-request time and requester for display, and `activity`: the latest review, comment or request per actor from the last detail read, with `activityRead` once a detail was read (`02` §3.5) |
 | `knownRepositories` | `[{name, lastSeenAt}]` | Repositories seen in the last 90 days, for the selection picker (FR-73) |
 
 `cache/` is marked `isExcludedFromBackup`: it is rebuilt by one poll and holds titles from private
