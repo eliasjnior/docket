@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/eliasjnior/docket/compare/macos-v1.2.0...macos-v1.2.1) (2026-10-22)
+
+
+### Fixed
+
+* **macos:** cap the long settings tabs and scroll them ([#47](https://github.com/eliasjnior/docket/issues/47)) ([8018eae](https://github.com/eliasjnior/docket/commit/8018eae48c594f642f8825ef125a5c46c5c14d1c))
+
 ## [1.2.0](https://github.com/eliasjnior/docket/compare/macos-v1.1.0...macos-v1.2.0) (2026-10-22)
 
 
