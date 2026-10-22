@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/eliasjnior/docket/compare/macos-v1.1.0...macos-v1.2.0) (2026-10-22)
+
+
+### New
+
+* **activity:** filter by several values and group Mine by readiness ([#43](https://github.com/eliasjnior/docket/issues/43)) ([ab42df0](https://github.com/eliasjnior/docket/commit/ab42df0c7bbc478175245030fdadb1b317cd2930))
+* **activity:** track which pull requests you have seen ([#42](https://github.com/eliasjnior/docket/issues/42)) ([06c4336](https://github.com/eliasjnior/docket/commit/06c4336e09cee99dd0a87183fbb8811d9e95f813))
+* **activity:** triage review requests into humans, bots and stale ([#41](https://github.com/eliasjnior/docket/issues/41)) ([bf72d7f](https://github.com/eliasjnior/docket/commit/bf72d7f8cd82fd0a2e3ee7a92661b14acf2a5247))
+* **github:** read labels, branch, issue links and human activity ([#40](https://github.com/eliasjnior/docket/issues/40)) ([40106fa](https://github.com/eliasjnior/docket/commit/40106fac08cd67691417f6a85566ca8a3014f3c7))
+* **macos:** open in Jira and run review or summary commands in a terminal ([#45](https://github.com/eliasjnior/docket/issues/45)) ([889ca08](https://github.com/eliasjnior/docket/commit/889ca085654d547de51db7c4fae0243c56716c79))
+* **macos:** redesign the popover for triage, labels and seen state ([#44](https://github.com/eliasjnior/docket/issues/44)) ([fba4998](https://github.com/eliasjnior/docket/commit/fba4998909ea4596593ecd04c510372bcad2cbda))
+
 ## [1.1.0](https://github.com/eliasjnior/docket/compare/macos-v1.0.0...macos-v1.1.0) (2026-10-21)
 
 
