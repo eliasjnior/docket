@@ -34,7 +34,7 @@ struct RowView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(verbatim: pullRequest.title)
                     .font(.body.weight(unseen ? .semibold : .regular))
-                    .foregroundStyle(unseen ? Color.textPrimary : Color.textSecondary)
+                    .foregroundStyle(unseen ? Color.textPrimary : Color.textSeen)
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .help(pullRequest.title)

@@ -100,15 +100,15 @@ opening the popover.
 
 | Property | Value | Why |
 |---|---|---|
-| Width | 420 pt; 640 pt while *Mine* is shown as a board | Three equal tabs fit `Review requested` and its count circle at full size; three board columns need the room |
+| Width | 460 pt; 640 pt while *Mine* is shown as a board | Three equal tabs fit `Review requested` and its count circle with room on both sides; three board columns need the room |
 | Height | Content height, at most 640 pt or the screen's visible height minus 40 pt, whichever is smaller | A short list does not leave an empty panel; a long one never runs off a 13-inch screen |
 | Scrolling | The list scrolls; the header, tabs and filters stay fixed. The list's height is measured, not estimated: a lazy stack's estimate left empty space around a short list | Refresh and the filters are always reachable |
-| Background | The popover's own material; group headers add a raised band | §2 |
+| Background | `windowBackgroundColor`, solid; group headers add a raised band | Through the popover's vibrant material, text read pale and see-through |
 
 ### 5.2 Layout
 
 ```
-┌──────────────────────────────────────────────────── 420 pt ┐
+┌──────────────────────────────────────────────────── 460 pt ┐
 │  [icon] Docket                                    ⟳     ⚙  │  header
 │  ⚠  acme requires SAML authorization.        [Authorize]   │  banners, §7.2
 │ ┌─────────────────────────────────────────────────────────┐ │
@@ -129,8 +129,8 @@ opening the popover.
 `Updating…` text. When the list is older than two poll intervals, a banner reads
 `Updated N min ago` (FR-44, §7.2).
 
-**Tabs.** A segmented control the width of the popover, 32 pt tall: *Review requested*, *Mine*,
-*Involved*, and *Ignored* while something is ignored. The segments are of equal width, and each
+**Tabs.** A segmented control the width of the popover: *Review requested*, *Mine*,
+*Involved*, and *Ignored* while something is ignored, 28 pt tall. The segments are of equal width, and each
 centres its label and its count circle together, the number centred in the circle. The selected
 segment is filled with the accent colour, its label white and its circle white with accent digits.
 When four segments do not fit, a label shrinks to 75% before it truncates. A first version pinned the
@@ -190,7 +190,7 @@ vertical. The whole row is the click target (FR-42), and opening it marks it see
 | Element | Content | Style |
 |---|---|---|
 | Status rail | The status colour (§6.3) | 3 pt, full height; at 55% opacity on a seen row |
-| Title | The pull request title, verbatim | `.body`, one line, truncated at the tail; the full title is the tooltip. **Unseen**: semibold in `text.primary`, and the row tinted with the accent at 10%. **Seen**: regular in `text.secondary`, no tint |
+| Title | The pull request title, verbatim | `.body`, one line, truncated at the tail; the full title is the tooltip. **Unseen**: semibold in `text.primary`, and the row tinted with the accent at 10%. **Seen**: regular in `text.seen` (`labelColor` at 72%), no tint |
 | Number | `#482` | `.subheadline`, monospaced digits, `text.secondary`. The repository is the group header |
 | Status pill | §6.3 | `Ready to merge` shortens to `Ready` in *Review requested* |
 | Draft modifier | `✎ Draft` (FR-31) | `status.neutral` |

@@ -39,7 +39,7 @@ struct TabBar: View {
             .padding(.horizontal, 2)
             .font(.subheadline.weight(selected ? .semibold : .medium))
             .foregroundStyle(selected ? Color.white : Color.textPrimary)
-            .frame(maxWidth: .infinity, minHeight: 32)
+            .frame(maxWidth: .infinity, minHeight: 28)
             .background(RoundedRectangle(cornerRadius: 7).fill(selected ? Color.accent : .clear))
             .contentShape(RoundedRectangle(cornerRadius: 7))
         }

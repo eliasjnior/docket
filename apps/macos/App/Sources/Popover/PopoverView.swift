@@ -5,7 +5,7 @@ import SwiftUI
 
 /// The popover of `docs/05-design.md` §5: header, banners, tabs, filters, then the list or a full screen.
 struct PopoverView: View {
-    static let width: CGFloat = 420
+    static let width: CGFloat = 460
     static let boardWidth: CGFloat = 640
 
     let watch: WatchStore
@@ -48,6 +48,8 @@ struct PopoverView: View {
             }
         }
         .frame(width: isBoard ? Self.boardWidth : Self.width)
+        // Solid, not the popover's vibrant material: through vibrancy the text read pale and see-through.
+        .background(Color(nsColor: .windowBackgroundColor))
         .focusable()
         .focusEffectDisabled()
         .onKeyPress(.downArrow) { move(1) }

@@ -7,6 +7,8 @@ extension Color {
     static let textPrimary = Color(nsColor: .labelColor)
     static let textSecondary = Color(nsColor: .secondaryLabelColor)
     static let textTertiary = Color(nsColor: .tertiaryLabelColor)
+    /// A seen title: quieter than unseen, still easy to read (secondary was too faint for a title).
+    static let textSeen = Color(nsColor: .labelColor).opacity(0.72)
     static let accentMarked = Color(nsColor: .controlAccentColor)
     static let statusBlocking = Color(nsColor: .systemRed)
     static let statusAttention = Color(nsColor: .systemOrange)
