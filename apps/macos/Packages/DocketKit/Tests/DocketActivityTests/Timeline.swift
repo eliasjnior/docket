@@ -8,7 +8,8 @@ struct Timeline {
     var viewer = ViewerContext(login: "you", teams: ["acme": ["backend"]])
     var state = PersistedState()
     var cache: SnapshotCache?
-    var config = Config()
+    /// Reminders are off by default; the timelines that exercise them need them on.
+    var config = Config(reminders: Config.Reminders(enabled: true))
     var now = Fixtures.now
 
     /// One poll. `discovery` defaults to: authored by you, requested when you are in `reviewRequests`, and

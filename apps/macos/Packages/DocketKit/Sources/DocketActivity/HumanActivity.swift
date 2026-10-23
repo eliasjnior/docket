@@ -64,3 +64,19 @@ public enum HumanActivity {
         return dates.max()
     }
 }
+
+extension PullRequestDetail {
+    /// The links in bots' conversation comments, the latest comment first, each link once and at most
+    /// `perBot` from one bot, which keeps a chatty bot from burying the preview (`PR Links`).
+    public func botLinks(extra: [String], perBot: Int = 8) -> [PullRequestLink] {
+        var seen = Set<URL>()
+        var counts: [String: Int] = [:]
+        return comments.filter { Bots.isBot($0.author, extra: extra) }.sorted { $0.createdAt > $1.createdAt }
+            .flatMap(\.links).filter { link in
+                let source = link.source ?? ""
+                guard counts[source, default: 0] < perBot, seen.insert(link.url).inserted else { return false }
+                counts[source, default: 0] += 1
+                return true
+            }
+    }
+}

@@ -17,22 +17,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         let environment = AppEnvironment()
         self.environment = environment
-        environment.handleNotifications { [weak self] route in
-            switch route {
-            case .open(let url):
-                NSWorkspace.shared.open(url)
-                // A notification about one pull request opens it, so the row is seen (spec §4).
-                let seen = environment.watch.items.filter { item in
-                    let base = item.pullRequest.url.absoluteString
-                    guard url.absoluteString.hasPrefix(base) else { return false }
-                    return url.absoluteString.dropFirst(base.count).first.map { "#/?".contains($0) } ?? true
-                }
-                Task { await environment.poller.markSeen(seen.map(\.id)) }
-            case .popover(let repository):
-                if let repository { self?.popover.show(repository: repository) }
-                self?.statusBar?.show()
-            }
-        }
+        environment.handleNotifications { [weak self] route in self?.follow(route) }
+        environment.cards.configure(cardActions(environment))
         let updateWindows = UpdateWindows(updates: environment.updates, info: environment.info)
         self.updateWindows = updateWindows
         settings = makeSettings(environment, windows: updateWindows)
@@ -54,6 +40,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// Where a notification or a card leads.
+    private func follow(_ route: NotificationRoute) {
+        guard let environment else { return }
+        switch route {
+        case .open(let url):
+            NSWorkspace.shared.open(url)
+            // A notification about one pull request opens it, so the row is seen (spec §4).
+            let seen = environment.watch.items.filter { item in
+                let base = item.pullRequest.url.absoluteString
+                guard url.absoluteString.hasPrefix(base) else { return false }
+                return url.absoluteString.dropFirst(base.count).first.map { "#/?".contains($0) } ?? true
+            }
+            Task { await environment.poller.markSeen(seen.map(\.id)) }
+        case .popover(let repository):
+            if let repository { popover.show(repository: repository) }
+            statusBar?.show()
+        }
+    }
+
+    private func cardActions(_ environment: AppEnvironment) -> CardActions {
+        let stack = environment.cards.stack
+        let watched = { (card: NotificationCard) in
+            environment.watch.items.first { $0.id == card.pullRequestID }?.pullRequest
+        }
+        return CardActions(
+            open: { [weak self] card in
+                stack.dismiss(card.id)
+                self?.follow(card.url.map(NotificationRoute.open) ?? .popover(repository: card.repository))
+            },
+            reviewWithAI: { card in
+                stack.dismiss(card.id)
+                guard let pullRequest = watched(card) else { return }
+                TerminalLauncher.run(
+                    .review, for: pullRequest, integrations: environment.configStore.config.integrations)
+            },
+            showMore: { [weak self] in
+                stack.dismissAll()
+                self?.statusBar?.show()
+            },
+            dismiss: { stack.dismiss($0) },
+            dismissAll: { stack.dismissAll() },
+            canReviewWithAI: { watched($0) != nil })
+    }
+
     private func makeSettings(_ environment: AppEnvironment, windows updateWindows: UpdateWindows)
         -> SettingsWindowController
     {
@@ -66,6 +96,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 watch: environment.watch, configStore: environment.configStore, account: account,
                 permission: environment.permission,
                 requestPermission: { Task { await environment.requestNotificationPermission() } },
+                showExampleCards: { environment.showExampleCards() },
                 checkRepository: { await environment.repositoryExists($0) }, updates: environment.updates,
                 info: environment.info, loginItem: environment.loginItem, dataFolder: environment.paths.root,
                 showWhatsNew: { updateWindows.showWhatsNew() }, showPrompt: { updateWindows.showPrompt() })).tabs

@@ -21,8 +21,18 @@ public struct ComposedNotification: Hashable, Sendable {
     public var repository: String?
     /// What a click opens (§7.4); `nil` opens the popover filtered to `repository`.
     public var url: URL?
-    /// For `Mute Reminders` on a single reminder.
+    /// For `Mute Reminders` on a single reminder, and for a card's `Review with AI`.
     public var pullRequestID: String?
+    /// The kind of the events; `nil` for reminders, the overflow line and the digest.
+    public var kind: EventKind?
+    public var decision: ReviewState?
+    public var merged: Bool?
+    /// Set for one event or one reminder: the card shows it under the title.
+    public var pullRequestTitle: String?
+    /// `via @acme/backend` for a request that reached you through a team.
+    public var via: String?
+    /// A card that stays until it is acted on: something somebody waits for you to do.
+    public var isSticky = false
 
     public static let titleLimit = 80
     public static let bodyLineLimit = 4
@@ -60,14 +70,24 @@ public struct ComposedNotification: Hashable, Sendable {
         body = Self.truncated(event.title)
         category = .single
         url = event.url
+        pullRequestID = event.pullRequestID
+        self.kind = kind
+        decision = event.decision
+        merged = event.merged
+        pullRequestTitle = event.title
+        isSticky = kind == .reviewRequested || kind == .mention
         switch kind {
         case .reviewRequested:
             title = String(localized: "\(actor) is waiting for your review", comment: "One review request")
             if let team = event.team {
-                body += " · " + String(localized: "via \(team.handle)", comment: "Team request")
+                via = String(localized: "via \(team.handle)", comment: "Team request")
+                body += " · " + (via ?? "")
             }
         case .reviewSubmitted:
-            title = Self.decision(actor, event.decision)
+            title =
+                event.decision == .approved
+                ? String(localized: "\(actor) approved your pull request", comment: "One approval")
+                : Self.decision(actor, event.decision)
         case .threadReply:
             title = String(localized: "\(actor) replied to your comment", comment: "One reply")
         case .commentAdded:
@@ -88,6 +108,8 @@ public struct ComposedNotification: Hashable, Sendable {
         let count = events.count
         subtitle = events.first?.repository ?? ""
         category = .group
+        self.kind = kind
+        isSticky = kind == .reviewRequested || kind == .mention
         let lines: [String]
         switch kind {
         case .reviewRequested:
@@ -128,6 +150,8 @@ public struct ComposedNotification: Hashable, Sendable {
             category = .reminder
             url = first.url
             pullRequestID = first.pullRequestID
+            pullRequestTitle = first.title
+            isSticky = true
         } else {
             title = String(localized: "\(reminders.count) reviews still waiting for you", comment: "Several reminders")
             subtitle = first.repository

@@ -88,14 +88,30 @@ struct DocketCLI {
     }
 
     static func report(_ output: PollOutput, costs: [(String, ResponseMeta)], viewerCost: Int) {
-        let items = Watch.items(cache: output.cache.pullRequests, config: Config(), state: output.state, now: Date())
-        for role in Role.allCases {
-            let rows = items.filter { $0.role == role }
+        let now = Date()
+        let items = Watch.items(cache: output.cache.pullRequests, config: Config(), state: output.state, now: now)
+        // In the popover's order: the latest activity first.
+        let sections = Sections(items)
+        let lists: [(Role, [WatchedPullRequest])] = [
+            (.reviewRequested, sections.reviewRequested.flatMap(\.items)), (.authored, sections.mine),
+            (.involved, sections.involved),
+        ]
+        for (role, rows) in lists {
             print("\n\(role.rawValue) (\(rows.count))")
-            for item in rows.sorted(by: { $0.pullRequest.ref < $1.pullRequest.ref }) {
+            for item in rows {
                 let draft = item.pullRequest.isDraft ? " draft" : ""
-                print("  \(item.pullRequest.ref)  \(item.status.rawValue)\(draft)  \(item.pullRequest.title)")
+                let status = item.status.rawValue + draft
+                let active = Age.short(now.timeIntervalSince(item.lastActivity))
+                print("  \(item.pullRequest.ref)  \(status)  active \(active)  \(item.pullRequest.title)")
             }
+        }
+        let described = items.reduce(0) { $0 + $1.pullRequest.links.count }
+        let fromBots = items.reduce(0) { $0 + $1.botLinks.count }
+        print("\nPR links: \(described) in descriptions, \(fromBots) in bot comments")
+        print("\nstacks (\(sections.mineStacks.count))")
+        for stack in sections.mineStacks {
+            let refs = stack.items.map { "#\($0.pullRequest.number)" }.joined(separator: " → ")
+            print("  \(stack.repository) on \(stack.base ?? "?"): \(refs)")
         }
         print("\nneeds you: \(Count.count(items))")
         print("\nevents (\(output.events.count))")

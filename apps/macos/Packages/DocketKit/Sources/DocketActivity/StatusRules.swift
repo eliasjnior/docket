@@ -16,12 +16,28 @@ public enum StatusRules {
         }
         if isChangesRequested(pullRequest) { return .changesRequested }
         switch pullRequest.checks {
-        case .pending, .expected: return .checksRunning
+        case .pending, .expected:
+            return waitingChecks(pullRequest).isEmpty ? .checksRunning : .checksWaiting
         default: break
         }
         if isApproved(pullRequest) { return .readyToMerge }
         if !pullRequest.reviewRequests.isEmpty { return .waitingForReview }
         return .noReviewers
+    }
+
+    /// The checks a person has to start or approve: none while any check run is still going (§3.2).
+    public static func waitingChecks(_ pullRequest: PullRequest) -> [WaitingCheck] {
+        guard let pending = pullRequest.pendingChecks, pending.running == 0 else { return [] }
+        return pending.waiting.filter { asksAPerson($0, on: pullRequest) }
+    }
+
+    /// An approval always waits for a person. A pending commit status does when its link leads to the pull
+    /// request's own page, as a gate that wants an `/e2e` comment does; a link elsewhere, or none, is an
+    /// external CI still running, however long it takes.
+    public static func asksAPerson(_ check: WaitingCheck, on pullRequest: PullRequest) -> Bool {
+        if check.isApproval { return true }
+        guard let url = check.url, url.host == pullRequest.url.host else { return false }
+        return url.path == pullRequest.url.path || url.path.hasPrefix(pullRequest.url.path + "/")
     }
 
     public static func isApproved(_ pullRequest: PullRequest) -> Bool {

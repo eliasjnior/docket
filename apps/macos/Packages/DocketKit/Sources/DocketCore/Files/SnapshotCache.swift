@@ -46,10 +46,15 @@ public struct CachedPullRequest: Codable, Hashable, Sendable, Identifiable {
     /// Whether a detail was ever read into `activity`. A cache written before stamps existed has none, and the
     /// next poll reads those details once instead of judging the pull requests stale (§3.5).
     public var activityRead: Bool
+    /// Links in bots' comments from the last detail read, the latest comment first.
+    public var botLinks: [PullRequestLink]
+    /// Whether a detail was read since `botLinks` existed: the next poll reads the others once.
+    public var linksRead: Bool
 
     public init(
         pullRequest: PullRequest, role: Role, request: RequestInfo? = nil, commenters: [String] = [],
-        activity: [ActivityStamp] = [], activityRead: Bool = false
+        activity: [ActivityStamp] = [], activityRead: Bool = false, botLinks: [PullRequestLink] = [],
+        linksRead: Bool = false
     ) {
         self.pullRequest = pullRequest
         self.role = role
@@ -57,6 +62,8 @@ public struct CachedPullRequest: Codable, Hashable, Sendable, Identifiable {
         self.commenters = commenters
         self.activity = activity
         self.activityRead = activityRead
+        self.botLinks = botLinks
+        self.linksRead = linksRead
     }
 
     public init(from decoder: Decoder) throws {
@@ -67,6 +74,8 @@ public struct CachedPullRequest: Codable, Hashable, Sendable, Identifiable {
         commenters = c.value(.commenters, default: [])
         activity = c.value(.activity, default: [])
         activityRead = c.value(.activityRead, default: false)
+        botLinks = c.value(.botLinks, default: [])
+        linksRead = c.value(.linksRead, default: false)
     }
 
     public var id: String { pullRequest.id }

@@ -58,5 +58,12 @@ struct StoreTests {
         #expect(store.isStale(now: now.addingTimeInterval(121)))
         configStore.update { $0.count.includeReviewRequests = false }
         #expect(store.count == 1)
+        // The rows are kept between reads, and follow a new snapshot.
+        #expect(store.sections() == store.sections())
+        store.apply(
+            WatchSnapshot(
+                cache: SnapshotCache(fetchedAt: now, viewerLogin: "you", pullRequests: [mine]), account: .ready))
+        #expect(store.items.map(\.id) == ["PR_2"])
+        #expect(store.sections().reviewRequested.isEmpty)
     }
 }

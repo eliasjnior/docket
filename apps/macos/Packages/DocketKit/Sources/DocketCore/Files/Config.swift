@@ -21,6 +21,10 @@ public struct Config: Codable, Hashable, Sendable {
     public var triage: Triage
     /// How *Mine* is laid out: stacked sections or a board (spec §7).
     public var mineLayout: MineLayout
+    /// The sections as tabs, one at a time, or as columns side by side in a wider popover.
+    public var popoverLayout: PopoverLayout
+    /// Which *Mine* group a draft with a conflict goes to.
+    public var conflictedDrafts: ConflictedDrafts
     public var integrations: Integrations
 
     public init(
@@ -29,7 +33,8 @@ public struct Config: Codable, Hashable, Sendable {
         ignored: [String: IgnoreEntry] = [:], botAllowlist: [String] = [], ghPath: String? = nil,
         launchAtLogin: Bool? = nil, updates: Updates = Updates(),
         mutes: [String: MuteEntry] = [:], shortcut: Shortcut = .controlOptionCommandD, triage: Triage = Triage(),
-        mineLayout: MineLayout = .list, integrations: Integrations = Integrations()
+        mineLayout: MineLayout = .list, popoverLayout: PopoverLayout = .tabs,
+        conflictedDrafts: ConflictedDrafts = .draft, integrations: Integrations = Integrations()
     ) {
         version = Self.currentVersion
         self.selection = selection
@@ -46,6 +51,8 @@ public struct Config: Codable, Hashable, Sendable {
         self.shortcut = shortcut
         self.triage = triage
         self.mineLayout = mineLayout
+        self.popoverLayout = popoverLayout
+        self.conflictedDrafts = conflictedDrafts
         self.integrations = integrations
     }
 
@@ -66,6 +73,8 @@ public struct Config: Codable, Hashable, Sendable {
         shortcut = c.value(.shortcut, default: .controlOptionCommandD)
         triage = c.value(.triage, default: Triage())
         mineLayout = c.value(.mineLayout, default: .list)
+        popoverLayout = c.value(.popoverLayout, default: .tabs)
+        conflictedDrafts = c.value(.conflictedDrafts, default: .draft)
         integrations = c.value(.integrations, default: Integrations())
     }
 
@@ -106,18 +115,6 @@ public struct Config: Codable, Hashable, Sendable {
         public func clone(of repository: String) -> String? {
             clones.first { $0.key.caseInsensitiveCompare(repository) == .orderedSame }?.value
         }
-    }
-
-    public enum MineLayout: String, Codable, Hashable, Sendable, CaseIterable {
-        case list
-        case board
-    }
-
-    public enum Shortcut: String, Codable, Hashable, Sendable, CaseIterable {
-        case off
-        case controlOptionCommandD
-        case optionCommandD
-        case controlOptionD
     }
 
     /// Reads a `config.json` exported from another install, through the same decoder as the file on disk
@@ -207,59 +204,13 @@ public struct Config: Codable, Hashable, Sendable {
         }
     }
 
-    public struct Notifications: Codable, Hashable, Sendable {
-        public var reviewRequested: Bool
-        public var reviewSubmitted: Bool
-        public var commentAdded: Bool
-        public var threadReply: Bool
-        public var checksFailed: Bool
-        public var closedByOther: Bool
-        public var mention: Bool
-
-        public init(
-            reviewRequested: Bool = true, reviewSubmitted: Bool = true, commentAdded: Bool = true,
-            threadReply: Bool = true, checksFailed: Bool = true, closedByOther: Bool = true, mention: Bool = true
-        ) {
-            self.reviewRequested = reviewRequested
-            self.reviewSubmitted = reviewSubmitted
-            self.commentAdded = commentAdded
-            self.threadReply = threadReply
-            self.checksFailed = checksFailed
-            self.closedByOther = closedByOther
-            self.mention = mention
-        }
-
-        public init(from decoder: Decoder) throws {
-            let c = try decoder.container(keyedBy: CodingKeys.self)
-            reviewRequested = c.value(.reviewRequested, default: true)
-            reviewSubmitted = c.value(.reviewSubmitted, default: true)
-            commentAdded = c.value(.commentAdded, default: true)
-            threadReply = c.value(.threadReply, default: true)
-            checksFailed = c.value(.checksFailed, default: true)
-            closedByOther = c.value(.closedByOther, default: true)
-            mention = c.value(.mention, default: true)
-        }
-
-        public func isEnabled(_ kind: EventKind) -> Bool {
-            switch kind {
-            case .reviewRequested: reviewRequested
-            case .reviewSubmitted: reviewSubmitted
-            case .commentAdded: commentAdded
-            case .threadReply: threadReply
-            case .checksFailed: checksFailed
-            case .closedByOther: closedByOther
-            case .mention: mention
-            }
-        }
-    }
-
     public struct Reminders: Codable, Hashable, Sendable {
         public static let allowedIntervals = [15, 30, 60, 120, 240, 480]
         public var enabled: Bool
         public var intervalMinutes: Int
         public var quietHours: QuietHours
 
-        public init(enabled: Bool = true, intervalMinutes: Int = 60, quietHours: QuietHours = QuietHours()) {
+        public init(enabled: Bool = false, intervalMinutes: Int = 60, quietHours: QuietHours = QuietHours()) {
             self.enabled = enabled
             self.intervalMinutes = intervalMinutes
             self.quietHours = quietHours
@@ -267,7 +218,7 @@ public struct Config: Codable, Hashable, Sendable {
 
         public init(from decoder: Decoder) throws {
             let c = try decoder.container(keyedBy: CodingKeys.self)
-            enabled = c.value(.enabled, default: true)
+            enabled = c.value(.enabled, default: false)
             let minutes = c.value(.intervalMinutes, default: 60)
             intervalMinutes = Self.allowedIntervals.contains(minutes) ? minutes : 60
             quietHours = c.value(.quietHours, default: QuietHours())
@@ -337,5 +288,29 @@ public struct Config: Codable, Hashable, Sendable {
             self.ref = ref
             self.ignoredAt = ignoredAt
         }
+    }
+}
+
+extension Config {
+    public enum MineLayout: String, Codable, Hashable, Sendable, CaseIterable {
+        case list
+        case board
+    }
+
+    public enum PopoverLayout: String, Codable, Hashable, Sendable, CaseIterable {
+        case tabs
+        case columns
+    }
+
+    public enum ConflictedDrafts: String, Codable, Hashable, Sendable, CaseIterable {
+        case draft
+        case blocked
+    }
+
+    public enum Shortcut: String, Codable, Hashable, Sendable, CaseIterable {
+        case off
+        case controlOptionCommandD
+        case optionCommandD
+        case controlOptionD
     }
 }

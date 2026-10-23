@@ -17,14 +17,37 @@
     "%@ approved" : {
       "comment" : "Review decision\nVoiceOver: reviewer"
     },
+    "%@ approved your pull request" : {
+      "comment" : "One approval"
+    },
+    "%@ are waiting" : {
+      "comment" : "Checks waiting reason, several checks"
+    },
     "%@ closed your pull request" : {
       "comment" : "Closed by someone else"
     },
     "%@ commented" : {
       "comment" : "One comment on your pull request\nReview decision\nVoiceOver: reviewer"
     },
+    "%@ is waiting" : {
+      "comment" : "Checks waiting reason"
+    },
+    "%@ is waiting for an approval" : {
+      "comment" : "Checks waiting reason"
+    },
     "%@ is waiting for your review" : {
       "comment" : "One review request"
+    },
+    "%@ is waiting: %@" : {
+      "comment" : "Checks waiting reason",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ is waiting: %2$@"
+          }
+        }
+      }
     },
     "%@ mentioned you" : {
       "comment" : "One mention"
@@ -55,14 +78,45 @@
     "%@ requires SAML authorization." : {
       "comment" : "SAML banner"
     },
+    "%@." : {
+      "comment" : "Failed poll reason: an unexpected error, as reported"
+    },
     "%lld comments on your pull requests" : {
       "comment" : "Digest line\nSeveral comments"
     },
     "%lld days without human activity" : {
       "comment" : "Stale threshold"
     },
+    "%lld files" : {
+      "comment" : "Stack header: files changed across the stack"
+    },
+    "%lld lines added and %lld deleted in %lld files" : {
+      "comment" : "Tooltip of a pull request's size",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld lines added and %2$lld deleted in %3$lld files"
+          }
+        }
+      }
+    },
+    "%lld lines added, %lld deleted." : {
+      "comment" : "VoiceOver: size",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld lines added, %2$lld deleted."
+          }
+        }
+      }
+    },
     "%lld mentions" : {
       "comment" : "Digest line\nSeveral mentions"
+    },
+    "%lld more in Docket" : {
+      "comment" : "Card stack footer"
     },
     "%lld more updates in %lld repositories" : {
       "comment" : "The fifth notification when a poll has more than five",
@@ -71,6 +125,28 @@
           "stringUnit" : {
             "state" : "new",
             "value" : "%1$lld more updates in %2$lld repositories"
+          }
+        }
+      }
+    },
+    "%lld of %lld in a stack" : {
+      "comment" : "VoiceOver: stack position",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld in a stack"
+          }
+        }
+      }
+    },
+    "%lld of %lld in a stack, from the bottom" : {
+      "comment" : "Tooltip of the stack badge",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld in a stack, from the bottom"
           }
         }
       }
@@ -92,6 +168,9 @@
     },
     "%lld reviews still waiting for you" : {
       "comment" : "Several reminders"
+    },
+    "%lld seconds" : {
+      "comment" : "Card lifetime"
     },
     "+ Filter" : {
       "comment" : "Add filter button"
@@ -176,6 +255,9 @@
     "Also bots" : {
       "comment" : "Extra bot logins field"
     },
+    "Approved" : {
+      "comment" : "Card kind"
+    },
     "Authorize" : {
       "comment" : "SAML banner button\nSAML button"
     },
@@ -206,8 +288,14 @@
     "Cancel" : {
       "comment" : "Repository picker"
     },
+    "Cards leave after a few seconds, like a banner; the pointer on a card holds it." : {
+      "comment" : "Notification style caption"
+    },
+    "Cards stay for" : {
+      "comment" : "Card lifetime picker"
+    },
     "Changes requested" : {
-      "comment" : "Blocked reason\nStatus chip"
+      "comment" : "Blocked reason\nCard kind\nStatus chip"
     },
     "Changes requested by %@" : {
       "comment" : "Blocked reason"
@@ -228,7 +316,7 @@
       "comment" : "Repository picker"
     },
     "Checks failed" : {
-      "comment" : "Checks failed on your pull request"
+      "comment" : "Card kind\nChecks failed on your pull request"
     },
     "Checks failed on %lld pull requests" : {
       "comment" : "Digest line\nSeveral failing checks"
@@ -241,6 +329,9 @@
     },
     "Checks running" : {
       "comment" : "Status chip"
+    },
+    "Checks waiting" : {
+      "comment" : "Status chip: a check waits for a person"
     },
     "Choose Folder" : {
       "comment" : "Clones button"
@@ -263,8 +354,20 @@
     "Clear filter" : {
       "comment" : "Filter chip"
     },
+    "Closed" : {
+      "comment" : "Card kind"
+    },
     "Collapsed" : {
       "comment" : "Group header state"
+    },
+    "Columns" : {
+      "comment" : "Popover layout"
+    },
+    "Columns show Review requested, Mine and Involved side by side in a popover three times as wide." : {
+      "comment" : "Popover layout caption"
+    },
+    "Comment" : {
+      "comment" : "Card kind"
     },
     "Comment on your pull request" : {
       "comment" : "Notification kind"
@@ -290,8 +393,16 @@
     "Could not check for updates. %@" : {
       "comment" : "Update error"
     },
-    "Couldn't update. Showing data from %@." : {
-      "comment" : "Failed poll banner"
+    "Couldn't update: %@ Showing data from %@. Click to try again." : {
+      "comment" : "Failed poll, on hover: the reason, then when the data shown is from",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Couldn't update: %1$@ Showing data from %2$@. Click to try again."
+          }
+        }
+      }
     },
     "Count and notify drafts" : {
       "comment" : "Triage setting"
@@ -317,14 +428,26 @@
     "Deliver Now" : {
       "comment" : "Focus hold banner button"
     },
+    "Description" : {
+      "comment" : "PR Links section"
+    },
+    "Dismiss" : {
+      "comment" : "Card button"
+    },
+    "Dismiss All" : {
+      "comment" : "Card stack footer"
+    },
     "Docket" : {
-      "comment" : "Focus filter title"
+      "comment" : "Card kind: several updates\nFocus filter title"
     },
     "Docket %@ is available" : {
       "comment" : "Update prompt title"
     },
     "Docket Settings" : {
       "comment" : "Settings window title"
+    },
+    "Docket cards" : {
+      "comment" : "Notification style"
     },
     "Docket needs %@ to read your pull requests and teams." : {
       "comment" : "Full screen body"
@@ -343,6 +466,9 @@
     },
     "Drafts" : {
       "comment" : "Review requested sub-tab"
+    },
+    "Drafts with a conflict go to" : {
+      "comment" : "Conflicted drafts picker"
     },
     "Every" : {
       "comment" : "Reminder interval"
@@ -377,14 +503,29 @@
     "GitHub CLI token is missing scopes" : {
       "comment" : "Status item tooltip reason"
     },
+    "GitHub could not be reached; the connection dropped or timed out." : {
+      "comment" : "Failed poll reason"
+    },
+    "GitHub had a server error (HTTP %lld), usually brief." : {
+      "comment" : "Failed poll reason"
+    },
     "GitHub refused the download." : {
       "comment" : "Update error reason"
+    },
+    "GitHub refused the request (HTTP %lld)." : {
+      "comment" : "Failed poll reason"
     },
     "GitHub refused the request. Check that gh is signed in." : {
       "comment" : "Update error"
     },
+    "GitHub sent an answer Docket could not read." : {
+      "comment" : "Failed poll reason"
+    },
     "Granted" : {
       "comment" : "Scope state"
+    },
+    "Hide Involved" : {
+      "comment" : "Column header button"
     },
     "Hold Docket's notifications until this Focus ends, then deliver one summary per repository." : {
       "comment" : "Focus filter description"
@@ -410,6 +551,9 @@
     "Ignored" : {
       "comment" : "Tab"
     },
+    "Ignored (%lld)" : {
+      "comment" : "Column header button"
+    },
     "Import" : {
       "comment" : "Import settings button"
     },
@@ -428,6 +572,9 @@
     "Involved" : {
       "comment" : "Tab"
     },
+    "Keep review requests and mentions until I act on them" : {
+      "comment" : "Notification setting"
+    },
     "Keyboard" : {
       "comment" : "General settings section"
     },
@@ -437,14 +584,36 @@
     "Labels: %@." : {
       "comment" : "VoiceOver: GitHub labels"
     },
+    "Last activity %@ ago · opened %@ ago" : {
+      "comment" : "Tooltip of a row's times",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last activity %1$@ ago · opened %2$@ ago"
+          }
+        }
+      }
+    },
+    "Last activity %@ ago." : {
+      "comment" : "VoiceOver: time since the last human activity"
+    },
     "Last checked" : {
       "comment" : "Updates setting"
     },
-    "Last update failed at %@" : {
-      "comment" : "Status item tooltip"
+    "Last update failed at %@: %@" : {
+      "comment" : "Status item tooltip",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Last update failed at %1$@: %2$@"
+          }
+        }
+      }
     },
     "Later" : {
-      "comment" : "Update prompt button"
+      "comment" : "Card button: dismiss a review request for now\nUpdate prompt button"
     },
     "List" : {
       "comment" : "Mine layout"
@@ -464,11 +633,17 @@
     "Mark as Seen" : {
       "comment" : "Row context menu"
     },
+    "Mention" : {
+      "comment" : "Card kind"
+    },
     "Mention of you" : {
       "comment" : "Notification kind"
     },
     "Menu bar count" : {
       "comment" : "General settings section"
+    },
+    "Merged" : {
+      "comment" : "Card kind"
     },
     "Mine" : {
       "comment" : "General settings section\nTab"
@@ -490,6 +665,9 @@
     },
     "No drafts waiting on you." : {
       "comment" : "Empty state"
+    },
+    "No human activity for %lld days" : {
+      "comment" : "Tooltip of the stale chip on a stack"
     },
     "No open pull requests of yours in the watched repositories." : {
       "comment" : "Empty state"
@@ -582,10 +760,13 @@
       "comment" : "Selection mode"
     },
     "Open" : {
-      "comment" : "Notification action"
+      "comment" : "Card button\nNotification action"
+    },
+    "Open %@" : {
+      "comment" : "Row context menu: a waiting check"
     },
     "Open Docket" : {
-      "comment" : "Notification action"
+      "comment" : "Card button\nNotification action"
     },
     "Open Docket at login?" : {
       "comment" : "Launch at login banner"
@@ -620,6 +801,9 @@
     "Organizations needing SAML authorization" : {
       "comment" : "Account settings section"
     },
+    "PR Links" : {
+      "comment" : "Row context menu: links in the description and bot comments"
+    },
     "Paused by GitHub's rate limit until %@" : {
       "comment" : "Status item tooltip"
     },
@@ -629,7 +813,13 @@
     "Permission" : {
       "comment" : "Notifications setting"
     },
+    "Play a sound" : {
+      "comment" : "Notification setting"
+    },
     "Poll interval" : {
+      "comment" : "General settings section"
+    },
+    "Popover" : {
       "comment" : "General settings section"
     },
     "Put {title} inside quotes: a title starting with - would be read as an option." : {
@@ -671,6 +861,9 @@
     "Remove clone" : {
       "comment" : "Clones button"
     },
+    "Reply" : {
+      "comment" : "Card kind"
+    },
     "Reply to your comment" : {
       "comment" : "Notification kind"
     },
@@ -689,14 +882,20 @@
     "Reset to Default" : {
       "comment" : "Command button"
     },
+    "Review" : {
+      "comment" : "Card button: open the pull request"
+    },
     "Review on your pull request" : {
       "comment" : "Notification kind"
     },
     "Review requested" : {
-      "comment" : "Notification kind\nTab"
+      "comment" : "Card kind\nNotification kind\nTab"
     },
     "Review with AI" : {
-      "comment" : "AI settings section\nRow context menu"
+      "comment" : "AI settings section\nCard button\nRow context menu"
+    },
+    "Reviewed" : {
+      "comment" : "Card kind"
     },
     "Reviewers: %@." : {
       "comment" : "VoiceOver: reviewers"
@@ -716,6 +915,21 @@
     "Show Data Folder" : {
       "comment" : "About button"
     },
+    "Show Example" : {
+      "comment" : "Notification style button"
+    },
+    "Show Involved" : {
+      "comment" : "Column header button"
+    },
+    "Show Involved, %lld" : {
+      "comment" : "Folded column"
+    },
+    "Show as" : {
+      "comment" : "Notification style setting"
+    },
+    "Show the sections as" : {
+      "comment" : "Popover layout picker"
+    },
     "Show your pull requests as" : {
       "comment" : "Mine layout picker"
     },
@@ -731,8 +945,14 @@
     "Software Update" : {
       "comment" : "Window title"
     },
+    "Stack of %lld" : {
+      "comment" : "Board stack header"
+    },
+    "Stack of %lld pull requests" : {
+      "comment" : "Stack block header"
+    },
     "Stale" : {
-      "comment" : "Review requested sub-tab"
+      "comment" : "Review requested sub-tab\nStack header: no human activity for the stale period"
     },
     "Stale after" : {
       "comment" : "Triage setting"
@@ -740,11 +960,17 @@
     "Status" : {
       "comment" : "Filter dimension\nUpdates setting"
     },
+    "Still waiting" : {
+      "comment" : "Card kind: a reminder"
+    },
     "Stop Ignoring" : {
       "comment" : "Row context menu"
     },
     "Summarize with AI" : {
       "comment" : "AI settings section\nRow context menu"
+    },
+    "Tabs" : {
+      "comment" : "Popover layout"
     },
     "Terminal" : {
       "comment" : "AI settings section"
@@ -774,7 +1000,7 @@
       "comment" : "Focus setting"
     },
     "Try Again" : {
-      "comment" : "Failed poll banner button\nFull screen button"
+      "comment" : "Full screen button"
     },
     "Turn On" : {
       "comment" : "Launch at login banner button"
@@ -853,6 +1079,12 @@
     },
     "it needs macOS %@ or later." : {
       "comment" : "Update error reason"
+    },
+    "macOS notifications" : {
+      "comment" : "Notification style"
+    },
+    "on %@" : {
+      "comment" : "Stack header: the branch the stack merges into"
     },
     "owner/name or organization" : {
       "comment" : "Repository picker field"

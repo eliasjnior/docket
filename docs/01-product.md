@@ -60,6 +60,8 @@ the document that specifies it.
 | **FR-22** | Open pull requests you have commented on or reviewed, updated in the last 30 days, are watched with role `involved` | P0 |
 | **FR-23** | Each pull request has exactly one role, by precedence `authored` > `reviewRequested` > `involved` | P0 |
 | **FR-24** | Archived repositories are never watched | P0 |
+| **FR-25** | Each pull request shows the lines it adds and deletes, with the files changed in a tooltip, and is marked `L` past 400 lines and `XL` past 1000: a large pull request waits longer for review (`05-design.md` §6.1) | P1 |
+| **FR-26** | Pull requests stacked on one another — one's base branch another's head branch — are shown together, bottom to top, each with its position, and your stacks are a group of their own in *Mine* (`02-activity-detection.md` §3.7) | P1 |
 
 The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 
@@ -75,13 +77,15 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 | **FR-35** | Authored pull requests show the requested reviewers and the latest decision of each reviewer | P0 |
 | **FR-36** | *Review requested* splits into **Humans**, **Bots**, **Drafts** and **Stale** (`02-activity-detection.md` §3.6); every request is in exactly one | P0 |
 | **FR-37** | Whether Bots, Drafts and Stale count in the menu bar and notify are settings; by default bots count but do not notify, and drafts and stale pull requests do neither | P0 |
+| **FR-38** | A pull request whose checks wait for a person — a commit status left pending after every check run finished, or a check run waiting for an approval — shows `Checks waiting` with what it waits for, instead of `Checks running`, and counts as blocked (`02-activity-detection.md` §3.2) | P1 |
+| **FR-39** | Each pull request also shows the time since its last human activity — a commit, a force push, a review, a comment or a request — and every list is ordered by it, most recent first (`02-activity-detection.md` §3.5) | P1 |
 
 ### 3.4 Menu bar and popover
 
 | ID | Requirement | Priority |
 |---|---|---|
 | **FR-40** | One status item shows the "needs you" count (`02-activity-detection.md` §4), and no number when it is zero | P0 |
-| **FR-41** | The popover has three sections — *Review requested* grouped by repository, *Mine*, *Involved* collapsed by default — each sorted as in `05-design.md` | P0 |
+| **FR-41** | The popover has three sections — *Review requested* grouped by repository, *Mine*, *Involved* collapsed by default — each sorted as in `05-design.md`; a setting, off by default, shows them side by side as columns instead of tabs (`05-design.md` §5.1) | P0 |
 | **FR-42** | Clicking a row opens the pull request in the default browser | P0 |
 | **FR-43** | A row's context menu copies the URL and `owner/name#number`, filters to the row's repository, and marks it seen | P0 |
 | **FR-44** | The popover shows the last cached snapshot immediately, with an "updated N min ago" banner when it is older than two poll intervals | P0 |
@@ -111,8 +115,9 @@ The rules are in [`02-activity-detection.md`](02-activity-detection.md) §2.
 | **FR-63** | A single pull request can be muted, from its context menu or from a reminder, in one of two scopes: **reminders only**, or **all notifications**. It stays in the list and in the count, and the mute holds until it is undone (`02-activity-detection.md` §5.7) | P0 |
 | **FR-64** | A mention of you in a comment is its own event kind | P1 |
 | **FR-65** | A review request still pending one reminder interval after it was made sends a reminder, and so does every further interval while it stays pending (D-23, `02` §5.7) | P0 |
-| **FR-66** | Reminders have a global switch and a configurable interval — `15 minutes` to `8 hours` — on by default at `1 hour` | P0 |
+| **FR-66** | Reminders have a global switch and a configurable interval — `15 minutes` to `8 hours` — off by default, at `1 hour` when turned on: the review request itself already notifies once | P0 |
 | **FR-67** | Reminder quiet hours: a daily window in local time, which may cross midnight, during which no reminder is sent; a reminder due inside it is sent at the first poll after it ends. Off by default, `22:00`–`08:00` when first turned on (D-24) | P0 |
+| **FR-68** | Notifications show as Docket's own cards in the top right corner by default, with the repository, the pull request and its actions (`Review`, `Review with AI`, `Later`); cards leave by themselves after a few seconds like a banner, and a setting keeps review requests and mentions until acted on. macOS notifications remain a setting (`05-design.md` §8.1) | P1 |
 | **FR-69** | A Docket Focus filter, added by the user to any Focus in System Settings, holds notifications while that Focus is on and delivers them when it ends as one digest per repository; reminders are not sent while holding (D-25, `02` §7.5) | P1 |
 
 The rules are in [`02-activity-detection.md`](02-activity-detection.md) §5 and §7.

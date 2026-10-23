@@ -9,6 +9,11 @@ struct SectionsView: View {
     @Bindable var model: PopoverModel
     let actions: PopoverActions
     let now: Date
+    /// The section to show; `nil` follows the selected tab. Columns pass theirs.
+    var section: PopoverModel.Section?
+
+    private var tab: PopoverModel.Section { section ?? model.tab }
+    private var isBoard: Bool { watch.config.mineLayout == .board }
 
     var body: some View {
         let sections = watch.sections(filter: model.filter)
@@ -23,7 +28,7 @@ struct SectionsView: View {
                 )
                 .padding(.horizontal, 16)
             }
-            switch model.tab {
+            switch tab {
             case .reviewRequested:
                 let groups = sections.reviewRequested(model.triage)
                 if groups.isEmpty { EmptyLine(text: emptyText(.reviewRequested)) }
@@ -33,26 +38,21 @@ struct SectionsView: View {
                         if !collapsed { rows(group.items, .reviewRequested) }
                     } header: {
                         RepositoryHeader(repository: group.repository, count: group.items.count, collapsed: collapsed) {
-                            model.toggle(repository: group.repository)
+                            withMotion { model.toggle(repository: group.repository) }
                         }
                     }
                 }
                 notShown(.reviewRequested)
             case .mine:
                 if sections.mine.isEmpty { EmptyLine(text: emptyText(.mine)) }
-                if watch.config.mineLayout == .board {
-                    MineBoard(groups: sections.mineGroups, now: now, actions: actions.row, focusedID: model.focusedID)
+                if isBoard {
+                    MineBoard(
+                        groups: sections.mineListGroups, model: model, now: now,
+                        staleAfterDays: watch.config.triage.staleAfterDays, actions: actions.row)
                 } else {
-                    ForEach(sections.mineGroups) { group in
-                        let collapsed = model.collapsedMineGroups.contains(group.kind)
-                        Section {
-                            if !collapsed { rows(group.items, .mine) }
-                        } header: {
-                            MineHeader(kind: group.kind, count: group.items.count, collapsed: collapsed) {
-                                model.toggle(group.kind)
-                            }
-                        }
-                    }
+                    // Stacks between Blocked and Draft: each is a unit of its own, whatever its rows' statuses.
+                    // A stack is a block among its group's rows (`Sections.kind(of:)`), so it folds with it.
+                    ForEach(sections.mineListGroups) { mineGroup($0) }
                 }
                 notShown(.authored)
             case .involved:
@@ -64,7 +64,7 @@ struct SectionsView: View {
                 }
                 rows(sections.ignored, .ignored)
             }
-            if !model.filter.isEmpty, model.tab != .ignored {
+            if !model.filter.isEmpty, tab != .ignored {
                 Button(String(localized: "Clear Filters", comment: "Filter button")) { model.filter = PopoverFilter() }
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
@@ -72,13 +72,54 @@ struct SectionsView: View {
         }
     }
 
-    /// Rows with a hairline between each.
+    private func mineGroup(_ group: Sections.MineGroup) -> some View {
+        let collapsed = model.collapsedMineGroups.contains(group.kind)
+        return Section {
+            if !collapsed { rows(group.items, .mine) }
+        } header: {
+            MineHeader(kind: group.kind, count: group.items.count, collapsed: collapsed) {
+                withMotion { model.toggle(group.kind) }
+            }
+        }
+    }
+
+    /// Each row in a box of its own; a stack's rows, already together, share one block.
     private func rows(_ items: [WatchedPullRequest], _ placement: RowView.Placement) -> some View {
-        ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-            RowView(
-                item: item, placement: placement, now: now, actions: actions.row, isFocused: model.focusedID == item.id)
-            if index < items.count - 1 {
-                Divider().padding(.leading, 29)
+        let segments = RowSegment.split(items)
+        return Group {
+            if !segments.isEmpty { edge }
+            ForEach(segments) { segment in
+                switch segment {
+                case .row(let item):
+                    row(item, placement).modifier(RowBox())
+                case .stack(let stack):
+                    stackBlock(stack, placement)
+                }
+            }
+            if !segments.isEmpty { edge }
+        }
+    }
+
+    /// The other half of a box's inset at either end of a list, so the first and last box sit as far from the
+    /// headers as from the sides.
+    private var edge: some View {
+        Color.clear.frame(height: RowBox.inset / 2)
+    }
+
+    private func row(_ item: WatchedPullRequest, _ placement: RowView.Placement) -> some View {
+        RowView(item: item, placement: placement, now: now, actions: actions.row, isFocused: model.focusedID == item.id)
+    }
+
+    private func stackBlock(_ stack: Stack, _ placement: RowView.Placement) -> some View {
+        StackBlock(
+            stack: stack, now: now, staleAfterDays: watch.config.triage.staleAfterDays,
+            collapsed: model.collapsedStacks.contains(stack.id)
+        ) {
+            withMotion { model.toggle(stack: stack.id) }
+        } rows: {
+            ForEach(Array(stack.items.enumerated()), id: \.element.id) { index, item in
+                row(item, placement)
+                if index < stack.items.count - 1 { Divider() }
             }
         }
     }

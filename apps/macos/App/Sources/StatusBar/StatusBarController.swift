@@ -98,10 +98,11 @@ final class StatusBarController: NSObject, NSPopoverDelegate {
                 localized: "Paused by GitHub's rate limit until \(Banners.time(until, now: .now))",
                 comment: "Status item tooltip")
             title.append(Self.count(count, font: font))
-        case (_, .failed(let at)) where watch.isStale(now: .now):
+        case (_, .failed(let at, let reason)) where watch.isStale(now: .now):
             dimmed = false
             tooltip = String(
-                localized: "Last update failed at \(Banners.time(at, now: .now))", comment: "Status item tooltip")
+                localized: "Last update failed at \(Banners.time(at, now: .now)): \(PollStatusIcon.explain(reason))",
+                comment: "Status item tooltip")
             title.append(Self.count(count, font: font))
             title.append(Self.attention(font: font))
         default:

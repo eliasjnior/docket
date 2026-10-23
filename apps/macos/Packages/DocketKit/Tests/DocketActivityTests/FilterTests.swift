@@ -49,7 +49,12 @@ struct FilterTests {
     }
 
     @Test func mineKinds() {
-        #expect(MineKind.of(item("D", status: .conflict, role: .authored, isDraft: true)) == .draft)
+        let conflicted = item("D", status: .conflict, role: .authored, isDraft: true)
+        #expect(MineKind.of(conflicted) == .draft)
+        #expect(MineKind.of(conflicted, conflictedDrafts: .blocked) == .blocked)
+        let failing = item("D", status: .checksFailing, role: .authored, isDraft: true)
+        #expect(MineKind.of(failing, conflictedDrafts: .blocked) == .draft)
+        #expect(Sections([conflicted], conflictedDrafts: .blocked).mineGroups.map(\.kind) == [.blocked])
         for status in [Status.conflict, .checksFailing, .changesRequested] {
             #expect(MineKind.of(item("B", status: status, role: .authored)) == .blocked)
         }

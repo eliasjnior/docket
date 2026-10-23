@@ -15,12 +15,21 @@ enum RowAccessibility {
             String(
                 localized: "\(pullRequest.repository) number \(pullRequest.number).", comment: "VoiceOver: reference"))
         parts.append(timeClause(item, placement: placement, now: now))
+        parts.append(
+            String(
+                localized: "Last activity \(spoken(now.timeIntervalSince(item.lastActivity))) ago.",
+                comment: "VoiceOver: time since the last human activity"))
         if let team = item.request?.team {
             parts.append(
                 String(localized: "Requested from team \(spokenHandle(team.handle)).", comment: "VoiceOver: team"))
         }
         if placement != .mine, let author = pullRequest.author?.login {
             parts.append(String(localized: "By \(author).", comment: "VoiceOver: author"))
+        }
+        if let additions = pullRequest.additions, let deletions = pullRequest.deletions {
+            parts.append(
+                String(
+                    localized: "\(additions) lines added, \(deletions) deleted.", comment: "VoiceOver: size"))
         }
         if let reviewers = reviewersClause(item) { parts.append(reviewers) }
         if !pullRequest.labels.isEmpty {

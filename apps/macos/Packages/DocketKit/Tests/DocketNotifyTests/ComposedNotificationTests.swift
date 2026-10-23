@@ -35,6 +35,25 @@ struct ComposedNotificationTests {
         #expect(one.url == Fixtures.url("acme/api/pull/482#E1"))
     }
 
+    @Test func aCardKnowsTheEventAndStaysForWhatWaitsOnYou() {
+        let request = compose(
+            .reviewRequested, [event(.reviewRequested, "E1", team: .team(organization: "acme", slug: "backend"))])
+        #expect(request.kind == .reviewRequested)
+        #expect(request.pullRequestID == "PR_482")
+        #expect(request.pullRequestTitle == "Fix login redirect loop")
+        #expect(request.via == "via @acme/backend")
+        #expect(request.isSticky)
+        let review = compose(.reviewSubmitted, [event(.reviewSubmitted, "R1", decision: .approved)])
+        #expect(review.kind == .reviewSubmitted && review.decision == .approved)
+        #expect(!review.isSticky)
+        #expect(compose(.mention, [event(.mention, "M1")]).isSticky)
+        let group = compose(.reviewRequested, [event(.reviewRequested, "E1"), event(.reviewRequested, "E2")])
+        #expect(group.kind == .reviewRequested && group.pullRequestTitle == nil && group.isSticky)
+        let overflow = ComposedNotification(
+            PlannedNotification(repository: nil, content: .overflow(updates: 3, repositories: 2)), now: now)
+        #expect(overflow.kind == nil && !overflow.isSticky)
+    }
+
     @Test func groupsCountAndListOneLinePerPullRequest() {
         let three = compose(
             .reviewRequested,
@@ -50,7 +69,7 @@ struct ComposedNotificationTests {
     }
 
     @Test(arguments: [
-        (ReviewState.approved, "@bruno approved"), (.changesRequested, "@bruno requested changes"),
+        (ReviewState.approved, "@bruno approved your pull request"), (.changesRequested, "@bruno requested changes"),
         (.commented, "@bruno commented"),
     ])
     func reviewsSayTheDecision(decision: ReviewState, title: String) {

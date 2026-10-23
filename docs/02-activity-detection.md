@@ -112,6 +112,7 @@ days.
 |---|---|---|
 | `mergeable` | `PullRequest.mergeable` | `MERGEABLE`, `CONFLICTING`, `UNKNOWN` |
 | `checks` | `commits(last: 1).nodes[0].commit.statusCheckRollup.state` | `SUCCESS`, `FAILURE`, `ERROR`, `PENDING`, `EXPECTED`, or `null` when there are no checks |
+| `pendingChecks` | The checks query of §6.1, read only while `checks` is `PENDING` or `EXPECTED` | `running`: check runs `QUEUED`, `IN_PROGRESS`, `PENDING` or `REQUESTED`. `waiting`: check runs `WAITING` (an environment approval) and commit statuses `PENDING`, each with its name, description and link |
 | `decision` | `PullRequest.reviewDecision` | `APPROVED`, `CHANGES_REQUESTED`, `REVIEW_REQUIRED`, or `null` when no rule requires a review |
 | `latestReviews` | `latestOpinionatedReviews(first: 10)` | Each reviewer's latest `APPROVED` or `CHANGES_REQUESTED` |
 | `pendingRequests` | `reviewRequests(first: 10)` | Users and teams |
@@ -135,10 +136,20 @@ The first row that matches is the status. The order is "what you must do first":
 | 1 | `conflict` | `mergeable == CONFLICTING` | Nothing else can land until you rebase; checks and reviews may be redone after it |
 | 2 | `checksFailing` | `checks` is `FAILURE` or `ERROR` | Yours to fix, and reviewers often wait for green |
 | 3 | `changesRequested` | Changes requested | A person is waiting on you |
-| 4 | `checksRunning` | `checks` is `PENDING` or `EXPECTED` | Nobody can act yet; above `readyToMerge` so an approval with running checks is not called ready |
-| 5 | `readyToMerge` | Approved and `checks` is `SUCCESS` or `null` | Yours to merge |
-| 6 | `waitingForReview` | `pendingRequests` is not empty | Somebody else's move |
-| 7 | `noReviewers` | None of the above | Nobody has been asked |
+| 4 | `checksWaiting` | `checks` is `PENDING` or `EXPECTED`, no check run is running, and a check waits for a person: a check run `WAITING`, or a commit status `PENDING` whose link leads to the pull request's own page | Looks like running checks, but nothing will move until someone comments, approves or re-runs — a gate that asks for `/e2e`, a deployment approval |
+| 5 | `checksRunning` | `checks` is `PENDING` or `EXPECTED` | Nobody can act yet; above `readyToMerge` so an approval with running checks is not called ready |
+| 6 | `readyToMerge` | Approved and `checks` is `SUCCESS` or `null` | Yours to merge |
+| 7 | `waitingForReview` | `pendingRequests` is not empty | Somebody else's move |
+| 8 | `noReviewers` | None of the above | Nobody has been asked |
+
+A pending commit status is told apart by its link, not by how long it has been pending. A gate that
+waits for a comment links to the pull request's conversation (`…/pull/482#issuecomment-…`); an
+external CI — Jenkins, CircleCI — reporting through the status API links to its own job, or to
+nothing, and stays `checksRunning` however long it runs. A link to the same host and to the pull
+request's path, or a path under it, is the test; `…/pull/4820` and `…/actions/runs/…` are not. A first
+version waited 10 minutes instead, which called a slow external CI stuck. In *Mine*, `checksWaiting`
+is **Blocked**: one waiting check is named with its description, several are named together, the
+status chip's tooltip lists each on its own line, and the context menu opens each one.
 
 `isDraft` never changes the status. It is a modifier shown beside it (FR-31) and it removes the
 pull request from the count (§4).
@@ -189,7 +200,8 @@ One bot test serves the *Review requested* sub-tabs, seen state and §5.4: an ac
 `__typename` is `Bot`, its login ends in `[bot]`, or its login is in `config.triage.extraBotLogins`.
 A commit is a bot's when its author's login or name passes the same test.
 
-**Human activity** is the latest of:
+**Human activity** — shown as each row's last activity and the order of every list
+(`05-design.md` §5.3, §6.1) — is the latest of:
 
 - a review, comment, thread comment or review request by a non-bot, from the detail read;
 - the head commit, when its author is not a bot;
@@ -226,6 +238,23 @@ such as a review on your own pull request, follow their own rules. When a left-o
 comes back, by human activity or because the setting changed, it is tracked for reminders from that
 poll, without a burst for the time it was out.
 
+### 3.7 Stacks
+
+A pull request is **stacked** on another when its `baseRefName` is the other's `headRefName` in the
+same repository (both from the summary query). A stack is every pull request linked that way among
+the rows of one list, two or more: the **bottom** merges into a branch no row has (`main`), and the
+order runs bottom to top; a pull request with two stacked on it keeps both, the lower number first.
+Branch names are compared exactly, repository names without case.
+
+Stacks change only how rows are shown, never a status or the count:
+
+- *Mine*'s list keeps each of your stacks whole, as one block in a single status group: Blocked when
+  any of its pull requests is blocked, else Ready when any is not a draft, else Draft. The board puts the
+  stack's cards together the same way, in that column.
+- *Review requested* and *Involved* keep a stack's rows together, bottom to top, where its first row
+  was.
+- Every stacked row carries its position, `2/3`.
+
 ## 4. The "needs you" count
 
 The number in the menu bar (FR-40) is the sum of:
@@ -233,7 +262,7 @@ The number in the menu bar (FR-40) is the sum of:
 - every pull request with role `reviewRequested`, except those whose triage (§3.6) is left out:
   `Stale` by default, `Bots` when `triage.countBots` is off; and
 - every pull request with role `authored`, not a draft, whose status is `conflict`,
-  `checksFailing`, `changesRequested` or `readyToMerge`;
+  `checksFailing`, `changesRequested`, `checksWaiting` or `readyToMerge`;
 
 in both cases excluding pull requests you ignored (§5.8).
 
@@ -425,7 +454,7 @@ nodes(ids: $ids) {
     id number title url state isDraft createdAt updatedAt body headRefName
     author { __typename login }
     repository { nameWithOwner isArchived }
-    mergeable reviewDecision
+    mergeable reviewDecision additions deletions changedFiles
     labels(first: 10) { nodes { name color } }
     commits(last: 1) {
       nodes { commit { oid committedDate author { name user { login } } statusCheckRollup { state } } }
@@ -440,6 +469,28 @@ nodes(ids: $ids) {
   }
 }
 ```
+
+**Checks**, only for the pull requests whose summary says `PENDING` or `EXPECTED`, per batch of up to
+20 IDs:
+
+```graphql
+nodes(ids: $ids) {
+  ... on PullRequest {
+    id
+    commits(last: 1) {
+      nodes { commit { statusCheckRollup { state contexts(first: 100) { nodes { __typename
+        ... on CheckRun { name status detailsUrl }
+        ... on StatusContext { context state description targetUrl } } } } } }
+    }
+  }
+}
+```
+
+It is a query of its own because asking for the contexts of every summary made GitHub answer `504`.
+Only the contexts are used: asked for together with them, GitHub reports some pending rollups as
+`FAILURE`, counting check runs that a newer push cancelled, so the summary's `state` stays the
+authority. A failed checks query is logged and leaves those pull requests at `checksRunning`; it
+never fails the poll.
 
 **Detail**, per batch of up to 10 IDs:
 
@@ -474,10 +525,11 @@ request per connection plus one per nested connection per parent, divided by 100
 |---|---|---|
 | Discovery: 4 searches × `first: 50`, no nested connections | 4 | 1 |
 | Summary: 100 IDs × 5 nested connections | ~500 | 5 |
+| Checks: 20 IDs × 2 nested connections, only when a rollup is pending | ~40 | 1 per 20 pending |
 | Detail: 10 IDs × (4 connections + 30 threads' comments) | ~340 | 4 |
 
-A quiet poll with up to 100 watched pull requests costs about 6 points; at the default 60 s
-interval that is about 360 points an hour, under 5% of the 5000-point budget, which is what NFR-01
+A quiet poll with up to 100 watched pull requests costs about 6 points, plus one per 20 pull requests
+with pending checks; at the default 60 s interval that is about 360 points an hour, under 5% of the 5000-point budget, which is what NFR-01
 and D-06 rest on. These are estimates from GitHub's published formula. **The logged
 `rateLimit.cost` is the authority**, and `docket-cli poll` prints it so the estimate can be checked
 against a real account.
@@ -510,7 +562,7 @@ person waiting on you. Each group becomes one notification. Within a group, item
 | Group size | Title | Subtitle | Body |
 |---|---|---|---|
 | 1 × `reviewRequested` | `@ana is waiting for your review` | `acme/api #482` | `Fix login redirect loop` · `via @acme/backend` when through a team |
-| 1 × `reviewSubmitted` | `@bruno approved` / `@bruno requested changes` / `@bruno commented` | `acme/api #470` | The pull request title |
+| 1 × `reviewSubmitted` | `@bruno approved your pull request` / `@bruno requested changes` / `@bruno commented` | `acme/api #470` | The pull request title |
 | n × `reviewSubmitted` | `2 reviews on your pull requests` | `acme/api` | `@bruno approved #470`, `@carla requested changes #471` |
 | 1 × `threadReply` | `@carla replied to your comment` | `acme/web #88` | The pull request title |
 | n × `threadReply` | `3 replies to your comments` | `acme/web` | `@carla on #88`, `@dave on #91` |
@@ -596,7 +648,7 @@ Each row is a test in `DocketActivityTests`, built from synthetic snapshots. Log
 | 2 | Saved state; Docket quit for 2 h; `ana` requested your review on `acme/api#482` meanwhile | 1 notification, `@ana is waiting for your review` | The saved cursors are the baseline, so time closed is not time lost |
 | 3 | You reviewed `acme/api#482`; `ana` re-requests | 1 `reviewRequested` | A new `ReviewRequestedEvent` ID, and the role is `reviewRequested` again |
 | 4 | `ana` requests and withdraws your review between two polls | 0 notifications | The role check fails at the poll that sees the event |
-| 5 | `ana` approves your `acme/api#470` with 3 inline comments | 1 notification, `@ana approved` | §5.5 rule 1. The naive answer is 4 |
+| 5 | `ana` approves your `acme/api#470` with 3 inline comments | 1 notification, `@ana approved your pull request` | §5.5 rule 1. The naive answer is 4 |
 | 6 | `bruno` answers your inline comment on your own `acme/api#470`; GitHub records a `COMMENTED` review with an empty body and one reply | 1 `threadReply`, `@bruno replied to your comment` | §5.5 rule 2. The naive answer is `@bruno commented`, which hides that it was an answer |
 | 7 | On `carla`'s `acme/web#88` (role `involved`), `carla` replies in a thread you started; `dave` adds a conversation comment | 1 `threadReply` from `carla`; nothing for `dave` | §5.3: conversation comments on others' pull requests never fire |
 | 8 | You comment on your own pull request; `dependabot[bot]` comments on it | 0 notifications | §5.4 rules 1 and 2 |
@@ -659,6 +711,10 @@ Triage and one notification per request (§3.6, §7.1):
 | 44 | Seven requests arrive in one poll across five repositories | 5 notifications: four requests, then `3 more updates in 3 repositories` | The cap of §7.3 still holds |
 | 45 | `acme/api#482` was opened 20 days ago with no human activity since; a request arrives from a login in `extraBotLogins` | 0 notifications, no reminder, not in the count | Stale by default is left out; a bot's request is not human activity |
 | 46 | The same, but the request comes from `ana` | 1 notification | A human request is activity, so the pull request is no longer stale |
+| 47 | Your `acme/api#482`: every check run finished; the commit status `e2e` is `PENDING`, `Comment /e2e to run`, linking to a comment on the pull request; another pending status links to `ci.acme.dev` | `checksWaiting` with `e2e` only, in Blocked, counted | It waits for your comment, not for CI; `checksRunning` would hide that for days |
+| 48 | The same, but two check runs are still in progress | `checksRunning` | The gate may be waiting for them |
+| 49 | Nothing runs; the only pending status links to `ci.acme.dev`, to `…/actions/runs/7`, to `…/pull/4820`, or to nothing | `checksRunning` each time; a check run `WAITING` for an approval is `checksWaiting` | An external CI reports through statuses while it runs, for as long as it takes |
+| 50 | Your `acme/api#1` merges `matcher` into `main`, `#2` merges `plug` into `matcher`, `#3` merges `page` into `plug`; `#9` merges `other` into `main` | One stack `#1, #2, #3`, positions `1/3` to `3/3`; `#9` alone | §3.7: each base is the head below it |
 
 ## 9. What can go wrong
 

@@ -224,12 +224,12 @@ public actor Poller {
             snapshot.problem = .rateLimited(until: until)
             return max(1, until.timeIntervalSince(clock.now()))
         case GitHubError.network:
-            snapshot.problem = .failed(at: lastSuccessAt ?? clock.now())
+            snapshot.problem = .failed(at: lastSuccessAt ?? clock.now(), reason: PollFailure(error))
             let retry = Backoff.networkRetries[safe: networkFailures] ?? interval
             networkFailures += 1
             return retry
         default:
-            snapshot.problem = .failed(at: lastSuccessAt ?? clock.now())
+            snapshot.problem = .failed(at: lastSuccessAt ?? clock.now(), reason: PollFailure(error))
         }
         return interval
     }

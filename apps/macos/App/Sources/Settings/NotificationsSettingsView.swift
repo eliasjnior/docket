@@ -9,6 +9,7 @@ struct NotificationsSettingsView: View {
     let configStore: ConfigStore
     let permission: NotificationPermission
     let requestPermission: () -> Void
+    var showExampleCards: () -> Void = {}
     var holdSince: Date?
     @State private var newBot = ""
     @State private var selectedBot: String?
@@ -16,52 +17,51 @@ struct NotificationsSettingsView: View {
     var body: some View {
         Form {
             Section {
-                LabeledContent(String(localized: "Permission", comment: "Notifications setting")) {
-                    switch permission.status {
-                    case .allowed:
-                        Text("Allowed", comment: "Notification permission state")
-                    case .notAsked:
-                        HStack {
-                            Text("Not asked", comment: "Notification permission state")
-                            Button(
-                                String(localized: "Allow", comment: "Notification permission button"),
-                                action: requestPermission)
-                        }
-                    case .denied:
-                        HStack {
-                            Text("Off in System Settings", comment: "Notification permission state")
-                            Button(String(localized: "Open System Settings", comment: "Notification permission button"))
-                            {
-                                NotificationSettingsLink.open()
-                            }
-                        }
-                    }
+                Picker(String(localized: "Show as", comment: "Notification style setting"), selection: style) {
+                    Text("Docket cards", comment: "Notification style").tag(Config.Notifications.Style.card)
+                    Text("macOS notifications", comment: "Notification style").tag(Config.Notifications.Style.system)
                 }
-            }
-            Section(String(localized: "Notify me about", comment: "Notifications settings section")) {
                 Toggle(
-                    String(localized: "Review requested", comment: "Notification kind"),
-                    isOn: binding(\.notifications.reviewRequested))
-                Toggle(
-                    String(localized: "Review on your pull request", comment: "Notification kind"),
-                    isOn: binding(\.notifications.reviewSubmitted))
-                Toggle(
-                    String(localized: "Comment on your pull request", comment: "Notification kind"),
-                    isOn: binding(\.notifications.commentAdded))
-                Toggle(
-                    String(localized: "Reply to your comment", comment: "Notification kind"),
-                    isOn: binding(\.notifications.threadReply))
-                Toggle(
-                    String(localized: "Checks failing on your pull request", comment: "Notification kind"),
-                    isOn: binding(\.notifications.checksFailed))
+                    String(localized: "Play a sound", comment: "Notification setting"),
+                    isOn: binding(\.notifications.sound)
+                )
+                .disabled(configStore.config.notifications.style != .card)
                 Toggle(
                     String(
-                        localized: "Your pull request merged or closed by someone else", comment: "Notification kind"),
-                    isOn: binding(\.notifications.closedByOther))
-                Toggle(
-                    String(localized: "Mention of you", comment: "Notification kind"),
-                    isOn: binding(\.notifications.mention))
+                        localized: "Keep review requests and mentions until I act on them",
+                        comment: "Notification setting"),
+                    isOn: binding(\.notifications.keepCardsUntilActedOn)
+                )
+                .disabled(configStore.config.notifications.style != .card)
+                Picker(
+                    String(localized: "Cards stay for", comment: "Card lifetime picker"),
+                    selection: Binding(
+                        get: { configStore.config.notifications.cardSeconds },
+                        set: { value in configStore.update { $0.notifications.cardSeconds = value } })
+                ) {
+                    ForEach(Config.Notifications.allowedCardSeconds, id: \.self) { seconds in
+                        Text("\(seconds) seconds", comment: "Card lifetime").tag(seconds)
+                    }
+                }
+                .disabled(configStore.config.notifications.style != .card)
+                HStack {
+                    Text(
+                        "Cards leave after a few seconds, like a banner; the pointer on a card holds it.",
+                        comment: "Notification style caption"
+                    )
+                    .font(.caption).foregroundStyle(Color.textSecondary)
+                    Spacer()
+                    Button(
+                        String(localized: "Show Example", comment: "Notification style button"),
+                        action: showExampleCards
+                    )
+                    .disabled(configStore.config.notifications.style != .card)
+                }
             }
+            if configStore.config.notifications.style == .system {
+                permissionSection
+            }
+            notifyAbout
             RemindersSection(configStore: configStore)
             TriageSection(configStore: configStore)
             Section(String(localized: "Focus", comment: "Notifications settings section")) {
@@ -110,6 +110,58 @@ struct NotificationsSettingsView: View {
         .formStyle(.grouped)
     }
 
+    private var permissionSection: some View {
+        Section {
+            LabeledContent(String(localized: "Permission", comment: "Notifications setting")) {
+                switch permission.status {
+                case .allowed:
+                    Text("Allowed", comment: "Notification permission state")
+                case .notAsked:
+                    HStack {
+                        Text("Not asked", comment: "Notification permission state")
+                        Button(
+                            String(localized: "Allow", comment: "Notification permission button"),
+                            action: requestPermission)
+                    }
+                case .denied:
+                    HStack {
+                        Text("Off in System Settings", comment: "Notification permission state")
+                        Button(String(localized: "Open System Settings", comment: "Notification permission button")) {
+                            NotificationSettingsLink.open()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var notifyAbout: some View {
+        Section(String(localized: "Notify me about", comment: "Notifications settings section")) {
+            Toggle(
+                String(localized: "Review requested", comment: "Notification kind"),
+                isOn: binding(\.notifications.reviewRequested))
+            Toggle(
+                String(localized: "Review on your pull request", comment: "Notification kind"),
+                isOn: binding(\.notifications.reviewSubmitted))
+            Toggle(
+                String(localized: "Comment on your pull request", comment: "Notification kind"),
+                isOn: binding(\.notifications.commentAdded))
+            Toggle(
+                String(localized: "Reply to your comment", comment: "Notification kind"),
+                isOn: binding(\.notifications.threadReply))
+            Toggle(
+                String(localized: "Checks failing on your pull request", comment: "Notification kind"),
+                isOn: binding(\.notifications.checksFailed))
+            Toggle(
+                String(
+                    localized: "Your pull request merged or closed by someone else", comment: "Notification kind"),
+                isOn: binding(\.notifications.closedByOther))
+            Toggle(
+                String(localized: "Mention of you", comment: "Notification kind"),
+                isOn: binding(\.notifications.mention))
+        }
+    }
+
     private var holdState: String {
         guard let holdSince else { return String(localized: "Not holding", comment: "Focus hold state") }
         return String(
@@ -126,6 +178,12 @@ struct NotificationsSettingsView: View {
             }
         }
         newBot = ""
+    }
+
+    private var style: Binding<Config.Notifications.Style> {
+        Binding(
+            get: { configStore.config.notifications.style },
+            set: { value in configStore.update { $0.notifications.style = value } })
     }
 
     private func binding(_ path: WritableKeyPath<Config, Bool>) -> Binding<Bool> {

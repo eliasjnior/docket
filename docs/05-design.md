@@ -100,8 +100,9 @@ opening the popover.
 
 | Property | Value | Why |
 |---|---|---|
-| Width | 460 pt; 640 pt while *Mine* is shown as a board | Three equal tabs fit `Review requested` and its count circle with room on both sides; three board columns need the room |
-| Height | Fixed: 640 pt or the screen's visible height minus 40 pt, whichever is smaller, whatever the list holds. A full screen (§7.1) keeps its content height | A popover that followed its rows jumped on every fold and tab switch; a fixed one never runs off a 13-inch screen |
+| Width | 460 pt; 780 pt on every tab when *Mine* is shown as a board, so switching tabs never resizes the popover; with `popoverLayout = columns`, 420 pt per column and 780 pt for a *Mine* board, all narrowed together to the screen's visible width minus 40 pt | Three equal tabs fit `Review requested` and its count circle with room on both sides; three board columns need the room |
+| Columns | Off by default (`Show the sections as` `Tabs` or `Columns` in General). *Review requested*, *Mine* and *Involved* side by side, no tab bar; each column has a header with its name and count, *Review requested*'s with the sub-tabs under it, and scrolls on its own. The filters and `•••` stay above the columns. The selected column, where the arrow keys move, has an accent line under its header; a click on a header selects it. *Mine* follows `mineLayout`: as a board it gets a board's 640 pt, and the three columns narrow together on a screen too small for them. *Ignored*, when there is any, replaces *Involved* from a button in its header, and `Show Involved` brings it back. `sidebar.right` at the right of *Involved*'s header folds the column to a 40 pt strip — the symbol, the count and `Involved` on its side — and the popover narrows by the column; a click on the strip opens it again. The fold lasts while Docket runs, and the arrow keys skip a folded column | Everything at a glance on a wide screen, at the cost of a popover three times as wide |
+| Height | Fixed: 640 pt or the screen's visible height minus 40 pt, whichever is smaller, whatever the list holds and whichever tab is open — the list takes what the header, banners, tabs and filters leave, so a tab with sub-tabs has a shorter list, not a taller popover. A full screen (§7.1) keeps its content height | A popover that followed its rows jumped on every fold and tab switch; a fixed one never runs off a 13-inch screen |
 | Scrolling | The list scrolls; the header, tabs and filters stay fixed | Refresh and the filters are always reachable |
 | Background | `windowBackgroundColor`, solid; group headers add a raised band | Through the popover's vibrant material, text read pale and see-through |
 
@@ -126,8 +127,8 @@ opening the popover.
 **Header.** The app icon at 22 pt, `Docket` in `.headline`, a refresh button with `arrow.clockwise`
 (FR-45, `⌘R`) and a settings button with `gearshape` that opens a menu of `Settings`,
 `Check for Updates` and `Quit Docket`. The refresh symbol spins while a poll runs; there is no
-`Updating…` text. When the list is older than two poll intervals, a banner reads
-`Updated N min ago` (FR-44, §7.2).
+`Updating…` text. Left of refresh, a symbol says when the list may be out of date — a failed poll,
+offline, the rate limit, or older than two poll intervals — with its sentence on hover (FR-44, §7.2).
 
 **Tabs.** A segmented control the width of the popover: *Review requested*, *Mine*,
 *Involved*, and *Ignored* while something is ignored, 28 pt tall. The segments are of equal width, and each
@@ -153,9 +154,9 @@ popover. A click on a grouped notification opens the popover with that repositor
 
 | Section | Contains (role, `02` §2.2) | Order |
 |---|---|---|
-| **Review requested** | `reviewRequested`, in the selected sub-tab | Grouped by repository. Groups ordered by their newest request, newest first; rows inside a group by request time, newest first. Ties by `owner/name`, then `#number` |
-| **Mine** | `authored` | Three groups in this order: **Ready** (not a draft, not blocked), **Blocked** (not a draft; `conflict`, `checksFailing` or `changesRequested`), **Draft** (every draft). Inside a group, by status in the precedence order of `02-activity-detection.md` §3.2, then newest first. Shown as stacked sections or as a board (`config.mineLayout`) |
-| **Involved** | `involved` | By `updatedAt`, most recent first |
+| **Review requested** | `reviewRequested`, in the selected sub-tab | Grouped by repository. Groups ordered by their latest activity, most recent first; rows inside a group by last activity (§6.1), most recent first. Ties by `owner/name`, then `#number` |
+| **Mine** | `authored` | Three groups in this order: **Ready** (not a draft, not blocked), **Blocked** (not a draft; `conflict`, `checksFailing`, `changesRequested` or `checksWaiting`), **Draft** (every draft). `Drafts with a conflict go to` `Blocked` (`config.conflictedDrafts`, `Draft` by default) moves a draft with a conflict to Blocked, since nothing lands until it is rebased; failing checks on a draft stay in Draft, being work in progress. A draft in Blocked keeps its `Draft` chip and still never counts (`02` §4). Your stacks (`02` §3.7) stay inside Ready, Blocked and Draft: each stack is a block among its group's rows, placed by its latest activity, in Blocked when any of its pull requests is blocked, else Ready when any is not a draft, else Draft — so folding the group folds the stack too. A first version gave stacks a group of their own; it read as a fourth status. A stack is a block, not a band like the other groups: inset 10 pt, corner radius 10, the accent colour at 6% behind it and at 50% around it, so it reads as one thing among the single rows' neutral boxes. Its header is inside the block and reads like a row for the whole stack: chevron, `square.stack.3d.up.fill`, `Stack of 3 pull requests`, the repository tag and `on main`, then on the right the latest activity of any of its pull requests and the age of the oldest, styled as §6.2; under it, the status that needs you first (§3.2 precedence), `Stale` in `status.attention` when no human touched any of them for `Stale after` days, the summed `+1,234 −567` with `L`/`XL`, and the files changed. Its rows run bottom to top, each with its own status. Folded, the block keeps its header and adds the pull requests' numbers, `#475 → #476`, each in its status's colour, with their titles in the tooltip — on the board too. *Review requested* and *Involved* draw a stack's rows in the same block. On the board a stack is the same kind of block, in the column the list would put it, with the same summary as the list's header — `Stack of 3`, the latest activity and the age, then the status that needs you first and `Stale` on one line and the summed size and files on the next, the column being narrow — a chevron, and its cards bottom to top. Inside a group, by last activity, most recent first: a commit pushed today brings a pull request to the top whatever its status, which the chip still shows. No header names the repository, so each row carries it (§6.1); on the board each column is split by repository under a small repository tag with a disclosure chevron, the repository with the latest activity first, and a card shows `#number` alone. A repository folds in one column without folding it in the others; folded, its tag shows its count, and its cards leave the keyboard navigation. Shown as stacked sections or as a board (`config.mineLayout`) |
+| **Involved** | `involved` | By last activity, most recent first; `updatedAt` also moved for a bot's push or a label |
 | **Ignored** | Any role, ignored (FR-49) | By `ignoredAt`, most recent first. Rows in `text.secondary`, no status colour: nothing here asks for attention |
 
 A **repository header** is a raised band: an 18 pt rounded square in a colour derived from the
@@ -201,10 +202,16 @@ vertical. The whole row is the click target (FR-42), and opening it marks it see
 | Team | `via @acme/frontend` (FR-21) in *Review requested* | `.subheadline`, `text.secondary` |
 | Reviewers | *Mine* only, order of `02` §3.3, with `circle.dashed`, `checkmark`, `arrow.uturn.backward` or `text.bubble`; after three, `+N` | `.subheadline`, `text.secondary` |
 | Labels | GitHub labels, §6.4 | After the rest |
+| Repository | Outside *Review requested*, where no header names it: the repository's identity square (§5.3) at 13 pt with its initial, and the name without the owner, before `#number`; the full `owner/name` in the tooltip | `.subheadline`, `text.secondary`; never dropped |
+| Stack | `square.stack.3d.up.fill` and `2/3` in the accent colour after `#number`, for a stacked pull request (`02` §3.7); tooltip `2 of 3 in a stack, from the bottom` | `.caption` semibold |
+| Size | Lines added and deleted (FR-25), from `additions`, `deletions` and `changedFiles` of the summary query | `+120 −30` in `status.ready` and `status.blocking`, after the status and draft chips; `L` (401–1000 lines) or `XL` (over 1000) in a `status.attention` capsule before it. Tooltip `120 lines added and 30 deleted in 8 files`. In every tab. When the line is short, labels go first, then reviewers and the team, then the author; the size goes last, because it decides whether to review now |
+| Last activity | Time since the latest human activity, you included (`02` §3.5): a commit, a force push, a review, a comment or a request | Before the age, `clock.arrow.circlepath` and the short age, `text.secondary`; left out when it reads the same as the age. The times' tooltip says `Last activity 2h ago · opened 4d ago` |
 | Age | Waited time in *Review requested* (FR-33), age elsewhere (FR-32), §6.2 | Trailing, monospaced digits; `bell.slash` before it when muted |
 
-The second line never wraps: reviewers collapse to `+N` first, then labels; the status pill is
-never truncated.
+The second line never wraps: when it is too narrow, labels go first (the last one first), then reviewers
+and the team, then the author, and the size last; the repository, number, stack position, status and draft
+chips always stay. Each item is measured once and left out by rank: a `ViewThatFits` over six whole versions
+of the line measured all of them and made each tab switch take a fifth of a second.
 
 ### 6.2 Age styles
 
@@ -226,6 +233,7 @@ at 16%, the symbol and the word in the colour, `.subheadline` semibold.
 | `conflict` | `exclamationmark.triangle.fill` | `Conflict` | `status.blocking` |
 | `checksFailing` | `xmark.circle.fill` | `Checks failing` | `status.blocking` |
 | `changesRequested` | `arrow.uturn.backward.circle.fill` | `Changes requested` | `status.attention` |
+| `checksWaiting` | `hand.raised.fill` | `Checks waiting`; the board card names the check, `e2e is waiting: Comment /e2e to run`, or several together, `e2e and deploy are waiting`; the tooltip lists each on its own line; the context menu adds `Open <check>` for each with a link | `status.attention` |
 | `checksRunning` | `circle.dotted`, rotating | `Checks running` | `status.running` symbol; the word in `text.primary`, since yellow text is unreadable on a light popover |
 | `readyToMerge` | `checkmark.circle.fill` | `Ready to merge` | `status.ready` |
 | `waitingForReview` | `eye` | `Waiting for review` | `status.waiting` |
@@ -250,6 +258,8 @@ Right click on a row or a board card (FR-43):
 | `Open in Browser` | The pull request's `url` (same as a click); marks it seen |
 | `Copy URL` | The `url` |
 | `Copy Reference` | `owner/name#number`, without the space, so it pastes as a GitHub reference |
+| `PR Links` | A submenu: `Description`, the links in the description, then one section per bot (`@vercel`), the links in its comments, latest first — preview deploys, CI runs, reports. Each item is the link's own text and host, or its host and path. Images, badges and GitHub attachments are left out; at most 10 from the description and 8 per bot. Disabled when there are none |
+| `Open <check>` | For each waiting check with a link (§6.3) |
 | — | |
 | `Open in Jira` | FR-86. The issue linked in the description, else a key in the title or branch on the site the other pull requests link to. Disabled when none is found |
 | `Review with AI` | FR-87, D-28: the review command in the chosen terminal |
@@ -289,13 +299,20 @@ token colour, an action button on the right. They stack in the order of the tabl
 | Condition | Symbol | Copy | Action |
 |---|---|---|---|
 | SAML required, one banner per organization (FR-13) | `lock.shield` in `status.attention` | `acme requires SAML authorization.` | `Authorize` — opens the URL GitHub returned |
-| Rate-limited (`02` §6.3) | `clock` | `Paused by GitHub's rate limit until 14:30.` | — |
-| Offline | `wifi.slash` | `Offline. Showing data from 14:03.` | — |
-| Last poll failed | `exclamationmark.triangle` in `status.attention` | `Couldn't update. Showing data from 14:03.` | `Try Again` |
 | First run, after the baseline (D-19) | `info.circle` | `Watching from now on. What was already waiting is listed but did not notify.` | `OK` — dismissed for good |
 | First run, launch at login not decided (FR-90) | `power` | `Open Docket at login?` | `Turn On`, `Not Now` |
 | Notification permission denied | `bell.slash` | `Notifications are off for Docket.` | `Open System Settings` |
 | Focus hold on (`02` §7.5) | `moon` | `Holding 7 updates until your Focus ends.` | `Deliver Now` |
+
+Whether the list is current is not a banner: a banner for it pushed every row down each time a poll
+failed. It is a symbol in the header, left of refresh, with its sentence as the tooltip:
+
+| Condition | Symbol | Tooltip | Click |
+|---|---|---|---|
+| Rate-limited (`02` §6.3) | `clock` | `Paused by GitHub's rate limit until 14:30.` | — |
+| Offline | `wifi.slash` | `Offline. Showing data from 14:03.` | — |
+| Last poll failed | `exclamationmark.triangle.fill` in `status.attention` | `Couldn't update: <why> Showing data from 14:03. Click to try again.`, where `<why>` is `GitHub could not be reached; the connection dropped or timed out.`, `GitHub had a server error (HTTP 504), usually brief.`, `GitHub refused the request (HTTP 422).`, `GitHub sent an answer Docket could not read.`, or the error as reported. The status item's tooltip carries the same reason | A poll now |
+| Older than two poll intervals (FR-44) | `clock.arrow.circlepath` | `Updated 12 min ago` | — |
 
 Times are local, `HH:mm` per the user's locale, with the date added when not today.
 
@@ -342,6 +359,42 @@ Categories, registered at launch:
 A group of reminders uses `docket.group`: muting needs one pull request, and the popover is where
 the group's rows are.
 
+### 8.1 Cards
+
+By default (`config.notifications.style = card`, FR-68) the same composed notifications show as
+Docket's own cards instead of banners: in Notification Center a review request was one more grey
+banner among Slack's and Mail's, gone in five seconds and buried in a list.
+
+```
+                                              ┌──────────────────────────────────────┐
+                                              │ [A]  Review requested · acme/api   ✕ │
+                                              │  👁  @ana is waiting for your review │
+                                              │      Fix login redirect loop …       │
+                                              │      acme/api #482 · via @acme/team  │
+                                              │      [Review] [Review with AI] Later │
+                                              └──────────────────────────────────────┘
+                                                          [1 more in Docket  Dismiss All]
+```
+
+| Part | Value |
+|---|---|
+| Window | A borderless, non-activating panel at the top right of the active screen's visible frame, at the status bar level, on every Space and over full-screen apps. It never takes focus from the app in front; a first click acts |
+| Card | 360 pt wide, corner radius 14, regular material over the window background, separator border, soft shadow |
+| Badge | The repository's identity square (§5.3), 34 pt, with the kind's symbol in a 17 pt circle of its colour at the corner |
+| Kind | `Review requested` and `Still waiting` in `status.waiting` with `eye.fill` and `clock.fill`; `Approved` `status.ready`; `Changes requested` `status.attention`; `Checks failed` and `Closed` `status.blocking`; `Merged` purple; `Mention` indigo; comments, replies and reviews `status.neutral`; the overflow and the digest `Docket` in the accent colour |
+| Text | The kind and repository in caption; the notification's title in 13 pt semibold; the pull request's title on up to two lines; `owner/name #number · via @team`, or a group's lines, in caption secondary |
+| Actions | `Review` for a review request or a reminder, `Open` for one event, `Open Docket` for a group (the popover, filtered to the repository); `Review with AI` (spec §9.2) when the pull request is in the watch set; `Later` on a card that stays, `Dismiss` on the others; `✕` always on a card that leaves by itself, on hover on one that stays. A click anywhere on the card is the first action |
+| Lifetime | Every card leaves after 10 seconds by default — `Cards stay for` `6`, `10`, `15` or `30 seconds` (`notifications.cardSeconds`); 6 s, a banner's time, read as too quick. A ring in the kind's colour around `✕` empties as the time runs out; with the pointer on the card the ring and the time freeze, and they resume where they stopped when it leaves. With `Keep review requests and mentions until I act on them` (`notifications.keepCardsUntilActedOn`, off by default), review requests, reminders and mentions stay until acted on or dismissed, bordered in their kind's colour, with `Later` instead of `Dismiss`. A first version kept them by default; the user preferred cards that leave like a banner |
+| Stack | Newest on top, three visible; past one card a footer offers `N more in Docket` and `Dismiss All`. A card for the same notification replaces the one on screen |
+| Motion | Cards slide in from the right and fade out; with Reduce Motion they only fade |
+| Sound | The system's `Glass`, once per delivery, unless `notifications.sound` is off; `Hero` when the delivery holds an approval |
+| Approval | Good news looks it: `checkmark.seal.fill`, the card tinted `status.ready` at 12% and bordered in it, `@ana approved your pull request` |
+
+Cards do not need notification permission, so the permission row in settings and the popover's
+`Notifications are off` banner appear only with `style = system`. Focus does not hold a card; the
+Docket Focus filter (FR-69) still holds the events themselves, as it does for banners. `Show
+Example` in settings shows two synthetic cards.
+
 `Open Docket` is a foreground action that shows the popover; `Open` opens the browser without
 bringing Docket forward.
 
@@ -354,8 +407,8 @@ control writes `config.json` on change (`04-data.md` §2.1); there is no Apply b
 |---|---|---|
 | **Account** | `person.crop.circle` | Signed-in login; `gh` path with `Choose Location` and `Use Default` (FR-11); scopes present, each with `checkmark` or `xmark` and the word; organizations needing SAML, each with `Authorize` |
 | **Repositories** | `folder` | Mode as a radio group: `All repositories except these` / `Only these repositories` (`02` §2.3). Below, the list for the current mode — repositories and organizations, each row with its kind's symbol — with `+` and `−`. `+` opens the picker (FR-73): a search field over `knownRepositories` with the typed `owner/name` offered as the first row; a typed one shows `Checking…`, then is added or reads `Not found, or you don't have access` |
-| **Notifications** | `bell` | Permission state: `Allowed`, `Not asked` with `Allow`, or `Off in System Settings` with `Open System Settings` (`02` §9). One toggle per kind (FR-60): `Review requested`, `Review on your pull request`, `Comment on your pull request`, `Reply to your comment`. Bot allowlist (D-16): a list of logins with `+` and `−`, captioned `Bots never notify unless they are listed here.` A **Reminders** group (FR-66, FR-67): `Remind me about pending reviews` (on); `Every` with a pop-up of `15 minutes`, `30 minutes`, `1 hour`, `2 hours`, `4 hours`, `8 hours`; `Quiet hours` toggle with `From` and `To` time pickers (hour and minute), captioned `Reminders pause in this window. Other notifications follow Focus.`; The interval and quiet-hours controls are disabled, not hidden, while reminders are off. A **Focus** group (FR-69): one line, `To hold notifications during a Focus, add Docket's filter to it.`, with `Open Focus Settings`, and the state `Holding since 14:00` or `Not holding`. A **Bots, drafts and stale pull requests** group (FR-37): `Stale after` with `3`, `5`, `7`, `14` or `30 days without human activity`; `Count bot pull requests` (on); `Notify about bot pull requests` (off); `Count and notify stale pull requests` (off); `Count and notify drafts` (off); `Also bots`, a comma-separated list of logins treated as bots |
-| **General** | `gearshape` | Menu bar count: `Count review requests` and `Count your pull requests that need you`, captioned with the four statuses of `02` §4. Poll interval: a pop-up of `30 seconds`, `1 minute`, `2 minutes`, `5 minutes` (FR-92), captioned with the estimated hourly cost from `02` §6.2. **Mine**: `List` or `Board`. `Open at login` (FR-90) |
+| **Notifications** | `bell` | `Show as` with `Docket cards` and `macOS notifications`; `Play a sound`, `Keep review requests and mentions until I act on them` (off) and `Cards stay for` (10 seconds), cards only; the caption `Cards leave after a few seconds, like a banner; the pointer on a card holds it.` with `Show Example` (§8.1). With `macOS notifications`, the permission state: `Allowed`, `Not asked` with `Allow`, or `Off in System Settings` with `Open System Settings` (`02` §9). One toggle per kind (FR-60): `Review requested`, `Review on your pull request`, `Comment on your pull request`, `Reply to your comment`. Bot allowlist (D-16): a list of logins with `+` and `−`, captioned `Bots never notify unless they are listed here.` A **Reminders** group (FR-66, FR-67): `Remind me about pending reviews` (off); `Every` with a pop-up of `15 minutes`, `30 minutes`, `1 hour`, `2 hours`, `4 hours`, `8 hours`; `Quiet hours` toggle with `From` and `To` time pickers (hour and minute), captioned `Reminders pause in this window. Other notifications follow Focus.`; The interval and quiet-hours controls are disabled, not hidden, while reminders are off. A **Focus** group (FR-69): one line, `To hold notifications during a Focus, add Docket's filter to it.`, with `Open Focus Settings`, and the state `Holding since 14:00` or `Not holding`. A **Bots, drafts and stale pull requests** group (FR-37): `Stale after` with `3`, `5`, `7`, `14` or `30 days without human activity`; `Count bot pull requests` (on); `Notify about bot pull requests` (off); `Count and notify stale pull requests` (off); `Count and notify drafts` (off); `Also bots`, a comma-separated list of logins treated as bots |
+| **General** | `gearshape` | Menu bar count: `Count review requests` and `Count your pull requests that need you`, captioned with the four statuses of `02` §4. Poll interval: a pop-up of `30 seconds`, `1 minute`, `2 minutes`, `5 minutes` (FR-92), captioned with the estimated hourly cost from `02` §6.2. **Popover**: `Show the sections as` `Tabs` or `Columns`, captioned `Columns show Review requested, Mine and Involved side by side in a popover three times as wide.` **Mine**: `List` or `Board`; `Drafts with a conflict go to` `Draft` or `Blocked`. `Open at login` (FR-90) |
 | **AI** | `sparkles` | **Terminal**: `Open in` with `Default for .command files` and each installed terminal Docket knows (Terminal, iTerm, Ghostty, Warp, WezTerm), plus `Choose Terminal`. **Review with AI** and **Summarize with AI**: a monospaced editor each, captioned with the placeholders, `Reset to Default` when changed, and a warning when a placeholder sits inside single quotes, where it does not expand. **Local clones**: `owner/name` and a folder |
 | **Updates** | `arrow.down.circle` | As in Lookout: automatic checks, automatic install, `Check Now`, last checked |
 | **About** | `info.circle` | Name, version and build; link to the repository; `Show Data Folder` (`~/Library/Application Support/Docket/`); `What's New` |
@@ -416,17 +469,24 @@ relied on its colour would fail this section.
 ### 10.3 Space and shape
 
 A 4 pt grid: `2, 4, 6, 8, 12, 16, 20`. Rows 12 × 6 pt padding; section headers 12 pt horizontal,
-8 pt above; banners 12 × 8 pt; full screens 20 pt. Chips and labels are capsules. Row separators are
-none — rows are separated by spacing and the hover highlight; sections by a `separator` line. Hover
+8 pt above; banners 12 × 8 pt; full screens 20 pt. Chips and labels are capsules. Each row is a box
+of its own — 10 pt from the sides, from each other and from the headers above and below, corner radius 10, a `separator` border — the same shape as a stack's
+block, whose rows share the block and are parted by a full-width hairline; sections by a `separator`
+line. Hover
 and selection use the system's `.selection` background as a list row would.
 
 ### 10.4 Motion
 
-Minimal. The popover's open and close are `NSPopover`'s. Section expand and collapse use the
-default SwiftUI animation; rows inserted or removed by a poll appear without animation, because a
+Minimal. The popover's open and close are `NSPopover`'s. Folding and opening a group — a repository,
+Ready, Blocked or Draft, a stack, a board repository — folding *Involved* to its strip, and switching a tab
+or a sub-tab ease in and out over 0.22 s; a tab or sub-tab switch slides the list — in from the right when moving to a tab on the right, from the
+left when moving back — and the popover keeps its height, the list taking what the header and filters leave, so the
+sub-tab row only *Review requested* has moves the list with it instead of resizing the popover for a frame, and the popover's width follows
+the strip, *Involved* sliding out like a drawer: its column keeps its width inside a frame that grows and
+clips it, because laid out at full width at once its rows drew over *Mine* while the popover grew; rows inserted or removed by a poll appear without animation, because a
 list that moves while it is being read loses the reader's place. The refresh symbol rotates with
 `.symbolEffect(.rotate)` while a poll runs. With **Reduce Motion** on, the rotation becomes a static
-symbol with `Updating…` in the header and the disclosure animation is removed. The count never
+symbol with `Updating…` in the header, and folds, the strip and tab switches change at once. The count never
 animates.
 
 ## 11. Accessibility

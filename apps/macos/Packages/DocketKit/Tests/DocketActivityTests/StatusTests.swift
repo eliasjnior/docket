@@ -37,6 +37,47 @@ struct StatusTests {
         #expect(Count.count([WatchedPullRequest(pullRequest: pullRequest, role: .authored, status: status)]) == 0)
     }
 
+    private static func gate(_ url: String?) -> WaitingCheck {
+        WaitingCheck(name: "e2e", detail: "Comment /e2e to run", url: url.flatMap(URL.init(string:)))
+    }
+
+    @Test("Worked example #47: a gate that links to the pull request, with nothing running, is checksWaiting")
+    func example47() {
+        var pullRequest = Fixtures.pullRequest(author: "you", checks: .pending)
+        let gate = Self.gate("https://github.com/acme/api/pull/482#issuecomment-1")
+        let ci = Self.gate("https://ci.acme.dev/job/12")
+        pullRequest.pendingChecks = PendingChecks(running: 0, waiting: [gate, ci])
+        let status = StatusRules.status(of: pullRequest, lastMergeable: nil)
+        #expect(status == .checksWaiting)
+        #expect(StatusRules.waitingChecks(pullRequest) == [gate])
+        let item = WatchedPullRequest(pullRequest: pullRequest, role: .authored, status: status)
+        #expect(MineKind.of(item) == .blocked)
+        #expect(Count.count([item]) == 1)
+    }
+
+    @Test("Worked example #48: the same gate while a check run runs is checksRunning")
+    func example48() {
+        var pullRequest = Fixtures.pullRequest(author: "you", checks: .pending)
+        pullRequest.pendingChecks = PendingChecks(
+            running: 2, waiting: [Self.gate("https://github.com/acme/api/pull/482#issuecomment-1")])
+        #expect(StatusRules.status(of: pullRequest, lastMergeable: nil) == .checksRunning)
+    }
+
+    @Test("Worked example #49: an external CI's status is running however long it takes; an approval waits")
+    func example49() {
+        var pullRequest = Fixtures.pullRequest(author: "you", checks: .pending)
+        for url in [
+            "https://ci.acme.dev/job/12", "https://github.com/acme/api/actions/runs/7",
+            "https://github.com/acme/api/pull/4820", nil,
+        ] {
+            pullRequest.pendingChecks = PendingChecks(running: 0, waiting: [Self.gate(url)])
+            #expect(StatusRules.status(of: pullRequest, lastMergeable: nil) == .checksRunning)
+        }
+        pullRequest.pendingChecks = PendingChecks(
+            running: 0, waiting: [WaitingCheck(name: "deploy / staging", isApproval: true)])
+        #expect(StatusRules.status(of: pullRequest, lastMergeable: nil) == .checksWaiting)
+    }
+
     private static let precedenceCases: [(PullRequest, Status)] = {
         let approvedAndChanges = [
             LatestReview(login: "a", state: .approved), LatestReview(login: "b", state: .changesRequested),

@@ -50,8 +50,12 @@ struct PullRequestDTO: Decodable {
     var mergedBy: LatestReviewNode.Login?
     var body: String?
     var headRefName: String?
+    var baseRefName: String?
     var labels: Connection<LabelNode>?
     var timelineItems: Connection<ForcePushNode>?
+    var additions: Int?
+    var deletions: Int?
+    var changedFiles: Int?
 
     var value: PullRequest? {
         guard let id, let number, let title, let url, let createdAt, let updatedAt, let repository else { return nil }
@@ -62,7 +66,7 @@ struct PullRequestDTO: Decodable {
             repository: repository.nameWithOwner, isArchived: repository.isArchived,
             mergeable: Mergeable(rawValue: mergeable ?? "") ?? .unknown,
             reviewDecision: reviewDecision.flatMap(ReviewDecision.init(rawValue:)),
-            checks: head?.statusCheckRollup?.state.flatMap(CheckState.init(rawValue:)), headOID: head?.oid,
+            checks: head?.statusCheckRollup?.checks, headOID: head?.oid,
             reviewRequests: reviewRequests?.values.compactMap { $0.requestedReviewer?.value } ?? [],
             latestReviews: latestOpinionatedReviews?.values.compactMap { node in
                 guard let login = node.author?.login, let state = ReviewState(rawValue: node.state) else { return nil }
@@ -81,7 +85,9 @@ struct PullRequestDTO: Decodable {
             lastForcePush: timelineItems?.values.last.flatMap { node in
                 guard let at = node.createdAt, let actor = node.actor?.value else { return nil }
                 return ActivityStamp(login: actor.login, isBot: actor.isBot, at: at)
-            }
+            },
+            additions: additions, deletions: deletions, changedFiles: changedFiles, baseRefName: baseRefName,
+            links: Links.extract(from: body).filter { $0.url.absoluteString != url.absoluteString }
         )
     }
 }
@@ -158,7 +164,8 @@ struct DetailDTO: Decodable {
             comments: comments?.values.map { node in
                 Comment(
                     id: node.id, url: node.url, createdAt: node.createdAt, author: node.author?.value,
-                    mentions: Mentions.logins(in: node.body))
+                    mentions: Mentions.logins(in: node.body),
+                    links: Links.extract(from: node.body, source: node.author?.value?.login))
             } ?? [],
             threads: reviewThreads?.values.map { thread in
                 ReviewThread(
@@ -182,8 +189,67 @@ struct DetailDTO: Decodable {
     }
 }
 
+/// One entry of a rollup's contexts: a check run or a commit status.
+struct CheckContextDTO: Decodable {
+    var typename: String?
+    var name: String?
+    var status: String?
+    var detailsUrl: URL?
+    var context: String?
+    var state: String?
+    var description: String?
+    var targetUrl: URL?
+    var createdAt: Date?
+
+    enum CodingKeys: String, CodingKey {
+        case typename = "__typename"
+        case name, status, detailsUrl, context, state, description, targetUrl
+    }
+}
+
+/// A pull request in the answer to `Queries.checks`.
+struct ChecksDTO: Decodable {
+    struct Commit: Decodable { var statusCheckRollup: CommitDTO.Rollup? }
+    struct CommitNode: Decodable { var commit: Commit? }
+    var id: String?
+    var commits: Connection<CommitNode>?
+
+    var pendingChecks: PendingChecks? { commits?.values.last?.commit?.statusCheckRollup?.pendingChecks }
+}
+
 struct CommitDTO: Decodable {
-    struct Rollup: Decodable { var state: String? }
+    struct Rollup: Decodable {
+        static let runningStatuses: Set<String> = ["QUEUED", "IN_PROGRESS", "PENDING", "REQUESTED"]
+
+        var state: String?
+        var contexts: Connection<CheckContextDTO>?
+
+        var checks: CheckState? { state.flatMap(CheckState.init(rawValue:)) }
+
+        /// The summary's state decides whether this is read: asked for with its contexts, GitHub reports some
+        /// pending rollups as `FAILURE`, counting runs a newer push cancelled.
+        var pendingChecks: PendingChecks? {
+            guard let contexts else { return nil }
+            var result = PendingChecks()
+            for context in contexts.values {
+                switch context.typename {
+                case "CheckRun":
+                    if let status = context.status, Self.runningStatuses.contains(status) {
+                        result.running += 1
+                    } else if context.status == "WAITING", let name = context.name {
+                        result.waiting.append(WaitingCheck(name: name, url: context.detailsUrl, isApproval: true))
+                    }
+                case "StatusContext":
+                    if context.state == "PENDING", let name = context.context {
+                        result.waiting.append(
+                            WaitingCheck(name: name, detail: context.description, url: context.targetUrl))
+                    }
+                default: break
+                }
+            }
+            return result
+        }
+    }
     struct Author: Decodable {
         struct User: Decodable { var login: String }
         var name: String?

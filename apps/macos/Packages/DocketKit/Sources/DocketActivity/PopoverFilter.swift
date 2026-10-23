@@ -101,10 +101,16 @@ public enum MineKind: String, CaseIterable, Hashable, Sendable {
     case blocked
     case draft
 
-    public static let blockingStatuses: Set<Status> = [.conflict, .checksFailing, .changesRequested]
+    public static let blockingStatuses: Set<Status> = [.conflict, .checksFailing, .changesRequested, .checksWaiting]
 
-    public static func of(_ item: WatchedPullRequest) -> MineKind {
-        if item.pullRequest.isDraft { return .draft }
+    /// A draft is a draft, unless `conflictedDrafts` puts one with a conflict in Blocked: nothing lands until it
+    /// is rebased. Failing checks on a draft are work in progress either way.
+    public static func of(_ item: WatchedPullRequest, conflictedDrafts: Config.ConflictedDrafts = .draft)
+        -> MineKind
+    {
+        if item.pullRequest.isDraft {
+            return conflictedDrafts == .blocked && item.status == .conflict ? .blocked : .draft
+        }
         return blockingStatuses.contains(item.status) ? .blocked : .ready
     }
 }

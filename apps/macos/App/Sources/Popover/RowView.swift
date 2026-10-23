@@ -23,6 +23,7 @@ struct RowView: View {
     private var pullRequest: PullRequest { item.pullRequest }
     private var age: TimeInterval { now.timeIntervalSince(pullRequest.createdAt) }
     private var waited: TimeInterval { now.timeIntervalSince(item.waitingSince) }
+    private var sinceActivity: TimeInterval { now.timeIntervalSince(item.lastActivity) }
     private var unseen: Bool { item.isUnseen && placement != .ignored }
 
     var body: some View {
@@ -67,13 +68,7 @@ struct RowView: View {
     /// One line that never wraps: reviewers collapse to `+N` first, then labels (`docs/05-design.md` §6.1).
     private var details: some View {
         HStack(spacing: 6) {
-            ViewThatFits(in: .horizontal) {
-                detailLine(reviewers: 3, labels: pullRequest.labels.count)
-                detailLine(reviewers: 1, labels: pullRequest.labels.count)
-                detailLine(reviewers: 0, labels: 2)
-                detailLine(reviewers: 0, labels: 0)
-                StatusChip(status: item.status, short: true)
-            }
+            detailLine
             Spacer(minLength: 4)
             trailing
         }
@@ -86,49 +81,51 @@ struct RowView: View {
                     .foregroundStyle(Color.textSecondary)
                     .accessibilityLabel(Text("Muted", comment: "VoiceOver label of the muted marker"))
             }
-            if placement == .reviewRequested {
-                AgeLabel(elapsed: waited)
-            } else {
-                AgeLabel(elapsed: age)
-            }
+            let shown = placement == .reviewRequested ? waited : age
+            ActivityLabel(elapsed: sinceActivity, besideAge: shown)
+            AgeLabel(elapsed: shown)
         }
         .font(.subheadline)
         .fixedSize()
+        .help(
+            String(
+                localized: "Last activity \(Age.short(sinceActivity)) ago · opened \(Age.short(age)) ago",
+                comment: "Tooltip of a row's times"))
     }
 
-    private func detailLine(reviewers shownReviewers: Int, labels shownLabels: Int) -> some View {
-        HStack(spacing: 6) {
+    /// The size outlasts the labels, the team and the author: it is what decides whether to review now.
+    /// Labels leave first, then reviewers and the team, then the author, and the size last.
+    private var detailLine: some View {
+        DropLayout(spacing: 6) {
+            // Outside *Review requested* no header names the repository, so the row does.
+            if placement != .reviewRequested { RepositoryTag(repository: pullRequest.repository).fixedSize() }
             Text(verbatim: "#\(pullRequest.number)").font(.subheadline.monospacedDigit())
                 .foregroundStyle(Color.textSecondary)
+            if let position = item.stackPosition { StackBadge(position: position) }
             if placement == .ignored {
                 Text(verbatim: item.status.label).font(.subheadline).foregroundStyle(Color.textSecondary)
             } else {
                 StatusChip(status: item.status, short: placement == .reviewRequested)
+                    .help(item.waitingDetails ?? "")
             }
             if pullRequest.isDraft, placement != .ignored { DraftChip() }
+            if placement != .ignored { SizeLabel(pullRequest: pullRequest).layoutValue(key: DropRank.self, value: 1) }
             if placement != .mine, let author = pullRequest.author?.login {
                 Text(verbatim: "@\(author)").font(.subheadline).foregroundStyle(Color.textSecondary)
+                    .layoutValue(key: DropRank.self, value: 2)
             }
-            if placement == .reviewRequested, let team = teamText, shownReviewers > 0 {
+            if placement == .reviewRequested, let team = teamText {
                 Text(verbatim: team).font(.subheadline).foregroundStyle(Color.textSecondary)
+                    .layoutValue(key: DropRank.self, value: 3)
             }
             if placement == .mine {
-                ForEach(Array(item.reviewers.prefix(shownReviewers).enumerated()), id: \.offset) { _, entry in
-                    ReviewerLabel(entry: entry)
-                }
-                if item.reviewers.count > shownReviewers {
-                    Text(verbatim: "+\(item.reviewers.count - shownReviewers)").font(.subheadline)
-                        .foregroundStyle(Color.textSecondary)
+                ForEach(Array(item.reviewers.enumerated()), id: \.offset) { _, entry in
+                    ReviewerLabel(entry: entry).layoutValue(key: DropRank.self, value: 3)
                 }
             }
-            ForEach(pullRequest.labels.prefix(shownLabels), id: \.name) { LabelChip(label: $0) }
-            if pullRequest.labels.count > shownLabels {
-                Text(verbatim: "+\(pullRequest.labels.count - shownLabels)").font(.subheadline)
-                    .foregroundStyle(Color.textSecondary)
-            }
+            ForEach(pullRequest.labels, id: \.name) { LabelChip(label: $0).layoutValue(key: DropRank.self, value: 4) }
         }
         .lineLimit(1)
-        .fixedSize()
     }
 
     private var teamText: String? {
@@ -152,6 +149,12 @@ struct RowMenu: View {
             actions.copy(pullRequest.url.absoluteString)
         }
         Button(String(localized: "Copy Reference", comment: "Row context menu")) { actions.copy(pullRequest.ref) }
+        PullRequestLinksMenu(item: item, open: actions.open)
+        ForEach(item.waitingChecks.filter { $0.url != nil }, id: \.name) { check in
+            Button(String(localized: "Open \(check.name)", comment: "Row context menu: a waiting check")) {
+                check.url.map(actions.open)
+            }
+        }
         Divider()
         let jira = actions.jiraLink(item)
         Button(String(localized: "Open in Jira", comment: "Row context menu")) { jira.map(actions.open) }

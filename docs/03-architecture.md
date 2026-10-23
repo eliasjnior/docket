@@ -101,7 +101,7 @@ here is who does each step.
 | Roles, selection, status, count | `DocketActivity` | — |
 | Diff, reminders, fold, coalesce, cap | `DocketActivity` | — |
 | Commit snapshot, cursors, ledger | `DocketPersistence.StateStore` | `StateStoring` |
-| Deliver | `DocketNotify.UserNotificationSink` | `NotificationSink` |
+| Deliver | `StyledNotificationSink` in `App/Sources/Environment/`: Docket's cards (`05-design.md` §8.1) or `DocketNotify.UserNotificationSink`, as `config.notifications.style` says | `NotificationSink` |
 | Publish to the UI | `WatchStore` on the main actor | — |
 
 The poller publishes one immutable `WatchState` value per poll to `WatchStore`; views never observe
@@ -169,7 +169,7 @@ the port, so the code we wrote is the code under test.
 | `GitHubSource` | `DocketGitHub.GraphQLClient` over `URLSession` | The real client over a `URLProtocol` stub serving recorded, anonymized JSON fixtures from `Tests/DocketGitHubTests/Fixtures` |
 | `TokenProvider` | `GhTokenProvider`, through a `CommandRunner` | The real provider over a `CommandRunner` that returns scripted exit codes and output |
 | `StateStoring`, `ConfigStoring`, `CacheStoring` | `DocketPersistence` JSON stores | The real stores over a temporary directory |
-| `NotificationSink` | `DocketNotify.UserNotificationSink` | `RecordingNotificationSink`, which keeps the composed notifications — the edge is Notification Center itself |
+| `NotificationSink` | `StyledNotificationSink` over `DocketNotify.UserNotificationSink` and the cards | `RecordingNotificationSink`, which keeps the composed notifications — the edge is Notification Center itself |
 | `FocusHoldSink` | Not an adapter: the app target's `DocketFocusFilter` (`SetFocusFilterIntent`, App Intents) calls `NotificationStore.setHold(_:)` from `perform()` (`02` §7.5) | Tests call `setHold` directly; the intent is three lines of wiring and is checked by hand on each macOS release |
 | `ReleaseSource` | `DocketUpdate.GitHubReleasesSource` | The real source over the `URLProtocol` stub, as in Lookout |
 

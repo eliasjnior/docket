@@ -10,53 +10,31 @@ struct FilterBar: View {
     @Bindable var model: PopoverModel
     let actions: PopoverActions
 
+    /// In columns the sub-tabs sit atop the *Review requested* column.
+    private var columns: Bool { watch.config.popoverLayout == .columns }
+    private var layout: Config.MineLayout { watch.config.mineLayout }
+
     var body: some View {
         let sections = watch.sections(filter: model.filter)
         VStack(alignment: .leading, spacing: 8) {
-            if model.tab == .reviewRequested {
+            if model.tab == .reviewRequested, !columns {
                 HStack(spacing: 6) {
-                    ForEach(Triage.allCases, id: \.self) { triage in
-                        subTab(triage, count: sections.triageCounts[triage] ?? 0)
-                    }
+                    TriageTabs(model: model, sections: sections)
                     Spacer(minLength: 0)
-                    ActionsMenu(model: model, sections: sections, layout: watch.config.mineLayout, actions: actions)
+                    ActionsMenu(model: model, sections: sections, layout: layout, actions: actions)
                 }
             }
             HStack(spacing: 6) {
                 FilterChips(watch: watch, model: model)
                 Spacer(minLength: 0)
-                if model.tab != .reviewRequested {
-                    ActionsMenu(model: model, sections: sections, layout: watch.config.mineLayout, actions: actions)
+                if model.tab != .reviewRequested || columns {
+                    ActionsMenu(model: model, sections: sections, layout: layout, actions: actions)
                 }
             }
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 12)
-    }
-
-    private func subTab(_ triage: Triage, count: Int) -> some View {
-        let selected = model.triage == triage
-        return Button {
-            model.triage = triage
-            model.focusedID = nil
-        } label: {
-            HStack(spacing: 8) {
-                Text(verbatim: triage.title)
-                CountBadge(count: count, selected: selected)
-            }
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(selected ? Color.white : Color.textPrimary)
-            .padding(.leading, 12)
-            .padding(.trailing, 4)
-            .frame(height: 28)
-            .background(Capsule().fill(selected ? Color.accent : Color.fillTag))
-            .contentShape(Capsule())
-        }
-        .buttonStyle(.plain)
-        .fixedSize()
-        .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
-        .accessibilityLabel(Text(verbatim: "\(triage.title), \(count)"))
     }
 }
 

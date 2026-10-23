@@ -77,6 +77,120 @@ struct AgeLabel: View {
     }
 }
 
+/// The time since the last human activity (`docs/05-design.md` §6.1), beside the age. Left out when it
+/// reads the same as the age beside it, which is a pull request nobody touched since.
+struct ActivityLabel: View {
+    let elapsed: TimeInterval
+    let besideAge: TimeInterval
+
+    var body: some View {
+        if Age.short(elapsed) != Age.short(besideAge) {
+            HStack(spacing: 2) {
+                Image(systemName: "clock.arrow.circlepath").font(.caption)
+                Text(verbatim: Age.short(elapsed))
+            }
+            .font(.subheadline.monospacedDigit())
+            .foregroundStyle(Color.textSecondary)
+            .fixedSize()
+            .accessibilityHidden(true)
+        }
+    }
+}
+
+/// `+120 −30`, with `L` or `XL` before it for a pull request past one sitting (`docs/05-design.md` §6.1).
+struct SizeLabel: View {
+    let additions: Int?
+    let deletions: Int?
+    let files: Int?
+
+    init(pullRequest: PullRequest) {
+        additions = pullRequest.additions
+        deletions = pullRequest.deletions
+        files = pullRequest.changedFiles
+    }
+
+    /// A whole stack's lines and files.
+    init(additions: Int?, deletions: Int?, files: Int?) {
+        self.additions = additions
+        self.deletions = deletions
+        self.files = files
+    }
+
+    var body: some View {
+        if let additions, let deletions {
+            let size = PullRequestSize.of(lines: additions + deletions)
+            HStack(spacing: 3) {
+                if size.isLarge {
+                    Text(verbatim: size == .extraLarge ? "XL" : "L")
+                        .font(.caption2.weight(.bold))
+                        .foregroundStyle(Color.statusAttention)
+                        .padding(.horizontal, 4)
+                        .background(Capsule().fill(Color.statusAttention.opacity(0.16)))
+                }
+                Text(verbatim: "+\(additions)").foregroundStyle(Color.statusReady)
+                Text(verbatim: "−\(deletions)").foregroundStyle(Color.statusBlocking)
+            }
+            .font(.subheadline.monospacedDigit())
+            .fixedSize()
+            .help(tooltip(additions: additions, deletions: deletions))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(Text(verbatim: tooltip(additions: additions, deletions: deletions)))
+        }
+    }
+
+    private func tooltip(additions: Int, deletions: Int) -> String {
+        let files = files ?? 0
+        return String(
+            localized: "\(additions) lines added and \(deletions) deleted in \(files) files",
+            comment: "Tooltip of a pull request's size")
+    }
+}
+
+/// The repository's identity square and its name, for rows not grouped under a repository header
+/// (`docs/05-design.md` §6.1). The owner is in the tooltip.
+struct RepositoryTag: View {
+    let repository: String
+
+    var body: some View {
+        let name = repository.split(separator: "/").last.map(String.init) ?? repository
+        HStack(spacing: 4) {
+            Text(verbatim: String(name.prefix(1)).uppercased())
+                .font(.system(size: 8, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 13, height: 13)
+                .background(RoundedRectangle(cornerRadius: 3).fill(Color.identity(for: repository)))
+            Text(verbatim: name).lineLimit(1).truncationMode(.tail)
+        }
+        .font(.subheadline)
+        .foregroundStyle(Color.textSecondary)
+        .help(repository)
+        .accessibilityHidden(true)
+    }
+}
+
+/// `2/3`: where a pull request sits in its stack, bottom first (`docs/05-design.md` §6.1).
+struct StackBadge: View {
+    let position: StackPosition
+
+    var body: some View {
+        HStack(spacing: 2) {
+            Image(systemName: "square.stack.3d.up.fill")
+            Text(verbatim: "\(position.index)/\(position.count)").monospacedDigit()
+        }
+        .font(.caption.weight(.semibold))
+        .foregroundStyle(Color.accent)
+        .fixedSize()
+        .help(
+            String(
+                localized: "\(position.index) of \(position.count) in a stack, from the bottom",
+                comment: "Tooltip of the stack badge")
+        )
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(
+            Text("\(position.index) of \(position.count) in a stack", comment: "VoiceOver: stack position"))
+    }
+}
+
 struct ReviewerLabel: View {
     let entry: ReviewerEntry
 
