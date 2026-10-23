@@ -28,10 +28,13 @@ struct SectionsView: View {
                 let groups = sections.reviewRequested(model.triage)
                 if groups.isEmpty { EmptyLine(text: emptyText(.reviewRequested)) }
                 ForEach(groups) { group in
+                    let collapsed = model.collapsedRepositories.contains(group.repository)
                     Section {
-                        rows(group.items, .reviewRequested)
+                        if !collapsed { rows(group.items, .reviewRequested) }
                     } header: {
-                        RepositoryHeader(repository: group.repository, count: group.items.count)
+                        RepositoryHeader(repository: group.repository, count: group.items.count, collapsed: collapsed) {
+                            model.toggle(repository: group.repository)
+                        }
                     }
                 }
                 notShown(.reviewRequested)
@@ -41,15 +44,12 @@ struct SectionsView: View {
                     MineBoard(groups: sections.mineGroups, now: now, actions: actions.row, focusedID: model.focusedID)
                 } else {
                     ForEach(sections.mineGroups) { group in
-                        let collapsed = group.kind == .draft && !model.draftsExpanded
+                        let collapsed = model.collapsedMineGroups.contains(group.kind)
                         Section {
                             if !collapsed { rows(group.items, .mine) }
                         } header: {
-                            MineHeader(
-                                kind: group.kind, count: group.items.count,
-                                collapsed: group.kind == .draft ? collapsed : nil
-                            ) {
-                                model.draftsExpanded.toggle()
+                            MineHeader(kind: group.kind, count: group.items.count, collapsed: collapsed) {
+                                model.toggle(group.kind)
                             }
                         }
                     }
@@ -115,14 +115,24 @@ struct SectionsView: View {
 }
 
 /// A repository group: a raised band with the repository's colour, owner dimmed, name strong, count right.
+/// Clicking it folds the group.
 struct RepositoryHeader: View {
     let repository: String
     let count: Int
+    var collapsed = false
+    var toggle: () -> Void = {}
 
     var body: some View {
+        Button(action: toggle) { label }
+            .buttonStyle(.plain)
+            .accessibilityValue(DisclosureChevron.accessibilityValue(collapsed: collapsed))
+    }
+
+    private var label: some View {
         let parts = repository.split(separator: "/", maxSplits: 1).map(String.init)
         let name = parts.last ?? repository
-        HStack(spacing: 8) {
+        return HStack(spacing: 8) {
+            DisclosureChevron(collapsed: collapsed)
             Text(verbatim: String(name.prefix(1)).uppercased())
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.white)
@@ -142,8 +152,31 @@ struct RepositoryHeader: View {
         .background(.regularMaterial)
         .background(Color.fillRaised)
         .overlay(alignment: .bottom) { Hairline() }
+        .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
+    }
+}
+
+/// The arrow on a group header: right when folded, down when open.
+struct DisclosureChevron: View {
+    let collapsed: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Image(systemName: "chevron.right")
+            .font(.caption.weight(.bold))
+            .foregroundStyle(Color.textSecondary)
+            .rotationEffect(.degrees(collapsed ? 0 : 90))
+            .animation(reduceMotion ? nil : .default, value: collapsed)
+            .frame(width: 10)
+            .accessibilityHidden(true)
+    }
+
+    static func accessibilityValue(collapsed: Bool) -> String {
+        collapsed
+            ? String(localized: "Collapsed", comment: "Group header state")
+            : String(localized: "Expanded", comment: "Group header state")
     }
 }
 

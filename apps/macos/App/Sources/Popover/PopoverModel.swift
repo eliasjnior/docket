@@ -18,8 +18,18 @@ final class PopoverModel {
     var triage: Triage = .humans
     /// The row the keyboard focus ring is on (FR-47).
     var focusedID: String?
-    /// *Mine*'s Draft group in the list layout starts collapsed (spec §7).
-    var draftsExpanded = false
+    /// Repository groups of *Review requested* the user folded.
+    var collapsedRepositories: Set<String> = []
+    /// *Mine*'s groups folded in the list layout; Draft starts collapsed (spec §7).
+    var collapsedMineGroups: Set<MineKind> = [.draft]
+
+    func toggle(repository: String) {
+        collapsedRepositories.formSymmetricDifference([repository])
+    }
+
+    func toggle(_ kind: MineKind) {
+        collapsedMineGroups.formSymmetricDifference([kind])
+    }
 
     /// `Escape`: the most recently added filter first, then the popover (`docs/05-design.md` §11).
     func clearFilter() -> Bool {

@@ -101,8 +101,8 @@ opening the popover.
 | Property | Value | Why |
 |---|---|---|
 | Width | 460 pt; 640 pt while *Mine* is shown as a board | Three equal tabs fit `Review requested` and its count circle with room on both sides; three board columns need the room |
-| Height | Content height, at most 640 pt or the screen's visible height minus 40 pt, whichever is smaller | A short list does not leave an empty panel; a long one never runs off a 13-inch screen |
-| Scrolling | The list scrolls; the header, tabs and filters stay fixed. The list's height is measured, not estimated: a lazy stack's estimate left empty space around a short list | Refresh and the filters are always reachable |
+| Height | Fixed: 640 pt or the screen's visible height minus 40 pt, whichever is smaller, whatever the list holds. A full screen (§7.1) keeps its content height | A popover that followed its rows jumped on every fold and tab switch; a fixed one never runs off a 13-inch screen |
+| Scrolling | The list scrolls; the header, tabs and filters stay fixed | Refresh and the filters are always reachable |
 | Background | `windowBackgroundColor`, solid; group headers add a raised band | Through the popover's vibrant material, text read pale and see-through |
 
 ### 5.2 Layout
@@ -161,13 +161,16 @@ popover. A click on a grouped notification opens the popover with that repositor
 A **repository header** is a raised band: an 18 pt rounded square in a colour derived from the
 repository name (FNV-1a into blue, purple, pink, teal, indigo, cyan, brown and mint) with the name's
 initial, then the owner in `text.secondary`, `/`, the name in semibold, and the count circle on the
-right. Headers stay pinned at the top while their rows scroll and are replaced by the next group's.
+right, with a disclosure chevron before the square. Headers stay pinned at the top while their rows
+scroll and are replaced by the next group's. Clicking a header folds its group: the chevron points
+right and the rows, and the keyboard focus, skip it until it is opened again. Folds last for the life
+of the process.
 
 *Mine* as a **list** uses the same pinned headers, one per group, with a coloured dot: green Ready,
-red Blocked, grey Draft. Draft starts collapsed and opens with its chevron. As a **board**, the
-three groups are columns side by side; each card shows the status rail, the title on up to two
-lines, `owner/name #number` and the age, then the blocking reason (`Conflict with the base branch`,
-`Checks failing`, `Changes requested by @carla`) or the status pill. A card's column follows from its
+red Blocked, grey Draft. Every group folds from its chevron like a repository; Draft starts
+collapsed. As a **board**, the three groups are columns side by side; each card shows the status
+rail, the title on up to two lines, `owner/name #number` and the age, then the blocking reason
+(`Conflict with the base branch`, `Checks failing`, `Changes requested by @carla`) or the status pill. A card's column follows from its
 state; nothing is dragged.
 
 When a section holds more than its search returned, its last line reads `+N not shown`
