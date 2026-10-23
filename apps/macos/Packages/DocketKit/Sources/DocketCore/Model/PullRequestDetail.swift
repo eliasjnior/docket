@@ -57,13 +57,18 @@ public struct Comment: Codable, Hashable, Sendable, Identifiable {
     public var createdAt: Date
     public var author: Actor?
     public var mentions: [String]
+    /// The links in its text, which is never kept: a bot's preview deploy, for instance.
+    public var links: [PullRequestLink]
 
-    public init(id: String, url: URL, createdAt: Date, author: Actor?, mentions: [String] = []) {
+    public init(
+        id: String, url: URL, createdAt: Date, author: Actor?, mentions: [String] = [], links: [PullRequestLink] = []
+    ) {
         self.id = id
         self.url = url
         self.createdAt = createdAt
         self.author = author
         self.mentions = mentions
+        self.links = links
     }
 }
 

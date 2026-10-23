@@ -31,14 +31,32 @@ enum Queries {
     static let reviewer =
         "requestedReviewer { __typename ... on User { login } ... on Team { slug organization { login } } }"
 
+    /// What a pending rollup is made of, read only for the pull requests whose rollup is pending: asked for
+    /// every summary, the contexts made GitHub time out (§6.1).
+    static let checks = """
+        query($ids: [ID!]!) {
+          nodes(ids: $ids) {
+            ... on PullRequest {
+              id
+              commits(last: 1) {
+                nodes { commit { statusCheckRollup { state contexts(first: 100) { nodes { __typename
+                  ... on CheckRun { name status detailsUrl }
+                  ... on StatusContext { context state description targetUrl } } } } } }
+              }
+            }
+          }
+          \(rateLimit)
+        }
+        """
+
     static let summary = """
         query($ids: [ID!]!) {
           nodes(ids: $ids) {
             ... on PullRequest {
-              id number title url state isDraft createdAt updatedAt body headRefName
+              id number title url state isDraft createdAt updatedAt body headRefName baseRefName
               author { \(actor) }
               repository { nameWithOwner isArchived }
-              mergeable reviewDecision mergedBy { login }
+              mergeable reviewDecision mergedBy { login } additions deletions changedFiles
               labels(first: 10) { nodes { name color } }
               commits(last: 1) {
                 nodes { commit { oid committedDate author { name user { login } } statusCheckRollup { state } } }

@@ -5,6 +5,8 @@ public enum Status: String, Codable, Hashable, Sendable, CaseIterable, Comparabl
     case conflict
     case checksFailing
     case changesRequested
+    /// Pending, nothing running, and a check waits for a person (§3.2).
+    case checksWaiting
     case checksRunning
     case readyToMerge
     case waitingForReview
@@ -16,10 +18,11 @@ public enum Status: String, Codable, Hashable, Sendable, CaseIterable, Comparabl
         case .conflict: 0
         case .checksFailing: 1
         case .changesRequested: 2
-        case .checksRunning: 3
-        case .readyToMerge: 4
-        case .waitingForReview: 5
-        case .noReviewers: 6
+        case .checksWaiting: 3
+        case .checksRunning: 4
+        case .readyToMerge: 5
+        case .waitingForReview: 6
+        case .noReviewers: 7
         }
     }
 

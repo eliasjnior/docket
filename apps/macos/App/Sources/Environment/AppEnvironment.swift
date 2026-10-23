@@ -23,6 +23,8 @@ final class AppEnvironment {
     let updates: UpdateStore
     let loginItem = LoginItem()
     private let notifications = UserNotificationSink()
+    /// Docket's own notification cards (`docs/05-design.md` §8.1).
+    let cards = CardPanelController()
     private var delegate: NotificationDelegate?
     private let monitor = NWPathMonitor()
     private var observers: [NSObjectProtocol] = []
@@ -45,7 +47,11 @@ final class AppEnvironment {
         self.tokens = tokens
         let github = GraphQLClient(tokens: tokens)
         self.github = github
-        let poller = Poller(github: github, tokens: tokens, storage: storage, notifications: notifications)
+        let cards = cards
+        let sink = StyledNotificationSink(
+            system: notifications, settings: { await MainActor.run { configStore.config.notifications } },
+            present: { list, sound in cards.show(list, sound: sound) })
+        let poller = Poller(github: github, tokens: tokens, storage: storage, notifications: sink)
         self.poller = poller
         let bundle = Bundle.main
         let repository =
@@ -114,6 +120,29 @@ final class AppEnvironment {
         }
         self.delegate = delegate
         UNUserNotificationCenter.current().delegate = delegate
+    }
+
+    /// Settings' `Show Example`: one card of each common kind, from synthetic events (`acme/api`, `ana`).
+    func showExampleCards() {
+        let now = Date()
+        let url = URL(string: "https://github.com/acme/api/pull/482") ?? URL(fileURLWithPath: "/")
+        func event(_ kind: EventKind, actor: String, decision: ReviewState? = nil) -> Event {
+            Event(
+                kind: kind, itemID: "example-\(kind.rawValue)-\(now.timeIntervalSince1970)",
+                pullRequestID: "example", repository: "acme/api", number: 482, title: "Fix login redirect loop",
+                url: url, actor: actor, decision: decision, at: now)
+        }
+        let planned = [
+            PlannedNotification(
+                repository: "acme/api",
+                content: .events(.reviewSubmitted, [event(.reviewSubmitted, actor: "bruno", decision: .approved)])),
+            PlannedNotification(
+                repository: "acme/api", content: .events(.reviewRequested, [event(.reviewRequested, actor: "ana")])),
+        ]
+        let settings = configStore.config.notifications
+        cards.show(
+            planned.map { NotificationCard(ComposedNotification($0, now: now), settings: settings) },
+            sound: settings.sound)
     }
 
     func requestNotificationPermission() async {

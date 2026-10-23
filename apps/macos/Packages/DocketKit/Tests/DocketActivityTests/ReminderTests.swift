@@ -259,6 +259,17 @@ struct ReminderTests {
         #expect(Reminders.inQuietHours(Fixtures.now, daytime, timeZone: .gmt))
     }
 
+    @Test func theDefaultConfigNotifiesTheRequestOnceAndNeverReminds() {
+        var timeline = Timeline()
+        timeline.config = Config()
+        timeline.poll([])
+        timeline.advance(minute)
+        let (pullRequest, detail) = requested(timeline: &timeline)
+        let first = timeline.poll([pullRequest], [detail])
+        #expect(first.notifications.map(\.kind) == [.reviewRequested])
+        #expect(run(&timeline, pullRequest, detail, for: 5 * hour).isEmpty)
+    }
+
     @Test func remindersOffOrHoldingSendNothing() {
         for holding in [false, true] {
             var timeline = Timeline()

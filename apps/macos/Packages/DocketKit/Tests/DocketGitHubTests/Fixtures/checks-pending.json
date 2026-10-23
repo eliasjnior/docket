@@ -1,0 +1,86 @@
+{
+ "data": {
+  "nodes": [
+   {
+    "id": "PR_9",
+    "commits": {
+     "nodes": [
+      {
+       "commit": {
+        "statusCheckRollup": {
+         "state": "FAILURE",
+         "contexts": {
+          "nodes": [
+           {
+            "__typename": "CheckRun",
+            "name": "lint",
+            "status": "COMPLETED",
+            "detailsUrl": "https://github.com/acme/api/runs/1"
+           },
+           {
+            "__typename": "CheckRun",
+            "name": "deploy / staging",
+            "status": "WAITING",
+            "detailsUrl": "https://github.com/acme/api/runs/2"
+           },
+           {
+            "__typename": "StatusContext",
+            "context": "e2e",
+            "state": "PENDING",
+            "description": "Comment /e2e to run",
+            "targetUrl": "https://github.com/acme/api/pull/470#issuecomment-1"
+           },
+           {
+            "__typename": "StatusContext",
+            "context": "coverage",
+            "state": "SUCCESS",
+            "description": "92%",
+            "targetUrl": null
+           }
+          ]
+         }
+        }
+       }
+      }
+     ]
+    }
+   },
+   {
+    "id": "PR_10",
+    "commits": {
+     "nodes": [
+      {
+       "commit": {
+        "statusCheckRollup": {
+         "state": "PENDING",
+         "contexts": {
+          "nodes": [
+           {
+            "__typename": "CheckRun",
+            "name": "test",
+            "status": "IN_PROGRESS",
+            "detailsUrl": null
+           },
+           {
+            "__typename": "CheckRun",
+            "name": "build",
+            "status": "QUEUED",
+            "detailsUrl": null
+           }
+          ]
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  ],
+  "rateLimit": {
+   "cost": 1,
+   "remaining": 4989,
+   "limit": 5000,
+   "resetAt": "2026-10-21T13:00:00Z"
+  }
+ }
+}

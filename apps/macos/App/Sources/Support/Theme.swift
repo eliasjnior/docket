@@ -50,6 +50,7 @@ extension Status {
         case .conflict: "exclamationmark.triangle.fill"
         case .checksFailing: "xmark.circle.fill"
         case .changesRequested: "arrow.uturn.backward.circle.fill"
+        case .checksWaiting: "hand.raised.fill"
         case .checksRunning: "circle.dotted"
         case .readyToMerge: "checkmark.circle.fill"
         case .waitingForReview: "eye"
@@ -62,6 +63,7 @@ extension Status {
         case .conflict: String(localized: "Conflict", comment: "Status chip: the pull request has a merge conflict")
         case .checksFailing: String(localized: "Checks failing", comment: "Status chip")
         case .changesRequested: String(localized: "Changes requested", comment: "Status chip")
+        case .checksWaiting: String(localized: "Checks waiting", comment: "Status chip: a check waits for a person")
         case .checksRunning: String(localized: "Checks running", comment: "Status chip")
         case .readyToMerge: String(localized: "Ready to merge", comment: "Status chip")
         case .waitingForReview: String(localized: "Waiting for review", comment: "Status chip")
@@ -77,7 +79,7 @@ extension Status {
     var color: Color {
         switch self {
         case .conflict, .checksFailing: .statusBlocking
-        case .changesRequested: .statusAttention
+        case .changesRequested, .checksWaiting: .statusAttention
         case .readyToMerge: .statusReady
         case .checksRunning: .statusRunning
         case .waitingForReview: .statusWaiting

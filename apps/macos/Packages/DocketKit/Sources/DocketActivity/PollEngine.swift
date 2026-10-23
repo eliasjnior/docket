@@ -21,7 +21,8 @@ public enum PollEngine {
         summaries: [PullRequest], discovery: Discovery, state: PersistedState, viewer: ViewerContext, now: Date,
         previousCache: SnapshotCache? = nil
     ) -> [String] {
-        let unread = Set((previousCache?.pullRequests ?? []).filter { !$0.activityRead }.map(\.id))
+        let unread = Set(
+            (previousCache?.pullRequests ?? []).filter { !$0.activityRead || !$0.linksRead }.map(\.id))
         return summaries.filter { pullRequest in
             let cursor = state.cursors[pullRequest.id]
             // One last read of your own pull request as it closes, to learn who closed it (FR-62).
@@ -172,9 +173,11 @@ struct PollRun {
             detail.map { Reviewers.commenters(in: $0, pullRequest: pullRequest, viewer: viewer) }
             ?? old?.commenters ?? []
         let activity = detail.map(HumanActivity.stamps(in:)) ?? old?.activity ?? []
+        let botLinks = detail.map { $0.botLinks(extra: input.config.triage.extraBotLogins) } ?? old?.botLinks ?? []
         return CachedPullRequest(
             pullRequest: pullRequest, role: role, request: request, commenters: commenters, activity: activity,
-            activityRead: detail != nil || old?.activityRead == true)
+            activityRead: detail != nil || old?.activityRead == true, botLinks: botLinks,
+            linksRead: detail != nil || old?.linksRead == true)
     }
 
     /// A node that failed this poll keeps its previous snapshot (`docs/02-activity-detection.md` §9).

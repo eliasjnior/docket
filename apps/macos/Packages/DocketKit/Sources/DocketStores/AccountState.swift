@@ -23,7 +23,28 @@ public enum AccountState: Hashable, Sendable {
 public enum PollProblem: Hashable, Sendable {
     case offline
     case rateLimited(until: Date)
-    case failed(at: Date)
+    /// `at`: when the data shown was fetched.
+    case failed(at: Date, reason: PollFailure)
+}
+
+/// Why the last poll failed, for the header's warning (`docs/05-design.md` §7.2).
+public enum PollFailure: Hashable, Sendable {
+    /// No answer from GitHub: the connection dropped or timed out.
+    case network
+    /// GitHub answered with an error status, such as `502` or `504`.
+    case server(status: Int)
+    /// GitHub answered with something Docket could not read.
+    case invalidResponse
+    case other(String)
+
+    init(_ error: Error) {
+        switch error {
+        case GitHubError.network: self = .network
+        case GitHubError.server(let status): self = .server(status: status)
+        case GitHubError.invalidResponse: self = .invalidResponse
+        default: self = .other(String(describing: error))
+        }
+    }
 }
 
 /// An organization whose results SAML left out (FR-13).

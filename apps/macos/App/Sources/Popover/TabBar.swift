@@ -27,8 +27,7 @@ struct TabBar: View {
     private func segment(_ section: PopoverModel.Section, _ title: String, _ count: Int) -> some View {
         let selected = model.tab == section
         return Button {
-            model.tab = section
-            model.focusedID = nil
+            model.switchTo(section)
         } label: {
             HStack(spacing: 5) {
                 Text(verbatim: title)

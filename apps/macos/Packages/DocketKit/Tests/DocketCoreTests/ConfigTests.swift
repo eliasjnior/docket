@@ -81,6 +81,23 @@ struct ConfigTests {
         #expect(try decoder.decode(Config.self, from: encoder.encode(config)) == config)
     }
 
+    @Test func anOlderFileGetsCardsThatLeaveByThemselvesAndNoReminders() throws {
+        let config = try decode(
+            #"{ "notifications": { "reviewRequested": true }, "reminders": { "intervalMinutes": 30 } }"#)
+        #expect(config.notifications.style == .card)
+        #expect(config.notifications.sound)
+        #expect(!config.notifications.keepCardsUntilActedOn)
+        #expect(config.notifications.cardSeconds == 10)
+        #expect(try decode(#"{ "notifications": { "cardSeconds": 7 } }"#).notifications.cardSeconds == 10)
+        #expect(!config.reminders.enabled)
+        #expect(config.reminders.intervalMinutes == 30)
+        #expect(config.popoverLayout == .tabs)
+        #expect(config.conflictedDrafts == .draft)
+        let unknown = try decode(#"{ "notifications": { "style": "hologram" }, "popoverLayout": "grid" }"#)
+        #expect(unknown.notifications.style == .card)
+        #expect(unknown.popoverLayout == .tabs)
+    }
+
     @Test(arguments: [
         (EventKind.reviewRequested, true), (.reviewSubmitted, false), (.commentAdded, true), (.threadReply, true),
     ])

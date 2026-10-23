@@ -87,12 +87,15 @@ struct GraphQLClientTests {
         #expect(first.author == Actor(login: "ana"))
         #expect(first.mergeable == .conflicting)
         #expect(first.checks == .failure)
+        #expect(first.pendingChecks == nil)
+        #expect(first.additions == 120 && first.deletions == 30 && first.changedFiles == 8)
         #expect(first.headOID == "abc123")
         #expect(first.reviewDecision == .reviewRequired)
         #expect(first.reviewRequests == [.user(login: "you"), .team(organization: "acme", slug: "backend")])
         #expect(first.latestReviews == [LatestReview(login: "bruno", state: .approved)])
         #expect(first.labels == [Label(name: "backend", color: "0e8a16")])
         #expect(first.headRefName == "api-12-login-loop")
+        #expect(first.baseRefName == "main")
         #expect(first.issueLinks.map(\.absoluteString) == ["https://acme.atlassian.net/browse/API-12"])
         #expect(first.headCommit == CommitStamp(login: "ana", at: Date(timeIntervalSince1970: 1_792_573_200)))
         #expect(first.lastForcePush?.login == "dependabot")
@@ -102,7 +105,33 @@ struct GraphQLClientTests {
         #expect(draft.author?.isBot == true)
         #expect(draft.mergeable == .unknown)
         #expect(draft.checks == nil)
+        #expect(draft.additions == nil)
         #expect(draft.labels.isEmpty && draft.issueLinks.isEmpty && draft.headCommit == nil)
+    }
+
+    @Test func aPendingRollupSaysWhatRunsAndWhatWaits() async throws {
+        let (client, _) = client([ok("summary-pending"), ok("checks-pending")])
+        let batch = try await client.summaries(ids: ["PR_9", "PR_10"]).value
+        #expect(StubURLProtocol.requests.count == 2)
+        #expect(
+            (body(StubURLProtocol.requests[1])["variables"] as? [String: Any])?["ids"] as? [String] == [
+                "PR_9", "PR_10",
+            ])
+        let waiting = try #require(batch.pullRequests.first { $0.id == "PR_9" }?.pendingChecks)
+        #expect(waiting.running == 0)
+        #expect(waiting.waiting.map(\.name) == ["deploy / staging", "e2e"])
+        #expect(waiting.waiting.map(\.isApproval) == [true, false])
+        #expect(waiting.waiting.last?.detail == "Comment /e2e to run")
+        #expect(waiting.waiting.last?.url?.absoluteString == "https://github.com/acme/api/pull/470#issuecomment-1")
+        let running = try #require(batch.pullRequests.first { $0.id == "PR_10" }?.pendingChecks)
+        #expect(running == PendingChecks(running: 2, waiting: []))
+    }
+
+    @Test func pendingChecksThatCannotBeReadLeaveThePollStanding() async throws {
+        let (client, _) = client([ok("summary-pending"), StubURLProtocol.Stub(status: 504, body: Data())])
+        let batch = try await client.summaries(ids: ["PR_9", "PR_10"]).value
+        #expect(batch.pullRequests.count == 2)
+        #expect(batch.pullRequests.allSatisfy { $0.checks == .pending && $0.pendingChecks == nil })
     }
 
     @Test func summariesAreReadInBatchesOfAHundred() async throws {

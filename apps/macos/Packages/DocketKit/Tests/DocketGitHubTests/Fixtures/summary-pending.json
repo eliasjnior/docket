@@ -1,0 +1,95 @@
+{
+ "data": {
+  "nodes": [
+   {
+    "id": "PR_9",
+    "number": 470,
+    "title": "Add bulk edit",
+    "url": "https://github.com/acme/api/pull/470",
+    "state": "OPEN",
+    "isDraft": false,
+    "createdAt": "2026-10-19T12:00:00Z",
+    "updatedAt": "2026-10-21T11:00:00Z",
+    "author": {
+     "__typename": "User",
+     "login": "you"
+    },
+    "repository": {
+     "nameWithOwner": "acme/api",
+     "isArchived": false
+    },
+    "mergeable": "MERGEABLE",
+    "reviewDecision": "REVIEW_REQUIRED",
+    "commits": {
+     "nodes": [
+      {
+       "commit": {
+        "oid": "f00",
+        "committedDate": "2026-10-21T09:00:00Z",
+        "author": {
+         "name": "You",
+         "user": {
+          "login": "you"
+         }
+        },
+        "statusCheckRollup": {
+         "state": "PENDING"
+        }
+       }
+      }
+     ]
+    },
+    "reviewRequests": {
+     "nodes": []
+    },
+    "latestOpinionatedReviews": {
+     "nodes": []
+    }
+   },
+   {
+    "id": "PR_10",
+    "number": 471,
+    "title": "Rename settings",
+    "url": "https://github.com/acme/api/pull/471",
+    "state": "OPEN",
+    "isDraft": false,
+    "createdAt": "2026-10-19T12:00:00Z",
+    "updatedAt": "2026-10-21T11:00:00Z",
+    "author": {
+     "__typename": "User",
+     "login": "you"
+    },
+    "repository": {
+     "nameWithOwner": "acme/api",
+     "isArchived": false
+    },
+    "mergeable": "MERGEABLE",
+    "reviewDecision": null,
+    "commits": {
+     "nodes": [
+      {
+       "commit": {
+        "oid": "f01",
+        "statusCheckRollup": {
+         "state": "PENDING"
+        }
+       }
+      }
+     ]
+    },
+    "reviewRequests": {
+     "nodes": []
+    },
+    "latestOpinionatedReviews": {
+     "nodes": []
+    }
+   }
+  ],
+  "rateLimit": {
+   "cost": 1,
+   "remaining": 4990,
+   "limit": 5000,
+   "resetAt": "2026-10-21T13:00:00Z"
+  }
+ }
+}

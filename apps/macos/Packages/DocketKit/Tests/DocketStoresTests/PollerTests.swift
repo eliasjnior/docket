@@ -82,7 +82,8 @@ struct PollerTests {
         GitHubWorld.update { $0.status = 502 }
         let snapshot = await harness.poll()
         #expect(snapshot.cache?.pullRequests.count == 1)
-        if case .failed = snapshot.problem {
+        if case .failed(_, let reason) = snapshot.problem {
+            #expect(reason == .server(status: 502))
         } else {
             Issue.record("expected a failed poll, got \(String(describing: snapshot.problem))")
         }

@@ -43,16 +43,22 @@ written by a poll.
 | `triage.countDrafts` | Bool | `false` | `02` §3.6 |
 | `triage.notifyBots` | Bool | `false` | Review-request notifications and reminders for bot pull requests, `02` §3.6 |
 | `mineLayout` | `"list"` \| `"board"` | `"list"` | How *Mine* is shown, `05-design.md` §5.3 |
+| `popoverLayout` | `"tabs"` \| `"columns"` | `"tabs"` | The sections one at a time, or side by side in a wider popover, `05-design.md` §5.1 |
+| `conflictedDrafts` | `"draft"` \| `"blocked"` | `"draft"` | Which *Mine* group a draft with a conflict goes to, `05-design.md` §5.3 |
 | `integrations.terminalApp` | String \| null | `null` | Path of the terminal app; `null` uses the `.command` handler (FR-87) |
 | `integrations.reviewCommand` | String | A `claude` command | The template of *Review with AI*; `{url}`, `{repo}`, `{number}`, `{title}`, `{branch}` |
 | `integrations.summarizeCommand` | String | A `claude` command | The template of *Summarize with AI* |
 | `integrations.clones` | `{owner/name: path}` | `{}` | Local clones the commands run in |
+| `notifications.style` | `"card"` \| `"system"` | `"card"` | FR-68: Docket's cards or Notification Center, `05-design.md` §8.1 |
+| `notifications.sound` | Bool | `true` | A sound with each new card; Notification Center's sound follows the system settings |
+| `notifications.keepCardsUntilActedOn` | Bool | `false` | Review requests, reminders and mentions stay as cards until acted on; off, every card leaves by itself, `05-design.md` §8.1 |
+| `notifications.cardSeconds` | `6` \| `10` \| `15` \| `30` | `10` | How long a card stays before it leaves by itself |
 | `notifications.reviewRequested` | Bool | `true` | FR-60, one per kind of `02` §5.3 |
 | `notifications.reviewSubmitted` | Bool | `true` | |
 | `notifications.commentAdded` | Bool | `true` | |
 | `notifications.threadReply` | Bool | `true` | |
 | `notifications.checksFailed`, `.closedByOther`, `.mention` | Bool | `true` | The P1 kinds (FR-61, FR-62, FR-64); read only once they ship |
-| `reminders.enabled` | Bool | `true` | FR-66 |
+| `reminders.enabled` | Bool | `false` | FR-66 |
 | `reminders.intervalMinutes` | `15` \| `30` \| `60` \| `120` \| `240` \| `480` | `60` | FR-66 |
 | `reminders.quietHours.enabled` | Bool | `false` | FR-67 |
 | `reminders.quietHours.start` | `"HH:mm"` | `"22:00"` | Local time, 24-hour; must differ from `end` (`02` §5.7) |
@@ -105,7 +111,7 @@ Example:
   "notifications": { "commentAdded": true, "reviewRequested": true, "reviewSubmitted": true, "threadReply": true },
   "polling": { "intervalSeconds": 60 },
   "reminders": {
-    "enabled": true,
+    "enabled": false,
     "intervalMinutes": 60,
     "quietHours": { "enabled": false, "end": "08:00", "start": "22:00" }
   },
@@ -179,7 +185,7 @@ summaries by `DocketActivity`, so a rule change in an update applies to cached d
 | `version` | integer | §1 |
 | `fetchedAt` | timestamp | Drives "updated N min ago" |
 | `viewerLogin` | String | A mismatch with `state.json` discards the cache |
-| `pullRequests` | `[PullRequestSummary]` | The fields of the summary query in `02` §6.1, plus each pull request's latest review-request time and requester for display, and `activity`: the latest review, comment or request per actor from the last detail read, with `activityRead` once a detail was read (`02` §3.5) |
+| `pullRequests` | `[PullRequestSummary]` | The fields of the summary query in `02` §6.1, `pendingChecks` from the checks query while the rollup is pending, plus each pull request's latest review-request time and requester for display, and `activity`: the latest review, comment or request per actor from the last detail read, with `activityRead` once a detail was read (`02` §3.5); `links` from the description, and `botLinks` from bots' comments with `linksRead` once a detail was read since they existed, so the next poll reads each detail once (`05-design.md` §6.5) |
 | `knownRepositories` | `[{name, lastSeenAt}]` | Repositories seen in the last 90 days, for the selection picker (FR-73) |
 
 `cache/` is marked `isExcludedFromBackup`: it is rebuilt by one poll and holds titles from private
@@ -225,12 +231,12 @@ your selection and tags, nothing else.
 | Not stored | Why |
 |---|---|
 | **The token** | Read from `gh` at launch and on `401` (D-02). A second copy would be a second thing to revoke and a second place to leak from |
-| **Comment and review bodies** | The notification is a pointer to the conversation, not a copy of it. Review `body` is read only to test emptiness (`02` §5.5) and discarded; comment and review text is read only to extract the logins it mentions (`02` §5.3 `mention`), and discarded the same way |
+| **Comment and review bodies** | The notification is a pointer to the conversation, not a copy of it. Review `body` is read only to test emptiness (`02` §5.5) and discarded; comment and review text is read only to extract the logins it mentions (`02` §5.3 `mention`) and, for a bot's conversation comment, the links in it (`PR Links`, at most 8 per bot), and discarded the same way |
 | **Diffs, file names, code** | Docket does not read them at all (`01-product.md` §6) |
 | **Notification history** | Only event IDs for deduplication. A history would be a second inbox, which is what Docket replaces |
 | **Avatars** | Logins are shown as text (`05-design.md`). Avatars would add an image host, a cache and colleagues' faces on disk for no decision they change |
 | **E-mail addresses, names, other profile fields** | Not queried, except the head commit's git author name, read only to tell a bot's commit (`dependabot[bot]`) and discarded |
-| **Pull request bodies** | Read only to extract issue links for *Open in Jira* (`02` §6.1); the links are kept, the text is discarded |
+| **Pull request bodies** | Read only to extract issue links for *Open in Jira* (`02` §6.1) and the links for `PR Links` (at most 10, images and badges left out); the links and their own text are kept, the rest is discarded |
 | **GitHub's notification inbox** | Never read (D-07) |
 | **Anything about pull requests outside the watch set** | Discovery returns IDs; only watched ones are summarized |
 

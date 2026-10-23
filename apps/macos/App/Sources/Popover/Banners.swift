@@ -19,39 +19,6 @@ struct Banners: View {
                     action: String(localized: "Authorize", comment: "SAML banner button")
                 ) { actions.row.open(organization.url) }
             }
-            switch watch.problem {
-            case .rateLimited(let until):
-                BannerRow(
-                    symbol: "clock", color: .textSecondary,
-                    text: String(
-                        localized: "Paused by GitHub's rate limit until \(Self.time(until, now: now)).",
-                        comment: "Rate-limit banner"))
-            case .offline:
-                BannerRow(
-                    symbol: "wifi.slash", color: .textSecondary,
-                    text: watch.fetchedAt.map {
-                        String(
-                            localized: "Offline. Showing data from \(Self.time($0, now: now)).",
-                            comment: "Offline banner")
-                    } ?? String(localized: "Offline.", comment: "Offline banner without data"))
-            case .failed(let at):
-                BannerRow(
-                    symbol: "exclamationmark.triangle", color: .statusAttention,
-                    text: String(
-                        localized: "Couldn't update. Showing data from \(Self.time(at, now: now)).",
-                        comment: "Failed poll banner"),
-                    action: String(localized: "Try Again", comment: "Failed poll banner button"),
-                    perform: actions.refresh)
-            case nil:
-                // Moved from the header: the list is older than two poll intervals (FR-44).
-                if !watch.isPolling, watch.isStale(now: now), let fetchedAt = watch.fetchedAt {
-                    BannerRow(
-                        symbol: "clock.arrow.circlepath", color: .textSecondary,
-                        text: String(
-                            localized: "Updated \(max(1, Int(now.timeIntervalSince(fetchedAt) / 60))) min ago",
-                            comment: "Banner when the list is older than two poll intervals"))
-                }
-            }
             if watch.snapshot.state.baselineAt != nil, watch.config.launchAtLogin == nil {
                 HStack(spacing: 8) {
                     Image(systemName: "power").foregroundStyle(Color.textSecondary)
@@ -79,7 +46,7 @@ struct Banners: View {
                     action: String(localized: "Deliver Now", comment: "Focus hold banner button"),
                     perform: actions.deliverHeld)
             }
-            if permission.status == .denied {
+            if permission.status == .denied, watch.config.notifications.style == .system {
                 BannerRow(
                     symbol: "bell.slash", color: .textSecondary,
                     text: String(localized: "Notifications are off for Docket.", comment: "Permission banner"),

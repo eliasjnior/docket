@@ -20,6 +20,7 @@ struct SettingsView {
     let account: AccountSettingsModel
     let permission: NotificationPermission
     let requestPermission: () -> Void
+    let showExampleCards: () -> Void
     let checkRepository: (String) async -> Bool
     let updates: UpdateStore
     let info: AppInfo
@@ -42,7 +43,7 @@ struct SettingsView {
                 String(localized: "Notifications", comment: "Settings tab"), "bell",
                 NotificationsSettingsView(
                     configStore: configStore, permission: permission, requestPermission: requestPermission,
-                    holdSince: watch.snapshot.state.focusHold?.since),
+                    showExampleCards: showExampleCards, holdSince: watch.snapshot.state.focusHold?.since),
                 scrolls: true),
             tab(
                 String(localized: "General", comment: "Settings tab"), "gearshape",
@@ -209,6 +210,24 @@ struct GeneralSettingsView: View {
                 )
                 .font(.caption).foregroundStyle(Color.textSecondary)
             }
+            Section {
+                Picker(
+                    String(localized: "Show the sections as", comment: "Popover layout picker"),
+                    selection: binding(\.popoverLayout)
+                ) {
+                    Text("Tabs", comment: "Popover layout").tag(Config.PopoverLayout.tabs)
+                    Text("Columns", comment: "Popover layout").tag(Config.PopoverLayout.columns)
+                }
+                .pickerStyle(.segmented)
+            } header: {
+                Text("Popover", comment: "General settings section")
+            } footer: {
+                Text(
+                    "Columns show Review requested, Mine and Involved side by side in a popover three times as wide.",
+                    comment: "Popover layout caption"
+                )
+                .font(.caption).foregroundStyle(Color.textSecondary)
+            }
             Section(String(localized: "Mine", comment: "General settings section")) {
                 Picker(
                     String(localized: "Show your pull requests as", comment: "Mine layout picker"),
@@ -216,6 +235,14 @@ struct GeneralSettingsView: View {
                 ) {
                     Text("List", comment: "Mine layout").tag(Config.MineLayout.list)
                     Text("Board", comment: "Mine layout").tag(Config.MineLayout.board)
+                }
+                .pickerStyle(.segmented)
+                Picker(
+                    String(localized: "Drafts with a conflict go to", comment: "Conflicted drafts picker"),
+                    selection: binding(\.conflictedDrafts)
+                ) {
+                    Text("Draft", comment: "Mine group").tag(Config.ConflictedDrafts.draft)
+                    Text("Blocked", comment: "Mine group").tag(Config.ConflictedDrafts.blocked)
                 }
                 .pickerStyle(.segmented)
             }

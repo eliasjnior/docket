@@ -23,6 +23,12 @@ enum Snapshots {
             Scenario(name: "popover-mine", account: .ready, cache: SampleData.cache, tab: .mine),
             Scenario(name: "popover-mine-board", account: .ready, cache: SampleData.cache, tab: .mine, board: true),
             Scenario(name: "popover-involved", account: .ready, cache: SampleData.cache, tab: .involved),
+            Scenario(name: "popover-columns", account: .ready, cache: SampleData.cache, columns: true),
+            Scenario(
+                name: "popover-columns-folded", account: .ready, cache: SampleData.cache, columns: true,
+                involvedFolded: true),
+            Scenario(
+                name: "popover-columns-board", account: .ready, cache: SampleData.cache, board: true, columns: true),
             Scenario(name: "popover-offline", account: .ready, problem: .offline, cache: SampleData.cache),
             Scenario(
                 name: "popover-empty", account: .ready,
@@ -37,17 +43,19 @@ enum Snapshots {
             for scenario in scenarios {
                 let watch = SampleData.watch(
                     account: scenario.account, problem: scenario.problem, cache: scenario.cache,
-                    board: scenario.board)
+                    board: scenario.board, columns: scenario.columns)
                 let model = PopoverModel()
                 model.tab = scenario.tab
                 model.triage = scenario.triage
                 model.filter = scenario.filter
+                model.involvedFolded = scenario.involvedFolded
                 render(
                     PopoverView(
                         watch: watch, model: model, permission: NotificationPermission(), actions: SampleData.actions),
                     appearance: appearance, to: directory, name: "\(scenario.name)-\(suffix)")
             }
             renderSettings(appearance: appearance, to: directory, suffix: suffix)
+            renderCards(appearance: appearance, to: directory, suffix: suffix)
         }
         exit(0)
     }
@@ -75,6 +83,37 @@ enum Snapshots {
             appearance: appearance, to: directory, name: "settings-general-\(suffix)")
     }
 
+    private static func renderCards(appearance: NSAppearance.Name, to directory: URL, suffix: String) {
+        let url = SampleData.url("acme/api/pull/482")
+        let cards = [
+            NotificationCard(
+                id: "1", kind: .reviewRequested, headline: "@ana is waiting for your review",
+                title: "Fix login redirect loop when the session expires during checkout",
+                detail: "acme/api #482 · via @acme/backend", repository: "acme/api", url: url, pullRequestID: "PR_1",
+                isSticky: true),
+            NotificationCard(
+                id: "2", kind: .approved, headline: "@bruno approved your pull request",
+                title: "Add bulk edit to the orders table",
+                detail: "acme/web #91", repository: "acme/web", url: url, pullRequestID: nil, isSticky: false),
+            NotificationCard(
+                id: "3", kind: .reviewRequested, headline: "3 reviews requested", title: nil,
+                detail: "#12 Rename settings\n#13 Drop the old importer\n#14 Cache the avatar",
+                repository: "globex/app",
+                url: nil, pullRequestID: nil, isSticky: true),
+            NotificationCard(
+                id: "4", kind: .checksFailed, headline: "Checks failed", title: "Bump the SDK", detail: "acme/api #470",
+                repository: "acme/api", url: url, pullRequestID: nil, isSticky: false),
+        ]
+        let stack = CardStack()
+        stack.push(cards.reversed())
+        let actions = CardActions(
+            open: { _ in }, reviewWithAI: { _ in }, showMore: {}, dismiss: { _ in }, dismissAll: {},
+            canReviewWithAI: { _ in true })
+        render(
+            CardStackView(stack: stack, actions: actions), appearance: appearance, to: directory,
+            name: "cards-\(suffix)")
+    }
+
     private struct Scenario {
         var name: String
         var account: AccountState
@@ -84,6 +123,8 @@ enum Snapshots {
         var triage: Triage = .humans
         var filter = PopoverFilter()
         var board = false
+        var columns = false
+        var involvedFolded = false
     }
 
     static func render(_ view: some View, appearance: NSAppearance.Name, to directory: URL, name: String) {
@@ -119,6 +160,9 @@ enum SampleData {
             id: ref, number: number, title: title, url: url("\(repository)/pull/\(number)"),
             createdAt: now.addingTimeInterval(-days * 86400), updatedAt: now.addingTimeInterval(-3600),
             author: Actor(login: author), repository: repository)
+        pullRequest.additions = (number * 37) % 900
+        pullRequest.deletions = (number * 13) % 200
+        pullRequest.changedFiles = number % 30 + 1
         change(&pullRequest)
         return pullRequest
     }
@@ -191,9 +235,32 @@ enum SampleData {
                 },
                 role: .authored, commenters: ["dave"]),
             CachedPullRequest(
+                pullRequest: pullRequest("acme/web#95", "Group the order filters", author: "you", days: 1) {
+                    $0.checks = .pending
+                    $0.reviewRequests = [.user(login: "ana")]
+                    $0.pendingChecks = PendingChecks(
+                        waiting: [
+                            WaitingCheck(
+                                name: "e2e", detail: "Comment /e2e to run",
+                                url: url("acme/web/pull/95#issuecomment-1")),
+                            WaitingCheck(name: "deploy / staging", isApproval: true),
+                        ])
+                },
+                role: .authored),
+            CachedPullRequest(
+                pullRequest: pullRequest("acme/api#476", "Log each webhook retry", author: "you", days: 2) {
+                    $0.headRefName = "webhooks-retry-log"
+                    $0.baseRefName = "webhooks-retry"
+                    $0.reviewRequests = [.user(login: "bruno")]
+                },
+                role: .authored),
+            CachedPullRequest(
                 pullRequest: pullRequest("acme/api#475", "Retry webhooks with backoff", author: "you", days: 9) {
                     $0.reviewDecision = .changesRequested
                     $0.latestReviews = [LatestReview(login: "carla", state: .changesRequested)]
+                    $0.headCommit = CommitStamp(login: "you", at: now.addingTimeInterval(-2 * 3600))
+                    $0.headRefName = "webhooks-retry"
+                    $0.baseRefName = "main"
                 },
                 role: .authored),
             CachedPullRequest(
@@ -207,11 +274,14 @@ enum SampleData {
 
     static func ago(days: Double) -> Date { now.addingTimeInterval(-days * 86400) }
 
-    static func watch(account: AccountState, problem: PollProblem?, cache: SnapshotCache?, board: Bool = false)
+    static func watch(
+        account: AccountState, problem: PollProblem?, cache: SnapshotCache?, board: Bool = false, columns: Bool = false
+    )
         -> WatchStore
     {
         var config = Config()
         config.mineLayout = board ? .board : .list
+        config.popoverLayout = columns ? .columns : .tabs
         config.mutes["acme/api#490"] = Config.MuteEntry(ref: "acme/api#490", scope: .all, mutedAt: now)
         let store = WatchStore(configStore: ConfigStore(storage: NoStorage(), initial: config))
         store.apply(

@@ -3,7 +3,9 @@ import Foundation
 
 /// The "needs you" number in the menu bar (`docs/02-activity-detection.md` §4).
 public enum Count {
-    public static let blockingStatuses: Set<Status> = [.conflict, .checksFailing, .changesRequested, .readyToMerge]
+    public static let blockingStatuses: Set<Status> = [
+        .conflict, .checksFailing, .changesRequested, .checksWaiting, .readyToMerge,
+    ]
 
     public static func needsYou(
         _ item: WatchedPullRequest, settings: Config.Count = Config.Count(), triage: Config.Triage = Config.Triage()

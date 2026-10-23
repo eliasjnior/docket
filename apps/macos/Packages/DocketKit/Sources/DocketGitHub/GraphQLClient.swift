@@ -116,7 +116,34 @@ public actor GraphQLClient: GitHubSource {
                 }
             }
         }
+        let pending = batch.pullRequests.filter { $0.checks == .pending || $0.checks == .expected }.map(\.id)
+        if !pending.isEmpty {
+            let (checks, checksMeta) = await pendingChecks(ids: pending)
+            meta = meta.merged(checksMeta)
+            for index in batch.pullRequests.indices {
+                batch.pullRequests[index].pendingChecks = checks[batch.pullRequests[index].id]
+            }
+        }
         return GitHubResponse(value: batch, meta: meta)
+    }
+
+    /// A failure here leaves the pull requests at `checksRunning` rather than failing the poll.
+    private func pendingChecks(ids: [String]) async -> ([String: PendingChecks], ResponseMeta) {
+        var result: [String: PendingChecks] = [:]
+        var meta = ResponseMeta()
+        for chunk in ids.chunked(into: 20) {
+            do {
+                let (envelope, chunkMeta) = try await send(
+                    Queries.checks, ["ids": .strings(chunk)], as: NodesData<ChecksDTO>.self)
+                meta = meta.merged(chunkMeta.with(envelope.data?.rateLimit))
+                for node in envelope.data?.nodes ?? [] {
+                    if let id = node?.id, let checks = node?.pendingChecks { result[id] = checks }
+                }
+            } catch {
+                log.error("Could not read pending checks: \(String(describing: error), privacy: .public)")
+            }
+        }
+        return (result, meta)
     }
 
     public func details(ids: [String]) async throws -> GitHubResponse<[PullRequestDetail]> {
