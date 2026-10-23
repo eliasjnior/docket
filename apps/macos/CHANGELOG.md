@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/eliasjnior/docket/compare/macos-v1.2.1...macos-v1.3.0) (2026-10-23)
+
+
+### New
+
+* **macos:** fold repository and Mine groups from their headers ([#51](https://github.com/eliasjnior/docket/issues/51)) ([fd755e2](https://github.com/eliasjnior/docket/commit/fd755e266ee6fa14ef2b96dbd76e0ec23b9ec3c8))
+
+
+### Fixed
+
+* **macos:** keep board cards at their own height ([#49](https://github.com/eliasjnior/docket/issues/49)) ([6242f00](https://github.com/eliasjnior/docket/commit/6242f0045b2144da1a48204ef2c16a11d43043d4))
+
 ## [1.2.1](https://github.com/eliasjnior/docket/compare/macos-v1.2.0...macos-v1.2.1) (2026-10-22)
 
 
