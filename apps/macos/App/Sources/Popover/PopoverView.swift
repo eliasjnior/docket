@@ -12,8 +12,6 @@ struct PopoverView: View {
     @Bindable var model: PopoverModel
     let permission: NotificationPermission
     let actions: PopoverActions
-    /// The list's real height: a lazy stack's ideal height is an estimate, which left empty space around it.
-    @State private var listHeight: CGFloat = 0
 
     private var maxHeight: CGFloat {
         min(640, (NSScreen.main?.visibleFrame.height ?? 800) - 40)
@@ -34,16 +32,12 @@ struct PopoverView: View {
                     TabBar(watch: watch, model: model)
                     FilterBar(watch: watch, model: model, actions: actions)
                     Divider()
+                    // A fixed height: a popover that followed its rows jumped on every fold and tab switch.
                     ScrollView {
                         SectionsView(watch: watch, model: model, actions: actions, now: now)
                             .padding(.bottom, 6)
-                            .onGeometryChange(for: CGFloat.self) {
-                                $0.size.height
-                            } action: {
-                                listHeight = $0
-                            }
                     }
-                    .frame(height: min(max(listHeight, 40), maxHeight - 150))
+                    .frame(height: maxHeight - 150)
                 }
             }
         }
@@ -77,14 +71,16 @@ extension PopoverView {
         Self.visibleItems(watch.sections(filter: model.filter), model: model, layout: watch.config.mineLayout)
     }
 
-    /// What is on screen: a collapsed Draft group is not.
+    /// What is on screen: a collapsed group's rows are not.
     static func visibleItems(_ sections: Sections, model: PopoverModel, layout: Config.MineLayout)
         -> [WatchedPullRequest]
     {
         switch model.tab {
-        case .reviewRequested: sections.reviewRequested(model.triage).flatMap(\.items)
+        case .reviewRequested:
+            sections.reviewRequested(model.triage).filter { !model.collapsedRepositories.contains($0.repository) }
+                .flatMap(\.items)
         case .mine:
-            sections.mineGroups.filter { $0.kind != .draft || layout == .board || model.draftsExpanded }
+            sections.mineGroups.filter { layout == .board || !model.collapsedMineGroups.contains($0.kind) }
                 .flatMap(\.items)
         case .involved: sections.involved
         case .ignored: sections.ignored

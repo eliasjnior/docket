@@ -42,24 +42,18 @@ extension WatchedPullRequest {
 struct MineHeader: View {
     let kind: MineKind
     let count: Int
-    /// Set for a group that can collapse.
-    var collapsed: Bool?
+    var collapsed = false
     var toggle: () -> Void = {}
 
     var body: some View {
-        if collapsed == nil {
-            label
-        } else {
-            Button(action: toggle) { label }.buttonStyle(.plain)
-        }
+        Button(action: toggle) { label }
+            .buttonStyle(.plain)
+            .accessibilityValue(DisclosureChevron.accessibilityValue(collapsed: collapsed))
     }
 
     private var label: some View {
         HStack(spacing: 8) {
-            if let collapsed {
-                Image(systemName: collapsed ? "chevron.right" : "chevron.down")
-                    .font(.caption.weight(.bold)).foregroundStyle(Color.textSecondary).frame(width: 10)
-            }
+            DisclosureChevron(collapsed: collapsed)
             Circle().fill(kind.color).frame(width: 8, height: 8)
             Text(verbatim: kind.title).fontWeight(.semibold)
             Spacer(minLength: 4)

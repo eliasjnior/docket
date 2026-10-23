@@ -164,23 +164,14 @@
     "All repositories except these" : {
       "comment" : "Selection mode"
     },
-    "All repositories, except…" : {
-      "comment" : "Selection mode"
-    },
     "Allow" : {
       "comment" : "Notification permission button"
     },
     "Allow in System Settings" : {
       "comment" : "Login item button"
     },
-    "Allow in System Settings…" : {
-      "comment" : "Login item button"
-    },
     "Allowed" : {
       "comment" : "Notification permission state"
-    },
-    "Allow…" : {
-      "comment" : "Notification permission button"
     },
     "Also bots" : {
       "comment" : "Extra bot logins field"
@@ -230,9 +221,6 @@
     "Check for Updates" : {
       "comment" : "Gear menu"
     },
-    "Check for Updates…" : {
-      "comment" : "Gear menu"
-    },
     "Check for updates automatically" : {
       "comment" : "Updates setting"
     },
@@ -257,25 +245,13 @@
     "Choose Folder" : {
       "comment" : "Clones button"
     },
-    "Choose Folder…" : {
-      "comment" : "Clones button"
-    },
     "Choose Location" : {
-      "comment" : "Account setting button\nFull screen button"
-    },
-    "Choose Location…" : {
       "comment" : "Account setting button\nFull screen button"
     },
     "Choose Repositories" : {
       "comment" : "Empty state button"
     },
-    "Choose Repositories…" : {
-      "comment" : "Empty state button"
-    },
     "Choose Terminal" : {
-      "comment" : "Terminal picker button"
-    },
-    "Choose Terminal…" : {
       "comment" : "Terminal picker button"
     },
     "Choose the gh executable" : {
@@ -286,6 +262,9 @@
     },
     "Clear filter" : {
       "comment" : "Filter chip"
+    },
+    "Collapsed" : {
+      "comment" : "Group header state"
     },
     "Comment on your pull request" : {
       "comment" : "Notification kind"
@@ -368,10 +347,10 @@
     "Every" : {
       "comment" : "Reminder interval"
     },
-    "Export" : {
-      "comment" : "Export settings button"
+    "Expanded" : {
+      "comment" : "Group header state"
     },
-    "Export…" : {
+    "Export" : {
       "comment" : "Export settings button"
     },
     "Filter to %@" : {
@@ -432,9 +411,6 @@
       "comment" : "Tab"
     },
     "Import" : {
-      "comment" : "Import settings button"
-    },
-    "Import…" : {
       "comment" : "Import settings button"
     },
     "Inside single quotes, {%@} is not replaced." : {
@@ -736,9 +712,6 @@
     },
     "Settings file" : {
       "comment" : "General settings section"
-    },
-    "Settings…" : {
-      "comment" : "Gear menu\nStatus item menu"
     },
     "Show Data Folder" : {
       "comment" : "About button"
