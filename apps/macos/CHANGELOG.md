@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/eliasjnior/docket/compare/macos-v1.3.0...macos-v1.4.0) (2026-10-23)
+
+
+### New
+
+* **macos:** review cards, waiting checks, stacks and popover layouts ([#52](https://github.com/eliasjnior/docket/issues/52)) ([69d499d](https://github.com/eliasjnior/docket/commit/69d499d75fc1f0a39589f336709c17b1a2ecd254))
+
 ## [1.3.0](https://github.com/eliasjnior/docket/compare/macos-v1.2.1...macos-v1.3.0) (2026-10-23)
 
 
