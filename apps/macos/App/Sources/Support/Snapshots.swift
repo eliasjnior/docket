@@ -248,14 +248,18 @@ enum SampleData {
                 },
                 role: .authored),
             CachedPullRequest(
-                pullRequest: pullRequest("acme/api#476", "Log each webhook retry", author: "you", days: 2) {
+                pullRequest: pullRequest(
+                    "acme/storefront-payments-gateway#476", "Log each webhook retry", author: "you", days: 2
+                ) {
                     $0.headRefName = "webhooks-retry-log"
                     $0.baseRefName = "webhooks-retry"
                     $0.reviewRequests = [.user(login: "bruno")]
                 },
                 role: .authored),
             CachedPullRequest(
-                pullRequest: pullRequest("acme/api#475", "Retry webhooks with backoff", author: "you", days: 9) {
+                pullRequest: pullRequest(
+                    "acme/storefront-payments-gateway#475", "Retry webhooks with backoff", author: "you", days: 9
+                ) {
                     $0.reviewDecision = .changesRequested
                     $0.latestReviews = [LatestReview(login: "carla", state: .changesRequested)]
                     $0.headCommit = CommitStamp(login: "you", at: now.addingTimeInterval(-2 * 3600))

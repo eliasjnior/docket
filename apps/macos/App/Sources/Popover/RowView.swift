@@ -98,7 +98,9 @@ struct RowView: View {
     private var detailLine: some View {
         DropLayout(spacing: 6) {
             // Outside *Review requested* no header names the repository, so the row does.
-            if placement != .reviewRequested { RepositoryTag(repository: pullRequest.repository).fixedSize() }
+            if placement != .reviewRequested {
+                RepositoryTag(repository: pullRequest.repository).layoutValue(key: DropShrinks.self, value: true)
+            }
             Text(verbatim: "#\(pullRequest.number)").font(.subheadline.monospacedDigit())
                 .foregroundStyle(Color.textSecondary)
             if let position = item.stackPosition { StackBadge(position: position) }

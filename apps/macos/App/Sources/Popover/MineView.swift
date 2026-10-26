@@ -294,7 +294,9 @@ struct StackBlock<Rows: View>: View {
                     .fontWeight(.semibold)
                     .foregroundStyle(Color.textPrimary)
                     .lineLimit(1)
-                RepositoryTag(repository: stack.repository).fixedSize()
+                    .layoutPriority(1)
+                // Not fixed: a long repository name truncates instead of widening the block past the popover.
+                RepositoryTag(repository: stack.repository)
                 if let base = stack.base {
                     Text("on \(base)", comment: "Stack header: the branch the stack merges into")
                         .foregroundStyle(Color.textSecondary).lineLimit(1).truncationMode(.middle)
