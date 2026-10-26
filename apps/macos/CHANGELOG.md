@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.5.0](https://github.com/eliasjnior/docket/compare/macos-v1.4.0...macos-v1.5.0) (2026-10-26)
+
+
+### New
+
+* **macos:** guide setup and install the GitHub CLI when it is missing ([#56](https://github.com/eliasjnior/docket/issues/56)) ([5af7345](https://github.com/eliasjnior/docket/commit/5af7345ec9a5e75038539b8e8c742c66849025cf))
+
+
+### Fixed
+
+* **macos:** keep long repository names from widening stack blocks ([#54](https://github.com/eliasjnior/docket/issues/54)) ([cc9b8fb](https://github.com/eliasjnior/docket/commit/cc9b8fb783fc91fb429c911f24f85455f1152f41))
+
 ## [1.4.0](https://github.com/eliasjnior/docket/compare/macos-v1.3.0...macos-v1.4.0) (2026-10-23)
 
 
