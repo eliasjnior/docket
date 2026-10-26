@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/eliasjnior/docket/compare/macos-v1.5.0...macos-v1.5.1) (2026-10-26)
+
+
+### Fixed
+
+* **stores:** pin the watch store test to the fixture clock ([#57](https://github.com/eliasjnior/docket/issues/57)) ([4ef49d7](https://github.com/eliasjnior/docket/commit/4ef49d7cdf131569ebbe30efb569626754e1df05))
+
 ## [1.5.0](https://github.com/eliasjnior/docket/compare/macos-v1.4.0...macos-v1.5.0) (2026-10-26)
 
 
