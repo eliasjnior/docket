@@ -243,11 +243,17 @@
     "All repositories except these" : {
       "comment" : "Selection mode"
     },
+    "All set. Docket is in your menu bar." : {
+      "comment" : "Setup window: every step done"
+    },
     "Allow" : {
       "comment" : "Notification permission button"
     },
     "Allow in System Settings" : {
       "comment" : "Login item button"
+    },
+    "Allow reading your repositories and teams" : {
+      "comment" : "Setup step title"
     },
     "Allowed" : {
       "comment" : "Notification permission state"
@@ -313,7 +319,7 @@
       "comment" : "Updates setting"
     },
     "Checking…" : {
-      "comment" : "Repository picker"
+      "comment" : "Repository picker\nSetup window: reading the account state"
     },
     "Checks failed" : {
       "comment" : "Card kind\nChecks failed on your pull request"
@@ -339,6 +345,9 @@
     "Choose Location" : {
       "comment" : "Account setting button\nFull screen button"
     },
+    "Choose Location…" : {
+      "comment" : "Setup window button"
+    },
     "Choose Repositories" : {
       "comment" : "Empty state button"
     },
@@ -353,6 +362,9 @@
     },
     "Clear filter" : {
       "comment" : "Filter chip"
+    },
+    "Close" : {
+      "comment" : "Setup window button"
     },
     "Closed" : {
       "comment" : "Card kind"
@@ -449,17 +461,35 @@
     "Docket cards" : {
       "comment" : "Notification style"
     },
+    "Docket downloads the official gh from GitHub, checks GitHub's signature, and keeps it in its own folder. No Homebrew or password needed." : {
+      "comment" : "Setup step detail"
+    },
     "Docket needs %@ to read your pull requests and teams." : {
       "comment" : "Full screen body"
     },
     "Docket needs attention: %@" : {
       "comment" : "Status item tooltip"
     },
+    "Docket only reads: the token needs the repo and read:org scopes to see your pull requests and teams." : {
+      "comment" : "Setup step detail"
+    },
+    "Docket reads your account through the GitHub CLI. Docket can install it for you, then help you sign in." : {
+      "comment" : "Full screen body"
+    },
     "Docket reads your account through the GitHub CLI. Install it, then sign in." : {
       "comment" : "Full screen body"
     },
+    "Docket reads your pull requests through the GitHub CLI. Three steps, once." : {
+      "comment" : "Setup window subtitle"
+    },
     "Docket update" : {
       "comment" : "Update prompt title"
+    },
+    "Done" : {
+      "comment" : "Setup window button"
+    },
+    "Downloading from GitHub…" : {
+      "comment" : "Setup window: installing gh"
     },
     "Draft" : {
       "comment" : "Mine group\nThe draft modifier beside the status chip"
@@ -503,6 +533,9 @@
     "GitHub CLI token is missing scopes" : {
       "comment" : "Status item tooltip reason"
     },
+    "GitHub could not be reached. Check your connection and try again." : {
+      "comment" : "Setup window: gh download failed"
+    },
     "GitHub could not be reached; the connection dropped or timed out." : {
       "comment" : "Failed poll reason"
     },
@@ -520,6 +553,12 @@
     },
     "GitHub sent an answer Docket could not read." : {
       "comment" : "Failed poll reason"
+    },
+    "GitHub's latest release of the CLI has no build for this Mac." : {
+      "comment" : "Setup window: gh download failed"
+    },
+    "Grant in Terminal" : {
+      "comment" : "Setup window button"
     },
     "Granted" : {
       "comment" : "Scope state"
@@ -560,8 +599,14 @@
     "Inside single quotes, {%@} is not replaced." : {
       "comment" : "Command warning"
     },
+    "Install GitHub CLI" : {
+      "comment" : "Setup window button"
+    },
     "Install and Relaunch" : {
       "comment" : "Update prompt button"
+    },
+    "Install the GitHub CLI" : {
+      "comment" : "Setup step title"
     },
     "Install updates automatically" : {
       "comment" : "Updates setting"
@@ -795,6 +840,9 @@
     "Open in Jira" : {
       "comment" : "Row context menu"
     },
+    "Opens Terminal and then your browser. Follow the prompts there; Docket notices when you are done." : {
+      "comment" : "Setup step detail"
+    },
     "Org" : {
       "comment" : "Filter dimension"
     },
@@ -906,6 +954,12 @@
     "Scopes" : {
       "comment" : "Account settings section"
     },
+    "Set Up Docket" : {
+      "comment" : "Setup window title"
+    },
+    "Set Up Docket…" : {
+      "comment" : "Full screen button"
+    },
     "Settings" : {
       "comment" : "Gear menu\nGear menu button\nStatus item menu"
     },
@@ -932,6 +986,12 @@
     },
     "Show your pull requests as" : {
       "comment" : "Mine layout picker"
+    },
+    "Sign In in Terminal" : {
+      "comment" : "Setup window button"
+    },
+    "Sign in to GitHub" : {
+      "comment" : "Setup step title"
     },
     "Sign in to the GitHub CLI" : {
       "comment" : "Full screen title"
@@ -983,6 +1043,15 @@
     },
     "The command runs in the clone of the pull request's repository, or in a new temporary folder." : {
       "comment" : "Clones caption"
+    },
+    "The download could not be unpacked." : {
+      "comment" : "Setup window: gh download failed"
+    },
+    "The download did not match GitHub's checksum, so nothing was installed." : {
+      "comment" : "Setup window: gh download failed"
+    },
+    "The download is not signed by GitHub, so nothing was installed." : {
+      "comment" : "Setup window: gh download failed"
     },
     "The pull requests waiting on you, from the menu bar." : {
       "comment" : "About: tagline"
@@ -1071,6 +1140,9 @@
     "copilot-pull-request-reviewer" : {
       "comment" : "Bot allowlist placeholder"
     },
+    "done" : {
+      "comment" : "VoiceOver: setup step state"
+    },
     "draft" : {
       "comment" : "VoiceOver: draft modifier"
     },
@@ -1079,6 +1151,9 @@
     },
     "it needs macOS %@ or later." : {
       "comment" : "Update error reason"
+    },
+    "later" : {
+      "comment" : "VoiceOver: setup step state"
     },
     "macOS notifications" : {
       "comment" : "Notification style"
@@ -1112,6 +1187,9 @@
     },
     "the release has no %@." : {
       "comment" : "Update error reason"
+    },
+    "to do now" : {
+      "comment" : "VoiceOver: setup step state"
     },
     "via %@" : {
       "comment" : "A review request through a team\nTeam request"

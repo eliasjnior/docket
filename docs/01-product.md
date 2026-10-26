@@ -50,6 +50,7 @@ the document that specifies it.
 | **FR-12** | When `gh` is missing, not signed in, or its token lacks `repo` or `read:org`, the popover shows a screen naming the exact command that fixes it | P0 |
 | **FR-13** | When an organization requires SAML authorization of the token, Docket names the organization and opens the authorization URL GitHub returned; the other organizations keep working | P0 |
 | **FR-14** | On a `401`, Docket re-reads the token once before reporting the account as signed out | P0 |
+| **FR-15** | When `gh` is missing, not signed in, or its token lacks a scope, a setup window walks through the three steps in order — install, sign in, grant the scopes — and opens by itself the first time in a launch that no poll can run. Install downloads the latest `cli/cli` release for the Mac's architecture from GitHub, refuses it unless it matches the release's SHA-256 list and carries GitHub's Developer ID signature, and keeps it in `~/Library/Application Support/Docket/bin/gh`, with no Homebrew or administrator password. Sign-in and scopes run `gh` in the user's terminal. The window re-checks every 3 s while open | P1 |
 
 ### 3.2 Which pull requests are watched
 

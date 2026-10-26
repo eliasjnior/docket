@@ -132,7 +132,8 @@ A poll requested while one is running is dropped.
 Docket never asks for a credential (D-02). `GhTokenProvider` implements `TokenProvider`:
 
 1. **Locate `gh`.** The path in `config.json` if set; otherwise the first executable of
-   `/opt/homebrew/bin/gh`, `/usr/local/bin/gh`; otherwise `command -v gh` run once through
+   `/opt/homebrew/bin/gh`, `/usr/local/bin/gh`, then the copy the setup window installed
+   (`~/Library/Application Support/Docket/bin/gh`, FR-15), so a Homebrew `gh` installed later wins; otherwise `command -v gh` run once through
    `/bin/zsh -lc` with a 3 s timeout, because a GUI app does not inherit the shell's `PATH`. The
    resolved path is cached for the launch (FR-11).
 2. **Read the token.** Run `gh auth token --hostname github.com` with a 5 s timeout and an
@@ -151,6 +152,18 @@ The token is held in one actor property, sent only in the `Authorization` header
 `api.github.com`, and never written to disk, logged or passed to a child process (`04-data.md`
 §6). The same token authorizes release downloads for the updater while the repository is private
 (D-14).
+
+**Setup (FR-15).** `SetupStore` reads its three steps from `AccountState`, so a step done outside
+Docket ticks off too. `DocketUpdate.GhInstaller`, behind the `GhInstalling` port, reads
+`api.github.com/repos/cli/cli/releases/latest` without a token (the repository is public, and there
+may be no token yet), downloads `gh_<version>_macOS_<arm64|amd64>.zip` and
+`gh_<version>_checksums.txt`, compares the SHA-256, unpacks with `ditto`, and installs `bin/gh` only
+if it satisfies `anchor apple generic and certificate leaf[subject.OU] = "VEKTX9H2N7"`, GitHub's
+Developer ID team. A matching checksum alone is not enough: the list comes from the same release.
+Sign-in runs `gh auth login --hostname github.com --git-protocol https --web --scopes read:org`
+and the scopes step `gh auth refresh --hostname github.com --scopes <missing>`, through the same
+self-deleting script as *Review with AI*, so the token never passes through Docket. While the window
+is open it re-checks every 3 s (the `Try Again` path: forget the lookup, poll).
 
 **SAML.** A response with `X-GitHub-SSO: required; url=<url>` names one resource and the URL that
 authorizes the token for it; `partial-results; organizations=<ids>` names organizations whose

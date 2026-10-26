@@ -2,6 +2,7 @@ import AppKit
 import DocketActivity
 import DocketCore
 import DocketStores
+import DocketUpdate
 import SwiftUI
 
 /// `Docket --snapshot <directory>` renders views with synthetic data to PNG, light and dark, then exits
@@ -56,6 +57,7 @@ enum Snapshots {
             }
             renderSettings(appearance: appearance, to: directory, suffix: suffix)
             renderCards(appearance: appearance, to: directory, suffix: suffix)
+            renderSetup(appearance: appearance, to: directory, suffix: suffix)
         }
         exit(0)
     }
@@ -112,6 +114,31 @@ enum Snapshots {
         render(
             CardStackView(stack: stack, actions: actions), appearance: appearance, to: directory,
             name: "cards-\(suffix)")
+    }
+
+    private static func renderSetup(appearance: NSAppearance.Name, to directory: URL, suffix: String) {
+        let accounts: [(String, AccountState)] = [
+            ("install", .ghNotFound), ("sign-in", .signedOut), ("scopes", .missingScopes(["read:org"])),
+            ("done", .ready),
+        ]
+        for (name, account) in accounts {
+            render(
+                SetupView(setup: setup(account), chooseGhLocation: {}, close: {}), appearance: appearance,
+                to: directory, name: "setup-\(name)-\(suffix)")
+        }
+        let failed = setup(.ghNotFound, failing: true)
+        Task { await failed.install() }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        render(
+            SetupView(setup: failed, chooseGhLocation: {}, close: {}), appearance: appearance, to: directory,
+            name: "setup-install-failed-\(suffix)")
+    }
+
+    private static func setup(_ account: AccountState, failing: Bool = false) -> SetupStore {
+        let watch = SampleData.watch(account: account, problem: nil, cache: nil)
+        return SetupStore(
+            watch: watch, installer: SnapshotInstaller(failing: failing), locate: { nil }, recheck: {},
+            runInTerminal: { _ in })
     }
 
     private struct Scenario {
@@ -310,6 +337,16 @@ enum SampleData {
             refresh: {}, openSettings: {}, checkForUpdates: {}, quit: {}, retry: {}, chooseGhLocation: {},
             launchAtLogin: { _ in }, deliverHeld: {},
             dismissBaselineNotice: {}, close: {}, row: row)
+    }
+}
+
+/// Snapshots never download anything.
+private struct SnapshotInstaller: GhInstalling {
+    let failing: Bool
+
+    func install() async throws -> URL {
+        if failing { throw GhInstallError.checksumMismatch }
+        return URL(fileURLWithPath: "/")
     }
 }
 

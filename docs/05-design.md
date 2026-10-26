@@ -284,9 +284,9 @@ stays, so refresh and settings remain.
 
 | Condition (FR-12) | Symbol | Title | Body and command | Actions |
 |---|---|---|---|---|
-| `gh` not found | `terminal` | `GitHub CLI not found` | Docket reads your account through the GitHub CLI. Install it, then sign in. `brew install gh` | `Copy`, `Choose Location` (FR-11), `Try Again` |
-| `gh` not signed in, or `401` after re-reading (FR-14) | `person.crop.circle.badge.xmark` | `Sign in to the GitHub CLI` | Run this in Terminal and follow the prompts. `gh auth login` | `Copy`, `Try Again` |
-| Missing scopes | `key` | `The GitHub CLI token is missing read:org` | Lists every missing scope by name, then the command with exactly those scopes: `gh auth refresh -h github.com -s read:org` or `-s repo,read:org` | `Copy`, `Try Again` |
+| `gh` not found | `terminal` | `GitHub CLI not found` | Docket reads your account through the GitHub CLI. Docket can install it for you, then help you sign in. `brew install gh` | `Set Up Docket…` (§7.4), `Copy`, `Choose Location` (FR-11), `Try Again` |
+| `gh` not signed in, or `401` after re-reading (FR-14) | `person.crop.circle.badge.xmark` | `Sign in to the GitHub CLI` | Run this in Terminal and follow the prompts. `gh auth login` | `Set Up Docket…`, `Copy`, `Try Again` |
+| Missing scopes | `key` | `The GitHub CLI token is missing read:org` | Lists every missing scope by name, then the command with exactly those scopes: `gh auth refresh -h github.com -s read:org` or `-s repo,read:org` | `Set Up Docket…`, `Copy`, `Try Again` |
 | First poll of a launch with no cache | `ProgressView`, small | `Loading pull requests…` | — | — |
 
 `Try Again` re-runs the authentication steps of `03-architecture.md` §6 and polls. The setup itself
@@ -331,6 +331,29 @@ One line in `text.secondary` under the section header, never an illustration.
 | Drafts, empty | `No drafts waiting on you.` |
 | Stale, empty | `Nothing stale.` |
 | Selection in `only` mode with nothing selected | `No repositories selected.` with `Choose Repositories` |
+
+### 7.4 Setup window
+
+FR-15. A window of its own, 480 pt wide, so it stays while the user is in Terminal or the browser:
+the app icon at 48 pt with `Set Up Docket` and `Docket reads your pull requests through the GitHub
+CLI. Three steps, once.`, then the steps, then a footer.
+
+| Step | Title | Detail | Actions while current |
+|---|---|---|---|
+| 1 | `Install the GitHub CLI` | Docket downloads the official gh from GitHub, checks GitHub's signature, and keeps it in its own folder. No Homebrew or password needed. | `Install GitHub CLI` (prominent), `Choose Location…` (FR-11). While it runs, a small spinner and `Downloading from GitHub…`; a failure says why in `status.attention` above the buttons |
+| 2 | `Sign in to GitHub` | Opens Terminal and then your browser. Follow the prompts there; Docket notices when you are done. | `Sign In in Terminal` (prominent) |
+| 3 | `Allow reading your repositories and teams` | Docket only reads: the token needs the repo and read:org scopes to see your pull requests and teams. | `Grant in Terminal` (prominent), asking for exactly the missing scopes |
+
+Each step has a 22 pt marker: its number in white on the accent for the current step, in
+`text.secondary` on `fill.tag` for a later one, and `checkmark.circle.fill` in `status.ready` once
+done. A later step's title is in `text.secondary`. The footer has `Close`, which becomes `Done` with
+`All set. Docket is in your menu bar.` in `status.ready` once every step is done, and `Checking…`
+with a small spinner before the first poll answers.
+
+Install failures: `GitHub could not be reached. Check your connection and try again.`, `GitHub's
+latest release of the CLI has no build for this Mac.`, `The download did not match GitHub's
+checksum, so nothing was installed.`, `The download is not signed by GitHub, so nothing was
+installed.`, `The download could not be unpacked.`
 
 ## 8. Notification composition
 

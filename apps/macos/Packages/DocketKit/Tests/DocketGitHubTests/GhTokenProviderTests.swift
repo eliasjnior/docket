@@ -53,6 +53,17 @@ struct GhTokenProviderTests {
             ])
     }
 
+    @Test func findsTheCopyDocketInstalledButPrefersHomebrew() async throws {
+        let managed = "/Users/you/Library/Application Support/Docket/bin/gh"
+        let runner = ScriptedRunner(executables: [managed], results: [managed: token])
+        let provider = GhTokenProvider(runner: runner, home: "/Users/you")
+        #expect(try await provider.token() == "gho_synthetic")
+        #expect(runner.calls.map(\.executable) == [managed])
+        let both = ScriptedRunner(
+            executables: [managed, "/opt/homebrew/bin/gh"], results: ["/opt/homebrew/bin/gh": token])
+        #expect(await GhTokenProvider(runner: both, home: "/Users/you").location() == "/opt/homebrew/bin/gh")
+    }
+
     @Test func fallsBackToTheLoginShell() async throws {
         let runner = ScriptedRunner(
             executables: ["/Users/you/.local/bin/gh"],

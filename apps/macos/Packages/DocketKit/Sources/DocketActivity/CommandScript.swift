@@ -35,7 +35,7 @@ public enum CommandScript {
     }
 
     /// `'…'` with each `'` closed, escaped and reopened.
-    static func quoted(_ value: String) -> String {
+    public static func quoted(_ value: String) -> String {
         "'" + value.replacingOccurrences(of: "'", with: #"'\''"#) + "'"
     }
 

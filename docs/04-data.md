@@ -2,7 +2,10 @@
 
 Every file Docket writes, its schema, what keeps it correct, when it is deleted, what is
 deliberately never stored, and how the token is held. There is no database (D-10): three locations
-under `~/Library/Application Support/Docket/`, written only by `DocketPersistence`.
+under `~/Library/Application Support/Docket/`, written only by `DocketPersistence`. The fourth thing
+there, `bin/gh`, is the GitHub CLI the setup window installs (FR-15), written only by
+`DocketUpdate.GhInstaller` after its checksum and signature checks; deleting it only brings the setup
+window back.
 
 ## 1. Conventions
 

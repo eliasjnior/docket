@@ -63,7 +63,8 @@ public actor GhTokenProvider: TokenProvider {
             return configured
         }
         if let resolvedPath { return resolvedPath }
-        if let known = Self.knownLocations.first(where: runner.isExecutable) {
+        // Homebrew's `gh` first: once installed it outranks the copy Docket installed for itself.
+        if let known = (Self.knownLocations + [GhLocation.managed(home: home)]).first(where: runner.isExecutable) {
             resolvedPath = known
             return known
         }
