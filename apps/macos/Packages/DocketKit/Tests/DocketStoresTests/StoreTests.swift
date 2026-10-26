@@ -41,7 +41,7 @@ struct StoreTests {
 
     @Test func theWatchStoreDerivesRowsCountAndStaleness() {
         let configStore = ConfigStore(storage: storage())
-        let store = WatchStore(configStore: configStore)
+        let store = WatchStore(configStore: configStore, now: { [now] in now })
         let requested = CachedPullRequest(
             pullRequest: Fixtures.pullRequest("PR_1", requests: [.user(login: "you")]), role: .reviewRequested)
         let mine = CachedPullRequest(
