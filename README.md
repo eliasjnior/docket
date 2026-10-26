@@ -7,6 +7,40 @@
 
 Native Swift, read-only, using the token of the GitHub CLI you are already signed in to.
 
+## Screenshots
+
+Rendered by `Docket --snapshot <dir>` from synthetic data (`acme/*`, `globex/*`), in the light or
+dark appearance your GitHub theme uses.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/popover-dark.png">
+    <img src="docs/images/popover-light.png" width="420" alt="The popover listing pull requests waiting for your review, grouped by repository, each with its status, size, author and age">
+  </picture>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/cards-dark.png">
+    <img src="docs/images/cards-light.png" width="360" alt="Notification cards for a review request, an approval and a grouped batch of three requests">
+  </picture>
+</p>
+
+*Mine* as a board, with a stack of dependent pull requests and the checks still waiting:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/popover-mine-board-dark.png">
+    <img src="docs/images/popover-mine-board-light.png" width="720" alt="Your own pull requests as a board with Ready, Blocked and Draft columns">
+  </picture>
+</p>
+
+Every section side by side, in the columns layout:
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/popover-columns-dark.png">
+    <img src="docs/images/popover-columns-light.png" alt="Review requested, Mine and Involved shown as three columns">
+  </picture>
+</p>
+
 ## Where the plan lives
 
 [`PROJECT.md`](PROJECT.md) holds the problem, the scope and every decision; [`docs/`](docs/) holds
