@@ -102,4 +102,5 @@ struct PopoverActions {
     var dismissBaselineNotice: () -> Void
     var close: () -> Void
     var row: RowActions
+    var openSetup: () -> Void = {}
 }

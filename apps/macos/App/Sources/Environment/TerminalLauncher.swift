@@ -3,7 +3,8 @@ import DocketActivity
 import DocketCore
 import os
 
-/// Runs *Review with AI* or *Summarize with AI* in the user's terminal (spec §9.2, D-28). Docket writes a
+/// Runs *Review with AI*, *Summarize with AI* (spec §9.2, D-28) and the setup's `gh` steps in the user's
+/// terminal. Docket writes a
 /// script that deletes itself and asks the terminal to open it; the user's command does the rest. The token is
 /// never in the script, its environment or its arguments.
 @MainActor
@@ -24,6 +25,11 @@ enum TerminalLauncher {
                 "number": "\(pullRequest.number)", "title": pullRequest.title, "branch": pullRequest.headRefName ?? "",
             ],
             directory: integrations.clone(of: pullRequest.repository))
+        open(script: script, terminalApp: integrations.terminalApp)
+    }
+
+    /// Writes `script` to a private `.command` file, which deletes itself, and opens it in the chosen terminal.
+    static func open(script: String, terminalApp: String?) {
         do {
             let folder = FileManager.default.temporaryDirectory.appending(path: "Docket", directoryHint: .isDirectory)
             try FileManager.default.createDirectory(
@@ -31,7 +37,7 @@ enum TerminalLauncher {
             let file = folder.appending(path: "\(UUID().uuidString).command")
             try Data(script.utf8).write(to: file, options: .atomic)
             try FileManager.default.setAttributes([.posixPermissions: 0o700], ofItemAtPath: file.path)
-            if let path = integrations.terminalApp, FileManager.default.fileExists(atPath: path) {
+            if let path = terminalApp, FileManager.default.fileExists(atPath: path) {
                 NSWorkspace.shared.open(
                     [file], withApplicationAt: URL(fileURLWithPath: path),
                     configuration: NSWorkspace.OpenConfiguration()

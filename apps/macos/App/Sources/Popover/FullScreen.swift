@@ -35,10 +35,15 @@ struct FullScreenView: View {
                 content(
                     symbol: "terminal", title: String(localized: "GitHub CLI not found", comment: "Full screen title"),
                     body: String(
-                        localized: "Docket reads your account through the GitHub CLI. Install it, then sign in.",
+                        localized:
+                            """
+                            Docket reads your account through the GitHub CLI. Docket can install it for you, then \
+                            help you sign in.
+                            """,
                         comment: "Full screen body"),
                     command: "brew install gh")
                 HStack {
+                    setUpButton
                     Button(
                         String(localized: "Choose Location", comment: "Full screen button"),
                         action: actions.chooseGhLocation)
@@ -51,7 +56,10 @@ struct FullScreenView: View {
                     body: String(
                         localized: "Run this in Terminal and follow the prompts.", comment: "Full screen body"),
                     command: "gh auth login")
-                Button(String(localized: "Try Again", comment: "Full screen button"), action: actions.retry)
+                HStack {
+                    setUpButton
+                    Button(String(localized: "Try Again", comment: "Full screen button"), action: actions.retry)
+                }
             case .missingScopes(let scopes):
                 content(
                     symbol: "key",
@@ -63,10 +71,20 @@ struct FullScreenView: View {
                             "Docket needs \(scopes.joined(separator: ", ")) to read your pull requests and teams.",
                         comment: "Full screen body"),
                     command: "gh auth refresh -h github.com -s \(scopes.joined(separator: ","))")
-                Button(String(localized: "Try Again", comment: "Full screen button"), action: actions.retry)
+                HStack {
+                    setUpButton
+                    Button(String(localized: "Try Again", comment: "Full screen button"), action: actions.retry)
+                }
             }
         }
         .frame(maxWidth: .infinity)
+    }
+
+    /// The guided way through every step (`docs/05-design.md` §7.4); the command beside it stays for those who
+    /// prefer a terminal.
+    private var setUpButton: some View {
+        Button(String(localized: "Set Up Docket…", comment: "Full screen button"), action: actions.openSetup)
+            .buttonStyle(.borderedProminent)
     }
 
     @ViewBuilder

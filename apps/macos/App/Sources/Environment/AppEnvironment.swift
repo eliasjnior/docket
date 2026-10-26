@@ -21,6 +21,7 @@ final class AppEnvironment {
     let permission = NotificationPermission()
     let info = AppInfo(bundle: .main)
     let updates: UpdateStore
+    let setup: SetupStore
     let loginItem = LoginItem()
     private let notifications = UserNotificationSink()
     /// Docket's own notification cards (`docs/05-design.md` §8.1).
@@ -53,6 +54,7 @@ final class AppEnvironment {
             present: { list, sound in cards.show(list, sound: sound) })
         let poller = Poller(github: github, tokens: tokens, storage: storage, notifications: sink)
         self.poller = poller
+        setup = Self.makeSetup(watch: watch, tokens: tokens, poller: poller, configStore: configStore)
         let bundle = Bundle.main
         let repository =
             bundle.object(forInfoDictionaryKey: "DocketReleaseRepository") as? String ?? "eliasjnior/docket"
@@ -75,6 +77,23 @@ final class AppEnvironment {
                         state.skippedVersion = skipped
                     }
                 }))
+    }
+
+    /// FR-15: the setup window installs `gh` into Docket's folder and runs its sign-in in the user's terminal.
+    private static func makeSetup(
+        watch: WatchStore, tokens: GhTokenProvider, poller: Poller, configStore: ConfigStore
+    ) -> SetupStore {
+        SetupStore(
+            watch: watch,
+            installer: GhInstaller(destination: URL(fileURLWithPath: GhLocation.managed(home: NSHomeDirectory()))),
+            locate: { await tokens.location() },
+            recheck: {
+                await tokens.reset()
+                await poller.pollNow()
+            },
+            runInTerminal: { script in
+                TerminalLauncher.open(script: script, terminalApp: configStore.config.integrations.terminalApp)
+            })
     }
 
     /// FR-90: `config.json` and `SMAppService` agree at launch; the user's choice wins.

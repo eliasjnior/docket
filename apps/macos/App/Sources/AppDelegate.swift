@@ -12,6 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var settings: SettingsWindowController?
     private let popover = PopoverModel()
     private var updateWindows: UpdateWindows?
+    private var setupWindow: SetupWindow?
     private let shortcut = GlobalShortcut()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -21,6 +22,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         environment.cards.configure(cardActions(environment))
         let updateWindows = UpdateWindows(updates: environment.updates, info: environment.info)
         self.updateWindows = updateWindows
+        let setupWindow = SetupWindow(setup: environment.setup) { [weak self] in self?.chooseGhLocation() }
+        self.setupWindow = setupWindow
         settings = makeSettings(environment, windows: updateWindows)
         statusBar = makeStatusBar(environment)
         Task {
@@ -35,6 +38,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         environment.updates.relaunch = { NSApp.terminate(nil) }
         environment.updates.startAutomaticChecks()
         observeUpdates(environment, windows: updateWindows)
+        observeSetup(environment, window: setupWindow)
         observeContinuously(environment.configStore) { [weak self] store in
             self?.shortcut.register(store.config.shortcut) { self?.statusBar?.show() }
         }
@@ -140,6 +144,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    /// The first time in a launch that no poll can run, the setup window opens by itself (FR-15).
+    private func observeSetup(_ environment: AppEnvironment, window: SetupWindow) {
+        var shown = false
+        observeContinuously(environment.watch) { watch in
+            guard watch.account.blocksPolling, !shown else { return }
+            shown = true
+            window.show()
+        }
+    }
+
     private func statusMenu() -> [NSMenuItem] {
         let refresh = NSMenuItem(
             title: String(localized: "Refresh", comment: "Status item menu"), action: #selector(refresh),
@@ -185,7 +199,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 Task { await environment.poller.updateState { $0.baselineNoticeDismissed = true } }
             },
             close: { [weak self] in self?.statusBar?.close() },
-            row: row)
+            row: row,
+            openSetup: { [weak self] in
+                self?.statusBar?.close()
+                self?.setupWindow?.show()
+            })
     }
 
     private func rowActions(_ environment: AppEnvironment) -> RowActions {
