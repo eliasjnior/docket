@@ -1,0 +1,4 @@
+# Toolchain for this repo, installed and activated by mise (https://mise.jdx.dev).
+[tools]
+node = "24"
+gitleaks = "8.30.1"  # run by the lefthook pre-commit hook
